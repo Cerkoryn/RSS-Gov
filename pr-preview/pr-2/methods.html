@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How RSS-Gov works</title>
+<meta name="description" content="How RSS-Gov compares reward schemes for Cardano governance: data, model, assumptions, validation and how to read the results.">
+<link rel="stylesheet" href="site.css?v=c679181857">
+</head>
+<body>
+<nav class="site" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true">R</span><span class="word">RSS-Gov</span></a>
+    <a class="page" href="index.html">Results</a>
+    <a class="page" href="methods.html" aria-current="page"><span class="long">How it works</span><span class="short">Method</span></a>
+    <a class="page" href="propose.html"><span class="long">Propose a scheme</span><span class="short">Propose</span></a>
+    <span class="spacer"></span>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch theme"></button>
+  </div>
+</nav>
+<main>
+  <div class="doc">
+    <aside class="toc" aria-label="Contents">
+      <div class="small" style="font-weight:600; margin-bottom:4px">On this page</div>
+      <div class="toc">
+<ul>
+<li><a href="#in-short">In short</a></li>
+<li><a href="#the-question">The question</a></li>
+<li><a href="#the-axes">The axes</a></li>
+<li><a href="#data">Data</a></li>
+<li><a href="#the-reward-family-mechanismspy">The reward family (mechanisms.py)</a></li>
+<li><a href="#tier-a-static-analysis-staticpy">Tier A: static analysis (static.py)</a></li>
+<li><a href="#tier-b-the-model-modelpy">Tier B: the model (model.py)</a><ul>
+<li><a href="#what-is-fitted-and-from-what-calibratepy">What is fitted, and from what (calibrate.py)</a></li>
+<li><a href="#validation-gate">Validation gate</a></li>
+<li><a href="#what-is-assumed-four-response-channels">What is assumed: four response channels</a></li>
+</ul>
+</li>
+<li><a href="#comparing-schemes-fairly-experimentpy">Comparing schemes fairly (experiment.py)</a></li>
+<li><a href="#search-and-hypervolume-searchpy">Search and hypervolume (search.py)</a></li>
+<li><a href="#proposed-designs-community-and-agents">Proposed designs: community and agents</a></li>
+<li><a href="#tier-c-measuring-real-reactions">Tier C: measuring real reactions</a></li>
+</ul>
+</div>
+
+    </aside>
+    <article class="prose">
+      <h1 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">#</a></h1>
+<p>What RSS-Gov claims, what it does not, and how each number is produced. The first section
+is a plain-language summary; the rest is the detail behind it.</p>
+<h2 id="in-short">In short<a class="headerlink" href="#in-short" title="Permanent link">#</a></h2>
+<p><strong>The question.</strong> Cardano's treasury could pay DReps, and the people who delegate to them,
+for taking part in governance. There are many ways to do that, and each one buys something
+and risks something. RSS-Gov does not pick a winner. It measures what each way of paying
+does, on five things that matter, so that the choice between them can be made in the open.</p>
+<p><strong>The five things measured.</strong> For every reward rule:</p>
+<ol>
+<li><em>Participation</em>: how much of all delegated ADA ends up casting a vote.</li>
+<li><em>Decentralisation</em>: how many DReps it takes to hold two thirds of the voting power. More
+   is better: power is spread wider.</li>
+<li><em>Skin in the game</em>: how much of the voting power is backed by the DRep's own ADA, so
+   that those who decide also bear the consequences.</li>
+<li><em>Cost</em>: how much ADA a year leaves the treasury.</li>
+<li><em>Sybil risk</em>: how much of the budget someone gains by pretending to be several DReps
+   (a Sybil attack). Lower is better.</li>
+</ol>
+<p><strong>Only votes are paid.</strong> Every rule pays for explicit votes (Yes, No and Abstain alike).
+Nothing is paid for just being registered or holding delegation.</p>
+<p><strong>What is known and what is assumed.</strong> Some things can be computed exactly from the chain
+today: who a rule would pay, what it costs, and how much splitting into several DReps
+would gain. How people <em>react</em> to being paid cannot be known before anyone has been paid.
+So RSS-Gov does three things:</p>
+<ul>
+<li>It builds a model of governance <em>without</em> rewards from the chain's history: how often
+  each DRep votes, how delegators move, how DReps come and go. It then checks that model
+  by starting it 40 epochs in the past and seeing whether it reproduces what actually
+  happened. It does.</li>
+<li>It adds four reactions to money, each switched on and off separately: DReps vote more,
+  delegators move towards paying DReps, DReps spend awards on attracting delegation, and
+  DReps add their own stake when a rule rewards it. Each is tried at a low, a central and
+  a high strength. A result that only appears at high strength is a hope, not a finding.</li>
+<li>It runs every rule many times from the same starting point with the same luck, and
+  reports each result as a difference from paying nothing, with its uncertainty.</li>
+</ul>
+<p><strong>What comes out.</strong> No rule wins on every count. Paying in proportion to voting power
+draws more votes but, if awards help DReps attract delegation, concentrates power. Paying
+everyone the same invites fake DReps. Caps and "skip the largest" invite large DReps to
+split themselves. Paying delegators moves some stake but costs many tiny payments. Tying
+pay to own stake shows how little own stake stands behind today's votes. The results
+page shows these trade-offs side by side, and which designs are not beaten on all five at
+once.</p>
+<p><strong>What would settle it.</strong> Only a real programme can measure how strongly people react. The
+last section describes how a programme could be set up to measure it.</p>
+<p><strong>How to take part.</strong> Anyone can propose a reward rule on the "Propose a scheme" page; it
+is simulated exactly like the others and listed with its results. The method itself is
+open too: this page is generated from <code>METHODS.md</code>, and <code>CONTRIBUTING.md</code> explains how to
+suggest a change.</p>
+<h2 id="the-question">The question<a class="headerlink" href="#the-question" title="Permanent link">#</a></h2>
+<p>Every way of paying for governance participation buys something and risks something.
+Paying in proportion to stake rewards the DReps who already hold the power. Paying
+everyone the same invites fake DReps. Paying delegators can move idle stake but spreads
+the money thin. Ignoring a DRep's own stake rewards power exercised with nothing at risk.
+The question is therefore not "which rule is best" but: <strong>for each rule, what does it do
+on each of these dimensions, how sure are we, and which rules are not beaten on all of
+them at once?</strong></p>
+<p>Nobody has been paid yet, so history cannot say how people react to money. RSS-Gov
+separates three kinds of evidence and never mixes them:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Question</th>
+<th>Depends on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. Static</td>
+<td>Who would this rule pay today, what does it cost, how gameable is it?</td>
+<td>Chain data only</td>
+</tr>
+<tr>
+<td>B. Model</td>
+<td>What happens if people react with a given strength?</td>
+<td>Chain data + assumed reaction strengths</td>
+</tr>
+<tr>
+<td>C. Real world</td>
+<td>How strongly do people actually react?</td>
+<td>A real programme set up as an experiment</td>
+</tr>
+</tbody>
+</table></div>
+<p>Tier A results are facts about a formula. Tier B results are conditional forecasts. Only
+tier C can turn them into findings.</p>
+<h2 id="the-axes">The axes<a class="headerlink" href="#the-axes" title="Permanent link">#</a></h2>
+<p>One measure per objective family. Decision quality (and "harmful proposals") is left out:
+it cannot be observed on chain, and any label for it would be invented. Proposal
+completion is left out as an axis too: too few actions close during one programme to tell
+schemes apart on it. The model still simulates ratification, which is checked against
+history and reported as <code>supported_ratified</code> in the run tables.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Measure (<code>config.yaml</code> name)</th>
+<th>Better</th>
+<th>Tier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Participation</td>
+<td>Share of all delegated stake, including always-abstain and no-confidence, that casts an explicit vote on an action (<code>participation</code>)</td>
+<td>higher</td>
+<td>B</td>
+</tr>
+<tr>
+<td>Decentralisation</td>
+<td>DReps needed to exceed two thirds of DRep voting power (<code>tau67</code>)</td>
+<td>higher</td>
+<td>B</td>
+</tr>
+<tr>
+<td>Skin in the game</td>
+<td>Share of DRep voting power backed by the DRep's own stake: Σ min(power, own stake) / Σ power (<code>backing</code>)</td>
+<td>higher</td>
+<td>B, from an on-chain start</td>
+</tr>
+<tr>
+<td>Reward sustainability</td>
+<td>Treasury cost a year: what is paid out plus one transaction fee per payment (<code>annual_cost_ada</code>)</td>
+<td>lower</td>
+<td>A</td>
+</tr>
+<tr>
+<td>Sybil resistance</td>
+<td>Largest share of the budget gained by splitting one identity into several (<code>split_gain</code>)</td>
+<td>lower</td>
+<td>A</td>
+</tr>
+</tbody>
+</table></div>
+<p>Notes on the choices:</p>
+<ul>
+<li><strong>Participation</strong> is measured against all delegated stake, not only stake already with
+  DReps. A scheme that moves stake out of always-abstain into a voting DRep therefore
+  scores, and one that only makes existing DReps vote more scores less than its turnout
+  suggests. Turnout among DReps is still reported.</li>
+<li><strong>Skin in the game</strong> is the reciprocal of leverage. One DRep's surplus cannot cover
+  another's shortfall. Today it is under 1%: see the data section for why that number is a
+  proxy.</li>
+<li><strong>Cost</strong> is an axis because the budget is a design choice. Named schemes are compared
+  at one budget; the search varies it, and a budget ladder shows what more money buys.</li>
+<li><strong>Sybil resistance</strong> is a measured quantity, not a pass/fail gate. Where to draw the
+  line is a separate, explicit guardrail (below).</li>
+</ul>
+<p>Each axis has a <code>meaningful</code> difference in <code>config.yaml</code>: the smallest change worth acting
+on. A change smaller than that counts as "same as unpaid" even if it is statistically
+clear, and a change larger than that counts only if its 95% interval excludes zero.</p>
+<h2 id="data">Data<a class="headerlink" href="#data" title="Permanent link">#</a></h2>
+<p><code>rss-gov data pull</code> reads the public Koios API and stores parquet tables under <code>data/</code>:
+governance actions and their official tallies, every vote, each DRep's voting power in
+every epoch since epoch 508, DRep certificates, protocol parameters, treasury totals, and
+the accounts currently delegating to each DRep and to the two predefined options.</p>
+<p>Two delegator lists are too long to page through (always-abstain has about 200,000
+accounts). For lists over 5,000 accounts, every account of at least 100,000 ADA is fetched
+exactly and the rest are represented by evenly spaced sample pages with a weight. Accounts
+of at least 100,000 ADA hold about 90% of delegated stake.</p>
+<p><strong>A DRep's own stake</strong> is not a ledger concept. Two clues are on chain and both are
+downloaded: the stake account that funded the DRep's registration transaction, and the
+payment address the DRep declares in its metadata. The current balance of those accounts,
+each counted once, is used as the DRep's own stake. For 828 of the 848 DReps with voting
+power the linked accounts hold a balance. This is a proxy with errors in both directions: a DRep can hold stake in
+accounts never linked to it, a registration can be paid for by someone else, and a
+declared address proves nothing about control. It is good enough to show the order of
+magnitude (most large DReps vote with thousands of times their linked stake) and not good
+enough to pay on. A programme that rewards own stake needs accounts declared and signed
+for by the DRep key.</p>
+<p>Raw pages are cached, so a pull can be rebuilt offline; <code>manifest.json</code> records a hash per
+table and <code>calibration.json</code> copies those hashes.</p>
+<h2 id="the-reward-family-mechanismspy">The reward family (<code>mechanisms.py</code>)<a class="headerlink" href="#the-reward-family-mechanismspy" title="Permanent link">#</a></h2>
+<p><strong>Only explicit votes are paid.</strong> Yes, No and Abstain count alike; not voting earns
+nothing; nothing is paid for merely being registered or holding delegation. Each epoch a
+DRep's weight is</p>
+<pre><code>eligible × min(stake, cap, leverage × own stake)^alpha × vote rate × (1 + bonus × rationale share)
+</code></pre>
+<p>where <code>vote rate</code> is the share of actions closed in the last 12 epochs that the DRep voted
+on, and <code>eligible</code> applies a minimum stake, a minimum number of delegators, a minimum vote
+rate, and an optional "skip the K largest, pay the next N". Weight is linear in the vote
+rate, so every vote earns the same increment.</p>
+<p>A share of the pot can go to delegators, always through a DRep that voted: <code>passthrough</code>
+shares each DRep's own award with its delegators, <code>flat</code> pays one yield per ADA and per
+unit of the DRep's vote rate. Delegating to always-abstain or to a DRep that does not vote
+earns nothing.</p>
+<p><code>leverage</code> ties the stake that counts for rewards to the DRep's own stake (a soft
+requirement). With <code>hard_cap</code> it limits <em>voting power</em> itself. That changes ratification
+and needs a hard fork; such schemes are simulated and flagged <code>pilot_testable: false</code>.</p>
+<h2 id="tier-a-static-analysis-staticpy">Tier A: static analysis (<code>static.py</code>)<a class="headerlink" href="#tier-a-static-analysis-staticpy" title="Permanent link">#</a></h2>
+<p>The rule is applied to today's real DReps with no behaviour change. Reported: how many
+are paid, the size of awards, the share going to the ten largest DReps, the share of
+delegator claims too small to be worth a transaction, the voting power a hard cap would
+leave, and two splitting measures.</p>
+<p><strong>An outsider splitting.</strong> Someone brings a fixed amount of own stake (default 1M ADA) and
+spreads it over m fake DReps, each paying its deposit, voting on everything, attaching a
+rationale to every vote, holding its stake in as many minimum-size accounts as the rule
+demands, and counting that stake as its own. Reported: the share of the budget at the best
+m up to 5,000, and how much of that exceeds what one honest DRep of the same size gets.
+Only the excess is a Sybil gain; the rest is the reward for taking part.</p>
+<p><strong>An insider splitting.</strong> For each of the 20 largest DReps and three smaller ones: what it
+adds by splitting into 2, 5, 10 or 20 equal DReps with its delegators and own stake
+following. The largest gain is reported. Delegators may not follow, so this is an upper
+bound. Stake pool operators did split pools in response to a cap, so it is not a
+theoretical one.</p>
+<p><code>split_gain</code> is the larger of the two. Rules linear in stake give nothing to split for.
+Equal splits reward an outsider's fake DReps. Caps, concave rules and "skip the largest"
+reward an insider's split, which is the less obvious half of the problem.</p>
+<h2 id="tier-b-the-model-modelpy">Tier B: the model (<code>model.py</code>)<a class="headerlink" href="#tier-b-the-model-modelpy" title="Permanent link">#</a></h2>
+<p>A run is one possible future of the programme (default 36 epochs). State: every DRep with
+voting power, and about 64,000 account rows that stand for the 270,000 delegating
+accounts. Each epoch:</p>
+<ol>
+<li>Account balances drift and fluctuate.</li>
+<li>DReps register and retire at historical rates, with historical sizes.</li>
+<li>The reward round is computed from what the chain shows.</li>
+<li>Accounts re-delegate with a small probability. A mover picks always-abstain,
+   no-confidence, or a DRep with weight <code>(stake + floor)^theta × exp(beta × vote rate)</code>.</li>
+<li>Governance actions closing this epoch are voted on. Each action is a whole historical
+   action resampled (its threshold, the support it had among voters, its abstention share
+   and the attention it drew), so the links between those stay as observed. A DRep votes
+   with its own fitted probability, shifted by the action's attention.</li>
+<li>Ratification follows the ledger rule for DReps: yes power over active power, with
+   non-voters counted as no, abstain votes and inactive DReps removed, and no-confidence
+   stake counted as no. On history this rule alone reproduces 119 of 120 outcomes.</li>
+</ol>
+<p>SPOs and the Constitutional Committee are not modelled. The scope is DReps and their
+delegators.</p>
+<h3 id="what-is-fitted-and-from-what-calibratepy">What is fitted, and from what (<code>calibrate.py</code>)<a class="headerlink" href="#what-is-fitted-and-from-what-calibratepy" title="Permanent link">#</a></h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Each DRep's vote probability</td>
+<td>Its own recency-weighted vote history, shrunk toward DReps of similar size. The half-life is chosen by how well votes are predicted 18 epochs ahead.</td>
+</tr>
+<tr>
+<td>Attention per action</td>
+<td>The logit shift that reconciles that forecast with the action's real turnout</td>
+</tr>
+<tr>
+<td>Re-delegation rate, large and small accounts</td>
+<td>Age of current delegations in the account table</td>
+</tr>
+<tr>
+<td>Share of moves to abstain / no-confidence</td>
+<td>Where recent movers went</td>
+</tr>
+<tr>
+<td>Preference for active DReps (<code>beta</code>)</td>
+<td>Maximum likelihood on where large recent movers went</td>
+</tr>
+<tr>
+<td>Preference for large DReps (<code>theta</code>)</td>
+<td>Simulated moments: the value that keeps the effective number of DReps on its observed path over the fit window</td>
+</tr>
+<tr>
+<td>Balance drift and volatility</td>
+<td>Simulated moments: end totals and the turnover of DRep power shares</td>
+</tr>
+<tr>
+<td>DRep entry and exit</td>
+<td>Counts and sizes over the last 80 epochs</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>theta</code> deserves a note. Fitting it to individual movers' choices gives 0.45–0.80, and a
+model run with that value slowly dissolves concentration, which has not happened on
+chain: 20–26 DReps have held two thirds of the power throughout. Real inflows are lumpier
+than a size rule (the five most-chosen DReps take 40–60% of moving accounts), so <code>theta</code>
+is fitted to the concentration path instead and the cross-section value is kept as a
+diagnostic.</p>
+<h3 id="validation-gate">Validation gate<a class="headerlink" href="#validation-gate" title="Permanent link">#</a></h3>
+<p>The model is fitted on epochs T-79..T-40 only, started from the observed state at T-40,
+and run 40 times without rewards to T. It passes when simulated concentration, totals,
+DRep count, share turnover, turnout, ballots per action and the ratification rate of
+supported actions are within the tolerances in <code>config.yaml</code>. <code>rss-gov calibrate</code> prints
+each check; every later command warns if the gate failed.</p>
+<p>Honest limits of this test:</p>
+<ul>
+<li>The tolerances were set while building the model, not before. The next data pull is the
+  first fully out-of-sample check: rerun <code>rss-gov calibrate</code> and see whether it still
+  passes.</li>
+<li>The account table exists only for today, so the re-delegation rate uses information
+  from the validation window. For earlier epochs each DRep's observed total is split into
+  accounts the way it is split today.</li>
+<li>Total stake delegated to DReps passes narrowly. One large account leaving moved it by
+  8% inside the window; the model cannot foresee such an event.</li>
+<li>The raw ratification rate is reported but not gated: it depends on which proposals get
+  submitted, and recent proposals were more contested than earlier ones.</li>
+</ul>
+<h3 id="what-is-assumed-four-response-channels">What is assumed: four response channels<a class="headerlink" href="#what-is-assumed-four-response-channels" title="Permanent link">#</a></h3>
+<p>Each trade-off has its own channel, so a result can be traced to the assumption it rests
+on. With every channel at zero, paying changes nothing (the tests check this).</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Channel</th>
+<th>What it does</th>
+<th>Trade-off it drives</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>drep_response</code></td>
+<td>A DRep's log-odds of voting rise by <code>response × log(1 + reward for one more vote / vote cost)</code>. The same strength scales rationale publishing and new registrations.</td>
+<td>Participation</td>
+</tr>
+<tr>
+<td><code>delegator_response</code></td>
+<td>A mover's log-weight for a DRep rises by <code>response</code> per point of annual yield; accounts earning less than a typical paying DRep offers become more likely to move. Yield falls as stake arrives.</td>
+<td>Mobilising idle stake; where it goes</td>
+</tr>
+<tr>
+<td><code>reinvest_response</code></td>
+<td>A DRep's pull on movers is multiplied by <code>(1 + award / upkeep)^response</code>: awards pay for reach. Under a stake-proportional rule this adds about <code>response</code> to the exponent with which movers already favour large DReps.</td>
+<td>Concentration under proportional pay</td>
+</tr>
+<tr>
+<td><code>pledge_response</code></td>
+<td>Under a rule that ties rewards or voting power to own stake, a DRep closes this share of its missing own stake over the programme.</td>
+<td>Skin in the game</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>low</code>, <code>central</code> and <code>high</code> move all four together. <code>voting_only</code>, <code>yield_only</code>,
+<code>reinvest_only</code> and <code>pledge_only</code> switch on one channel at its central value; the report
+uses them to show which assumption each result depends on. A scheme's score for ranking is
+its mean over <code>low</code>, <code>central</code> and <code>high</code>. The central values are guesses. A design is
+credible only if its verdicts hold from <code>low</code> to <code>high</code>.</p>
+<p>Not modelled: delegators leaving a DRep whose voting power is capped, vote buying,
+collusion, changes in vote <em>direction</em> or quality, and price effects.</p>
+<h2 id="comparing-schemes-fairly-experimentpy">Comparing schemes fairly (<code>experiment.py</code>)<a class="headerlink" href="#comparing-schemes-fairly-experimentpy" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Same start.</strong> Every scheme starts from the same chain snapshot.</li>
+<li><strong>Same money.</strong> Named schemes get the same budget and programme length. Where budget
+   varies (the ladder, the search) cost is an axis, so a cheaper design is not penalised
+   for buying less.</li>
+<li><strong>Same luck.</strong> All schemes share seeds, and every random draw about the outside world
+   (which actions arrive, who would register, which accounts move) is common across
+   schemes within a seed. Effects are mean paired differences from unpaid with a 95%
+   interval across seeds.</li>
+<li><strong>Same yardstick.</strong> Each axis gets a verdict against unpaid: better, worse, or no
+   meaningful difference. Verdicts are computed per scenario; the report marks a verdict
+   as solid only when it holds in <code>low</code>, <code>central</code> and <code>high</code>.</li>
+<li><strong>Measurements apart from judgement.</strong> The axes are measured. Where to draw lines is in
+   <code>guardrails</code>: a design is <em>acceptable</em> when splitting gains at most 10% of the budget
+   and no axis other than cost is worse than unpaid in any scenario. Changing a guardrail
+   re-labels designs without re-running anything.</li>
+<li><strong>No single score.</strong> A design is <em>shortlisted</em> when no other acceptable design is at
+   least as good on every axis and meaningfully better on one. Designs outside a
+   guardrail are not discarded: they are grouped by exactly which downside they accept,
+   and the unbeaten ones in each group are reported (<code>best_of_its_kind</code>). If nothing is
+   inside every guardrail, those groups are the result. What remains is a choice between
+   trade-offs, which is a governance decision, not a modelling one.</li>
+</ol>
+<p>Hard-fork-only designs go through the same comparison and get their own shortlist. They
+cannot be tried without a ledger change, so for them tiers A and B are all the evidence
+there will be before one.</p>
+<h2 id="search-and-hypervolume-searchpy">Search and hypervolume (<code>search.py</code>)<a class="headerlink" href="#search-and-hypervolume-searchpy" title="Permanent link">#</a></h2>
+<p>An evolutionary search over the family, budget included, with no language model in the
+loop. Each generation mutates designs on the current front and adds random ones.</p>
+<p>A search over noisy simulations always finds something. So the finalists are re-run on
+100 seeds the search never saw, and only those numbers are reported.</p>
+<p>With five axes almost any design is unbeaten on something, so the front is thinned: two
+designs that differ by less than the <code>meaningful</code> amount on every axis count as one.</p>
+<p>Hypervolume is used for one thing: a single number for "how much of the trade-off space
+does this set of designs cover". Each axis is rescaled to 0–1 between the <code>scale</code> bounds
+in <code>config.yaml</code>, expressed as a difference from unpaid, and the volume is exact. Unpaid is
+always a member, since doing nothing is always available. The 95% interval comes from
+resampling seeds. The report also gives what the search adds over the named schemes; if
+that interval includes zero, the search found nothing the named schemes did not offer.</p>
+<p>Coverage is also tracked using only designs within the Sybil guardrail, every round and on
+the holdout seeds, because the widest corners are often reached by designs that are easy
+to game. The finalists therefore include the largest contributors to both fronts: with and
+without the designs over the limit.</p>
+<p>Hypervolume depends on the chosen scales and rewards coverage of every corner, including
+corners nobody wants (a very cheap programme that does nothing much). It tracks search
+progress. It does not rank designs: read the shortlist.</p>
+<h2 id="proposed-designs-community-and-agents">Proposed designs: community and agents<a class="headerlink" href="#proposed-designs-community-and-agents" title="Permanent link">#</a></h2>
+<p>Anyone can propose a design in the same family, through the "Propose a scheme" page or
+as a YAML file. A proposal gets the exact static checks at once (the page computes them in
+the browser with the same formulas, and a test keeps the two implementations equal) and is
+then simulated on the holdout seeds by <code>rss-gov try</code>, so its numbers are directly
+comparable with the search finalists. Every proposal is kept in <code>results/proposals/</code> with
+its text, its verdict and its runs, and shown on the results page whether or not it joins
+the front. Proposals simulated under an older calibration are marked as needing a rerun.</p>
+<p>The autoresearch loop (<code>program.md</code>) works the same way: an agent proposes designs in a
+YAML file and runs <code>rss-gov try</code>.
+The evaluator is frozen. A proposal is accepted only if it differs from every design on
+the front by a meaningful amount without being beaten by one, and raises the holdout
+hypervolume by an amount whose 95% interval excludes zero. Every proposal is logged in
+<code>results/ledger.jsonl</code> with its change on each axis, accepted or not.</p>
+<p>Repeated proposals against the same holdout seeds will eventually fit them. After a few
+dozen proposals, change <code>HOLDOUT_OFFSET</code> and rerun the search.</p>
+<h2 id="tier-c-measuring-real-reactions">Tier C: measuring real reactions<a class="headerlink" href="#tier-c-measuring-real-reactions" title="Permanent link">#</a></h2>
+<p>Only a real programme can measure the responses the model has to assume. Each axis has a
+different status there:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Axis</th>
+<th>In a real programme</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Participation</td>
+<td>Directly observable: votes and delegation each epoch. Measures <code>drep_response</code> and <code>delegator_response</code>.</td>
+</tr>
+<tr>
+<td>Decentralisation</td>
+<td>Observable, but slow: delegation moves by under 1% an epoch. Expect a direction, not a settled level. Measures <code>reinvest_response</code>.</td>
+</tr>
+<tr>
+<td>Skin in the game</td>
+<td>Only if the programme collects signed account declarations. A soft own-stake rule can be tried; that also measures <code>pledge_response</code>.</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>Known exactly, including the number and size of payments.</td>
+</tr>
+<tr>
+<td>Sybil resistance</td>
+<td>Not directly. Watch for new DReps near the minimum stake with identical votes, and for large DReps' delegation splitting across new DReps.</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>Pre-register.</strong> Before launch, record the rule, the model's predicted change on each
+  axis under each scenario (<code>results/experiment_summary.csv</code>), and the analysis.
+  Afterwards, the scenario closest to the outcome replaces the guess.</li>
+<li><strong>Randomise.</strong> Before/after comparison of turnout is weak: turnout varied by 9 points
+  between actions over the last 80 epochs, so detecting a 5-point change needs about 49
+  actions per period, more than a six-month programme sees. Randomising <em>who is eligible
+  first</em> is far stronger. A DRep's vote rate changed by 0.16 (standard deviation) between
+  the last two 36-epoch windows, so two cohorts of about 170 DReps detect a 5-point
+  change in vote rate with 80% power, and 45 per cohort detect 10 points.</li>
+<li><strong>Stagger.</strong> Pay cohort A from the start and cohort B from the midpoint. Everyone is
+  paid eventually, and the first half is a clean comparison.</li>
+<li><strong>Measure what the model predicts.</strong> Vote rate per DRep, rationale rate, new
+  registrations, re-delegation toward paid DReps, stake leaving always-abstain, and
+  declared own stake.</li>
+</ul>
+<p>Rules that need a hard fork cannot be tried this way. A soft version of the same rule
+(own stake limiting rewards instead of voting power) can, and it measures the response a
+hard cap would rely on.</p>
+      <section class="card" style="margin-top:40px; background:var(--accent-bg)">
+        <h2 style="border:0; margin-top:0; padding-top:0">Improve this method</h2>
+        <p>This page is generated from <code>METHODS.md</code> in the repository, so it always describes the code that produced the results. If something is unclear, wrong or missing, the place to change it is that file. A change to how a number is computed comes with the code change and a rerun of the validation; a change to an assumption comes with the reason for the new value. <code>CONTRIBUTING.md</code> describes what reviewers check.</p>
+        <p class="actions"><a class="button" href="https://github.com/Cerkoryn/RSS-Gov/edit/main/METHODS.md">Suggest a change to this page</a> <a class="primary" href="propose.html">Propose a reward scheme</a></p>
+      </section>
+    </article>
+  </div>
+</main>
+<footer class="site"><div class="inner"></div></footer>
+<script src="data.js?v=c4a76c9ba4"></script>
+<script src="common.js?v=2f24132713"></script>
+</body>
+</html>

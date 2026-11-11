@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propose a reward scheme</title>
+<meta name="description" content="Propose a reward scheme for Cardano governance and have it simulated against the same baseline as every other design.">
+<link rel="stylesheet" href="site.css?v=c679181857">
+</head>
+<body>
+<nav class="site" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true">R</span><span class="word">RSS-Gov</span></a>
+    <a class="page" href="index.html">Results</a>
+    <a class="page" href="methods.html"><span class="long">How it works</span><span class="short">Method</span></a>
+    <a class="page" href="propose.html" aria-current="page"><span class="long">Propose a scheme</span><span class="short">Propose</span></a>
+    <span class="spacer"></span>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch theme"></button>
+  </div>
+</nav>
+<main>
+  <header class="hero">
+        <h1>Propose a reward scheme</h1>
+    <p class="lead">Build your own reward design. It is simulated exactly like every other one and listed with its results, whether or not it beats them.</p>
+    <div class="meta" id="mode"></div>
+  </header>
+
+  <div class="form-grid">
+    <section class="card" style="margin:0">
+      <div class="form-step">
+        <span class="n">1</span>
+        <div class="title-row"><h2>Start from a known design</h2><button class="info" type="button" aria-label="About starting points" data-info="Pick the closest design, then change what you like.||Every design pays only for votes: Yes, No and Abstain alike."></button></div>
+      </div>
+      <select id="preset" class="wide" aria-label="Start from"></select>
+
+      <div class="form-step">
+        <span class="n">2</span>
+        <div class="title-row"><h2>Set the rule</h2><button class="info" type="button" aria-label="About the rule" data-info="The first two groups are the heart of a design. The others are optional refinements; open one to change it."></button></div>
+      </div>
+      <form id="fields" onsubmit="return false"></form>
+
+      <div class="form-step">
+        <span class="n">3</span>
+        <div class="title-row"><h2>Explain the idea</h2><button class="info" type="button" aria-label="Why explain" data-info="Every design gives something up. Saying what you expect makes the result useful even if it fails."></button></div>
+      </div>
+      <div class="text"><label for="m-name">Short name</label><input id="m-name" maxlength="60" placeholder="e.g. capped_with_delegator_floor"></div>
+      <div class="text"><label for="m-hypothesis">What should it improve, and what does it give up?</label><textarea id="m-hypothesis" maxlength="2000" placeholder="e.g. A delegator floor should make splitting a large DRep costly, keeping the participation a cap buys without the Sybil risk."></textarea></div>
+      <div class="text"><label for="m-author">Your name or handle <span class="muted" style="font-weight:400">(optional, shown publicly)</span></label><input id="m-author" maxlength="80"></div>
+    </section>
+
+    <aside class="sticky">
+      <section class="card" style="margin:0" aria-live="polite">
+        <div class="eyebrow" style="margin-bottom:4px">Your proposal</div>
+        <p class="plain" id="plain">–</p>
+        <div id="badges" class="meta" style="margin:0 0 4px"></div>
+        <div id="checks"></div>
+        <div class="actions" id="actions"></div>
+        <div class="status" id="status"></div>
+        <details class="more" style="margin-top:14px">
+          <summary>The proposal as a file (YAML)</summary>
+          <pre class="yaml" id="yaml"></pre>
+        </details>
+      </section>
+    </aside>
+  </div>
+
+  <section class="block" aria-labelledby="list-title">
+    <div class="section-head">
+      <div class="title-row"><h2 id="list-title">Community proposals</h2><button class="info" type="button" aria-label="About this list" data-info="Changes compared with paying nothing, averaged over the weak, medium and strong reactions.||A proposal adds a trade-off when it does something no other design already does. Every proposal is on the results page either way."></button></div>
+    </div>
+    <div class="card"><div class="tablewrap" id="list"></div></div>
+  </section>
+
+  <section class="block" aria-labelledby="how-title">
+    <div class="section-head">
+      <h2 id="how-title">What happens next</h2>
+    </div>
+    <div class="steps">
+      <div><h3>Instant checks</h3>The rule is applied to today's real DReps, right here in your browser: who would be paid, how much, and how much someone gains by posing as several DReps. These numbers are exact.</div>
+      <div><h3>Simulation</h3>Your proposal opens as an issue on GitHub. Once a maintainer approves it, GitHub's servers run the programme 100 times under each of three reaction strengths, usually within a few minutes. The result is posted on the issue, with a preview of this site.</div>
+      <div><h3>Comparison</h3>The result is compared with every known design. Once merged, it is listed here and on the results page with its numbers, whether it adds a new trade-off or not.</div>
+      <div><h3>Beyond this form</h3>An idea the form cannot express, or a doubt about the method itself, is just as welcome: see <a href="methods.html">How it works</a> and <code>CONTRIBUTING.md</code>.</div>
+    </div>
+  </section>
+</main>
+<footer class="site"><div class="inner"></div></footer>
+<script src="data.js?v=c4a76c9ba4"></script>
+<script src="today.js?v=7a1d1b694c"></script>
+<script src="common.js?v=2f24132713"></script>
+<script src="checks.js?v=1e9f739200"></script>
+<script src="propose.js?v=960fc65938"></script>
+</body>
+</html>
