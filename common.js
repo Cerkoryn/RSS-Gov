@@ -212,21 +212,6 @@ function setupTheme() {
   });
 }
 
-// ---------- the optional local server ----------
-// `rss-gov serve` answers /api/*; a static copy of the site does not, and the pages then
-// fall back to what the data file holds.
-async function api(path, body) {
-  const options = body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
-  const res = await fetch("api/" + path, { cache: "no-store", ...options });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `server answered ${res.status}`);
-  return data;
-}
-async function serverStatus() {
-  if (location.protocol === "file:") return null;
-  try { return await api("status"); } catch (e) { return null; }
-}
-
 function footer() {
   const f = $("footer.site .inner");
   if (!f || !D.meta) return;
