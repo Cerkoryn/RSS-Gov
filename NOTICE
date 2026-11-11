@@ -1,0 +1,11 @@
+RSS-Gov
+
+RSS-Gov's governance research design was inspired by the Rewards Sharing Simulation
+Engine, written by Christina Ovezik at the University of Edinburgh Blockchain
+Technology Lab, and by contributions to that project, including Cerkoryn's CIP-50 work.
+
+Reference repository:
+https://github.com/Blockchain-Technology-Lab/Rewards-Sharing-Simulation-Engine
+
+RSS-Gov is maintained independently and shares no code with the reference simulator.
+Chain data are read from the public Koios API and are not redistributed here.

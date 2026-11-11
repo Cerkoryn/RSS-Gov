@@ -1,0 +1,153 @@
+# RSS-Gov study configuration. Everything a result depends on is in this file,
+# the data pull it points at, and the code.
+
+data: data/pull
+results: results
+
+programme:
+  budget_ada: 5000000       # total paid over the programme
+  epochs: 36                # about six months
+
+# Definitions of measured quantities. Changing these changes what the numbers mean.
+conventions:
+  activity_window: 12       # epochs of closed actions that count as "recent" activity
+  delegator_min_ada: 100    # smallest account that counts as a delegator
+  large_ada: 100000         # accounts at or above this get their own fitted move rate
+  stake_floor_ada: 1000     # keeps an empty DRep choosable by movers
+  prior_strength: 2         # pseudo-actions of shrinkage in a DRep's vote rate
+  forecast_lag: 18          # epochs ahead that fitted vote rates must hold for (half the programme)
+
+calibration:
+  window_epochs: 40         # fit window; the held-out validation window has the same length
+  fit_seeds: 12
+  validation_seeds: 40
+  # Largest acceptable gap between the held-out history and the model started 40 epochs
+  # earlier. Relative, except turnout (absolute, in share of stake).
+  tolerances:
+    tau67: 0.15
+    effective_n: 0.15
+    drep_power: 0.10
+    abstain: 0.10
+    dreps: 0.10
+    turnover: 0.50
+    turnout: 0.05
+    supported_ratified: 0.15  # share ratified among actions with enough voter support (absolute)
+    ballots: 0.20
+
+# Not estimable from history: nobody has been paid yet. These set the scale of the
+# response; the scenarios below set its strength.
+assumptions:
+  vote_cost_ada: 50         # effort of one considered vote; also the unit for a DRep's upkeep
+  rationale_cost_ada: 100   # extra effort of publishing a rationale
+  max_yield_pp: 50          # delegators ignore yield beyond this many points a year
+  min_payout_ada: 5         # smaller programme totals are not worth a transaction
+  payout_fee_ada: 0.3       # delivery cost of one payment
+
+# How strongly behaviour reacts to money. One channel per trade-off, so a result can be
+# traced to the assumption it rests on. With every channel at zero, paying changes nothing.
+#   drep_response      DReps vote more: logit shift in vote probability per
+#                      log(1 + reward per vote / vote cost).
+#   delegator_response Delegators chase yield: log-weight per point of annual yield.
+#   reinvest_response  Awards buy reach: a DRep's pull on movers is multiplied by
+#                      (1 + award / upkeep) ^ this. Under a stake-proportional rule this adds
+#                      about this much to the exponent with which movers favour large DReps.
+#   pledge_response    Share of the missing own stake a DRep adds over the programme when a
+#                      rule ties rewards or voting power to own stake.
+# low / central / high move all channels together; the *_only rows isolate one channel at
+# its central value and are used to attribute effects, not to rank schemes.
+scenarios:
+  no_response: {}
+  low: {drep_response: 0.25, delegator_response: 0.5, reinvest_response: 0.1, pledge_response: 0.1}
+  central: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2, pledge_response: 0.25}
+  high: {drep_response: 1.0, delegator_response: 2.0, reinvest_response: 0.4, pledge_response: 0.5}
+  voting_only: {drep_response: 0.5}
+  yield_only: {delegator_response: 1.0}
+  reinvest_only: {reinvest_response: 0.2}
+  pledge_only: {pledge_response: 0.25}
+ranking_scenarios: [low, central, high]   # a scheme's score is its mean over these
+
+# The axes schemes are compared on: one per objective family. Nothing is folded into a
+# single score. `meaningful` is the smallest difference worth acting on: smaller
+# differences count as "same" even when they are statistically detectable. `scale` is
+# [worst, best] as a difference from unpaid; it only sets the units of the hypervolume
+# used to track search progress.
+axes:
+  participation:
+    family: Participation
+    label: Delegated stake casting an explicit vote
+    better: higher
+    meaningful: 0.01
+    scale: [-0.05, 0.20]
+  tau67:
+    family: Decentralisation
+    label: DReps needed for 2/3 of voting power
+    better: higher
+    meaningful: 1
+    scale: [-5, 15]
+  backing:
+    family: Skin in the game
+    label: Voting power backed by the DRep's own stake
+    better: higher
+    meaningful: 0.002
+    scale: [-0.005, 0.05]
+  annual_cost_ada:
+    family: Reward sustainability
+    label: Treasury cost per year (ADA)
+    better: lower
+    meaningful: 500000
+    scale: [25000000, 0]
+  split_gain:
+    family: Sybil resistance
+    label: Share of the budget gained by splitting one identity
+    better: lower
+    meaningful: 0.02
+    scale: [1, 0]
+
+sybil:
+  newcomer_capital_ada: 1000000   # own stake an outsider can split over fake DReps
+
+# A design is shortlisted only inside these limits. They are judgement calls, kept
+# separate from the measurements so they can be moved without re-running anything.
+guardrails:
+  max_split_gain: 0.10            # at most this share of the budget for splitting
+  no_axis_worse_than_unpaid: true # cost excepted: every paid scheme costs more
+
+experiment:
+  seeds: 100
+  schemes:
+    - unpaid
+    - proportional
+    - equal
+    - sqrt
+    - capped
+    - middle_out
+    - activity_gate
+    - rationale_bonus
+    - small_drep_floor
+    - delegator_flat
+    - delegator_passthrough_sqrt
+    - pledge_soft
+    - pledge_hard_cap
+    # The same rule at other budgets: what more or less money buys.
+    - {name: capped_1m, preset: capped, budget_ada: 1000000}
+    - {name: capped_2m5, preset: capped, budget_ada: 2500000}
+    - {name: capped_10m, preset: capped, budget_ada: 10000000}
+
+# The results site (`rss-gov site`, `rss-gov serve`).
+site:
+  repository: null          # e.g. https://github.com/<owner>/RSS-Gov: adds "open as an issue"
+                            # and "suggest a change" links to the pages
+  methods: METHODS.md       # rendered as the "How it works" page
+  host: 0.0.0.0             # `rss-gov serve` listens on every interface: LAN and VPN included
+  port: 8000
+  submissions: true         # visitors of `rss-gov serve` may queue proposals for simulation.
+                            # There is no login: only serve on networks you trust.
+  max_queue: 20
+
+search:
+  seeds: 16
+  generations: 10
+  population: 24
+  holdout_seeds: 100
+  budgets_ada: [1000000, 2500000, 5000000, 10000000]
+  allow_hard_fork: true     # hard-fork-only designs are searched and flagged, never shortlisted

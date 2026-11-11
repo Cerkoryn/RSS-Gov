@@ -1,0 +1,247 @@
+{
+  "tip_epoch": 666,
+  "params": {
+    "hazard_large": 0.006909880344215469,
+    "hazard_small": 0.005254180270630626,
+    "theta": 0.8406250000000002,
+    "beta_activity": 1.0,
+    "abstain_large": 0.41903270021539063,
+    "abstain_small": 0.6546958689280675,
+    "no_confidence_share": 0.011686948837211358,
+    "sigma_balance": 0.008803315483969702,
+    "drift_drep": -0.003736547432014183,
+    "drift_abstain": 0.005591033883986322,
+    "entry_rate": 2.075,
+    "exit_rate": 2.275,
+    "half_life": 10.0,
+    "prior_strength": 2,
+    "forecast_lag": 18,
+    "large_ada": 100000,
+    "stake_floor_ada": 1000,
+    "activity_window": 12,
+    "drep_activity": 20,
+    "delegator_min_ada": 100,
+    "vote_cost_ada": 50,
+    "rationale_cost_ada": 100,
+    "max_yield_pp": 50,
+    "min_payout_ada": 5,
+    "payout_fee_ada": 0.3
+  },
+  "detail": {
+    "voting": {
+      "half_life": 10.0,
+      "salience_sd": 0.8182432648182288,
+      "log_loss": {
+        "5": 0.2801,
+        "10": 0.2759,
+        "20": 0.2821,
+        "40": 0.2905,
+        "1000": 0.3021
+      },
+      "turnout_bias": -0.011061696239497083,
+      "actions": 93
+    },
+    "delegation": {
+      "hazard_large": 0.006909880344215469,
+      "abstain_large": 0.41903270021539063,
+      "hazard_small": 0.005254180270630626,
+      "abstain_small": 0.6546958689280675,
+      "no_confidence_share": 0.011686948837211358,
+      "beta_activity": 1.0,
+      "choices": 2839,
+      "theta_cross_section": 0.6000000000000001
+    }
+  },
+  "validation": {
+    "start": 626,
+    "end": 666,
+    "seeds": 40,
+    "passed": true,
+    "checks": [
+      {
+        "metric": "tau67",
+        "observed": 22.3,
+        "simulated": 22.455000000000002,
+        "low": 21.055,
+        "high": 23.779374999999998,
+        "error": 0.006950672645740008,
+        "kind": "relative",
+        "tolerance": 0.15,
+        "gated": true,
+        "passed": true
+      },
+      {
+        "metric": "effective_n",
+        "observed": 28.31686311232128,
+        "simulated": 26.060795105598896,
+        "low": 24.085982356469312,
+        "high": 27.99091666668141,
+        "error": -0.07967224327685929,
+        "kind": "relative",
+        "tolerance": 0.15,
+        "gated": true,
+        "passed": true
+      },
+      {
+        "metric": "drep_power",
+        "observed": 5417227960.486746,
+        "simulated": 5956026419.247689,
+        "low": 5650712902.862294,
+        "high": 6253661578.234463,
+        "error": 0.09946017828508213,
+        "kind": "relative",
+        "tolerance": 0.1,
+        "gated": true,
+        "passed": true
+      },
+      {
+        "metric": "abstain",
+        "observed": 10491898753.751108,
+        "simulated": 10211856429.9275,
+        "low": 9850598809.564056,
+        "high": 10528646886.881435,
+        "error": -0.026691291099572134,
+        "kind": "relative",
+        "tolerance": 0.1,
+        "gated": true,
+        "passed": true
+      },
+      {
+        "metric": "dreps",
+        "observed": 848.0,
+        "simulated": 802.825,
+        "low": 764.975,
+        "high": 830.1,
+        "error": -0.053272405660377276,
+        "kind": "relative",
+        "tolerance": 0.1,
+        "gated": true,
+        "passed": true
+      },
+      {
+        "metric": "turnover",
+        "observed": 0.010434406253676962,
+        "simulated": 0.006732572619710229,
+        "low": 0.00595690750276539,
+        "high": 0.007656265953597233,
+        "error": -0.35477185227115815,
+        "kind": "relative",
+        "tolerance": 0.5,
+        "gated": true,
+        "passed": true
+      },
+      {
+        "metric": "turnout",
+        "observed": 0.7903805144028921,
+        "simulated": 0.7906734945683704,
+        "low": 0.7582614449327038,
+        "high": 0.8173672593638853,
+        "error": 0.000292980165478296,
+        "kind": "absolute",
+        "tolerance": 0.05,
+        "gated": true,
+        "passed": true
+      },
+      {
+        "metric": "supported_ratified",
+        "observed": 0.75,
+        "simulated": 0.7662329145200777,
+        "low": 0.5997727272727272,
+        "high": 1.0,
+        "error": 0.01623291452007769,
+        "kind": "absolute",
+        "tolerance": 0.15,
+        "gated": true,
+        "passed": true
+      },
+      {
+        "metric": "ratified",
+        "observed": 0.5,
+        "simulated": 0.6955566537999684,
+        "low": 0.5322641509433962,
+        "high": 0.8499999999999998,
+        "error": 0.19555665379996845,
+        "kind": "absolute",
+        "tolerance": NaN,
+        "gated": false,
+        "passed": null
+      },
+      {
+        "metric": "ballots",
+        "observed": 172.796875,
+        "simulated": 197.2669461617242,
+        "low": 183.61676587301588,
+        "high": 207.73109374999999,
+        "error": 0.14161176908855677,
+        "kind": "relative",
+        "tolerance": 0.2,
+        "gated": true,
+        "passed": true
+      }
+    ],
+    "params": {
+      "hazard_large": 0.005663908048820443,
+      "hazard_small": 0.006155648523496482,
+      "theta": 0.9781249999999999,
+      "beta_activity": 1.5,
+      "abstain_large": 0.46272054638588506,
+      "abstain_small": 0.6516795871978933,
+      "no_confidence_share": 0.012521575671129917,
+      "sigma_balance": 0.004834190546336542,
+      "drift_drep": -0.0011671399371222053,
+      "drift_abstain": 0.004542659234760729,
+      "entry_rate": 3.5375,
+      "exit_rate": 2.9625,
+      "half_life": 5.0,
+      "prior_strength": 2,
+      "forecast_lag": 18,
+      "large_ada": 100000,
+      "stake_floor_ada": 1000,
+      "activity_window": 12,
+      "drep_activity": 20,
+      "delegator_min_ada": 100,
+      "vote_cost_ada": 50,
+      "rationale_cost_ada": 100,
+      "max_yield_pp": 50,
+      "min_payout_ada": 5,
+      "payout_fee_ada": 0.3
+    },
+    "detail": {
+      "voting": {
+        "half_life": 5.0,
+        "salience_sd": 0.7927124744681907,
+        "log_loss": {
+          "5": 0.3158,
+          "10": 0.3183,
+          "20": 0.3234,
+          "40": 0.3268,
+          "1000": 0.3306
+        },
+        "turnout_bias": -0.0026357170038675205,
+        "actions": 29
+      },
+      "delegation": {
+        "hazard_large": 0.005663908048820443,
+        "abstain_large": 0.46272054638588506,
+        "hazard_small": 0.006155648523496482,
+        "abstain_small": 0.6516795871978933,
+        "no_confidence_share": 0.012521575671129917,
+        "beta_activity": 1.5,
+        "choices": 916,
+        "theta_cross_section": 0.45
+      }
+    }
+  },
+  "data": {
+    "proposals": "2a2c7ec8b405802f5539ab6b344952a7a9cc312fd93715222b96a3da018eb805",
+    "votes": "25c512f364a6f783fcb174762928325435e526159fc9150e32fad5af01b10973",
+    "drep_power": "59324e8eb61a5315c3315b45454d985c529b91266187460d6790fe0f0ae43c46",
+    "drep_updates": "d2b6e456c2dd29adc3d56866a1653afd12a03f6ad889a441fbdf9a94040cb91a",
+    "dreps": "a61dec86f5e2ce1bf0718335f8f4698b1b19a0b5953e5097c3f46dcee593ce9f",
+    "params": "420bc29b64ae50c5b297174de46e83888ba11a545cfb28237ed9f3b0e9eb6609",
+    "voting_summary": "96535c17c37d996c7e06fe233938acbd6ad02ae8b11760a1d77ead71b4694289",
+    "totals": "d92e999496009853648ab2d4772fa456b944514ec8aedf3a2f8651b2944bac37",
+    "delegators": "9724f264cb0c9fd0114680f947c6356cce8b61a2e7f441237d692108706261cd",
+    "drep_own": "4896be2ccfb1853cf83a269c6ebbeb2ff90f156ec6bcc4982f6b7b195df04932"
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "history": [
+    {
+      "generation": 0,
+      "evaluated": 39,
+      "front": 18,
+      "hypervolume": 0.01280539980939889,
+      "hypervolume_guarded": 0.006557037432640448
+    },
+    {
+      "generation": 1,
+      "evaluated": 58,
+      "front": 24,
+      "hypervolume": 0.014653674759763154,
+      "hypervolume_guarded": 0.00667962640202848
+    },
+    {
+      "generation": 2,
+      "evaluated": 77,
+      "front": 25,
+      "hypervolume": 0.01514223560781907,
+      "hypervolume_guarded": 0.00667962640202848
+    },
+    {
+      "generation": 3,
+      "evaluated": 94,
+      "front": 27,
+      "hypervolume": 0.015032319649908223,
+      "hypervolume_guarded": 0.006930110256095987
+    },
+    {
+      "generation": 4,
+      "evaluated": 114,
+      "front": 32,
+      "hypervolume": 0.01619333123513956,
+      "hypervolume_guarded": 0.008924946885988168
+    },
+    {
+      "generation": 5,
+      "evaluated": 133,
+      "front": 37,
+      "hypervolume": 0.016265900702620833,
+      "hypervolume_guarded": 0.008953730310677855
+    },
+    {
+      "generation": 6,
+      "evaluated": 152,
+      "front": 37,
+      "hypervolume": 0.017109600300088748,
+      "hypervolume_guarded": 0.009015017203180672
+    },
+    {
+      "generation": 7,
+      "evaluated": 169,
+      "front": 35,
+      "hypervolume": 0.01731667576345884,
+      "hypervolume_guarded": 0.008913725436217457
+    },
+    {
+      "generation": 8,
+      "evaluated": 192,
+      "front": 38,
+      "hypervolume": 0.017405150747456195,
+      "hypervolume_guarded": 0.009045508840013447
+    },
+    {
+      "generation": 9,
+      "evaluated": 210,
+      "front": 40,
+      "hypervolume": 0.018405743717350775,
+      "hypervolume_guarded": 0.010949057383439686
+    },
+    {
+      "generation": 10,
+      "evaluated": 230,
+      "front": 42,
+      "hypervolume": 0.018591541555143257,
+      "hypervolume_guarded": 0.011163049957084838
+    }
+  ],
+  "front": [
+    "capped_2m5",
+    "g0_16",
+    "g10_0",
+    "g10_18",
+    "g10_2",
+    "g10_20",
+    "g10_6",
+    "g10_9",
+    "g1_14",
+    "g1_17",
+    "g1_7",
+    "g4_19",
+    "g5_0",
+    "g6_0",
+    "g6_10",
+    "g6_9",
+    "g7_1",
+    "g7_16",
+    "g7_19",
+    "g7_20",
+    "g7_23",
+    "g8_7",
+    "g9_10",
+    "g9_18",
+    "g9_19",
+    "g9_20",
+    "middle_out"
+  ],
+  "shortlist": [
+    "g10_2",
+    "g10_9",
+    "g7_20",
+    "g9_18",
+    "g9_19"
+  ],
+  "pilot_shortlist": [
+    "g10_2",
+    "g10_9",
+    "g7_20",
+    "g9_18",
+    "g9_19"
+  ],
+  "axes": [
+    "participation",
+    "tau67",
+    "backing",
+    "annual_cost_ada",
+    "split_gain"
+  ],
+  "scenarios": [
+    "low",
+    "central",
+    "high"
+  ],
+  "baseline": {
+    "participation": 0.2522078948995727,
+    "tau67": 19.368333333333336,
+    "backing": 0.009690051063820782,
+    "annual_cost_ada": 0.0,
+    "split_gain": 0.0
+  },
+  "hypervolume": 0.019118777553841743,
+  "hypervolume_ci": [
+    0.01870072601067423,
+    0.01952277221666793
+  ],
+  "hypervolume_unpaid": 0.004545454545454546,
+  "search_gain": 0.009635202963964258,
+  "search_gain_ci": [
+    0.00940621550837228,
+    0.009863864288064834
+  ],
+  "hypervolume_guarded": 0.011497806928944867,
+  "hypervolume_guarded_ci": [
+    0.011201687953592561,
+    0.011767301103012646
+  ],
+  "hypervolume_named_guarded": 0.006145921788027749,
+  "holdout_seeds": 100
+}

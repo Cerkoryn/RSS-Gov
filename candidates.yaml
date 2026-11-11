@@ -1,0 +1,15 @@
+# Proposals for `rss-gov try candidates.yaml`. See program.md and CONTRIBUTING.md.
+# Each entry is a point in the reward family (see "The reward family" in METHODS.md): start
+# from a `preset` or set every field. `hypothesis` says what it should improve and what it
+# gives up; `author` is optional and shown publicly.
+- name: capped_20m_floor_50
+  hypothesis: A cap invites the largest DReps to split; a floor of 50 delegators per DRep
+    makes each extra identity costly without giving up the participation the cap buys.
+  alpha: 1.0
+  cap_ada: 20000000
+  min_delegators: 50
+- preset: proportional
+  name: proportional_gate_half_budget
+  hypothesis: Half the budget buys most of the participation of the full one.
+  activity_gate: 0.5
+  budget_ada: 2500000
