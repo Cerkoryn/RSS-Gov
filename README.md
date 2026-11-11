@@ -11,6 +11,9 @@ It replaces the earlier simulator (archived next to this folder as `OLD_RSS-Gov`
 design goal is that every number can be traced to chain data, to a stated assumption, or
 to both, and that the two are never confused.
 
+**The results are online at <https://cerkoryn.github.io/RSS-Gov/>.** Anyone can propose a
+reward rule there; it is simulated on GitHub's servers and listed with its results.
+
 ## The five axes
 
 | Family | Measure | Better |
@@ -36,17 +39,23 @@ on it. Every scheme pays only for explicit votes (Yes, No and Abstain count alik
 | Search the rule family; judge finalists on unseen seeds | `rss-gov search` | chain data + assumed response |
 | Test designs proposed by a person or an AI agent | `rss-gov try candidates.yaml` | same |
 | Write `results/report.md` with figures, and the results site in `results/site/` | `rss-gov report` | |
-| Serve the site on the network, with a form for proposing schemes | `rss-gov serve` | |
+| Check and store a proposal (YAML or a GitHub issue) | `rss-gov submit` | |
+| Serve the site on the network, simulating proposals on this machine | `rss-gov serve` | |
 
 `rss-gov all` runs everything after the download. On a 16-core desktop the whole run takes
 about half an hour; one simulated six-month programme takes 0.1–0.4 seconds.
 
 ## Quick start
 
-    uv venv --python 3.12 && uv pip install -e ".[dev]"
+    uv sync --extra dev      # the versions in uv.lock; or: uv venv && uv pip install -e ".[dev]"
     rss-gov data pull        # about 30 minutes; KOIOS_API_KEY in the environment or .env is optional
     rss-gov all
     pytest -q
+
+To work on the published results instead of a fresh pull, download the data they were
+computed from: `gh release download data-epoch-666 -p data.tar.gz` (the epoch is
+`tip_epoch` in `results/calibration.json`), unpack it into `data/pull/`, and check it with
+`rss-gov data verify`.
 
 Settings live in `config.yaml`: the programme budget and length, the axes and what counts
 as a meaningful difference on each, the response scenarios, the guardrails, and the
@@ -61,18 +70,20 @@ The results site in `results/site/` has three pages:
   against history.
 - **How it works**: `METHODS.md`, starting with a plain-language summary.
 - **Propose a scheme**: a form that builds a rule in the reward family, shows its exact
-  checks at once and queues it for simulation. Every proposal is listed with its results.
+  checks at once (computed in the browser) and submits it for simulation. Every proposal
+  is listed with its results.
 
-Run `rss-gov serve` and open the address it prints. It listens on every interface
+The site is published on GitHub Pages from the `gh-pages` branch (see "How the site is
+published" in `CONTRIBUTING.md`). Locally, open `results/site/index.html` from disk, or
+run `rss-gov serve` and open the address it prints. It listens on every interface
 (0.0.0.0, port 8000; see `site` in `config.yaml`), so other machines on your network or VPN
 can use it. There is no login: anyone who can reach the port can queue simulations, so
 serve it only on networks you trust, or add `--read-only`. If a firewall is active, allow
 the port from your network, for example `sudo ufw allow from 192.168.0.0/24 to any port
 8000 proto tcp`.
 
-The same folder also works as a static site (open `index.html` from disk, or upload the
-folder to any static host): everything but the instant checks and the submission queue
-works without the server. `results/report.md` has the same results as tables. `METHODS.md` explains how each number is produced and what it does not
+On a static host proposals go through GitHub issues; with `rss-gov serve` they are
+simulated on the spot. `results/report.md` has the same results as tables. `METHODS.md` explains how each number is produced and what it does not
 show. Things to keep in mind:
 
 1. **The unpaid model is fitted and tested.** Started 40 epochs back from data it was not

@@ -1,0 +1,151 @@
+# Simulate a community proposal on GitHub's runners.
+#
+# A proposal arrives as an issue (label `proposal`, usually from the site's "Submit on
+# GitHub" button). Adding the label `approved` starts this workflow: it checks the rule,
+# runs `rss-gov try` on the data the calibration was fitted to, rebuilds the site, opens a
+# pull request with the result and publishes a preview of the site with it. Merging the
+# pull request publishes the result.
+#
+# To re-run a proposal on the latest main (for example after another proposal was merged
+# and this one's pull request conflicts), run this workflow by hand with the issue number.
+#
+# The issue's text is untrusted: it is only ever read from a file and checked by
+# `rss-gov submit` (proposals.FIELDS), never pasted into a command.
+name: Simulate a proposal
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Issue number of the proposal
+        required: true
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: proposals
+  cancel-in-progress: false
+
+jobs:
+  simulate:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.label.name == 'approved' && contains(github.event.issue.labels.*.name, 'proposal'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE: ${{ github.event.issue.number || inputs.issue }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+      - name: Install
+        run: |
+          [[ $ISSUE =~ ^[0-9]+$ ]] || { echo "not an issue number: $ISSUE" >&2; exit 1; }
+          uv sync --frozen
+
+      - name: Get the mainnet data the calibration was fitted to
+        run: |
+          tip=$(jq -r .tip_epoch results/calibration.json)
+          gh release download "data-epoch-$tip" --pattern data.tar.gz --dir "$RUNNER_TEMP"
+          mkdir -p data/pull
+          tar -xzf "$RUNNER_TEMP/data.tar.gz" -C data/pull
+          uv run rss-gov data verify
+
+      - name: Read and check the proposal
+        id: proposal
+        run: |
+          gh issue view "$ISSUE" --json body,author > "$RUNNER_TEMP/issue.json"
+          jq -r .body "$RUNNER_TEMP/issue.json" > "$RUNNER_TEMP/issue.md"
+          author=$(jq -r .author.login "$RUNNER_TEMP/issue.json")
+          name=$(uv run rss-gov submit "$RUNNER_TEMP/issue.md" --author "$author" --source "issue #$ISSUE" 2> "$RUNNER_TEMP/refused.txt") \
+            || { cat "$RUNNER_TEMP/refused.txt" >&2; exit 1; }
+          [[ $name =~ ^[a-z][a-z0-9_]*$ ]] || { echo "unexpected name: $name" >&2; exit 1; }
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - name: Simulate
+        env:
+          NAME: ${{ steps.proposal.outputs.name }}
+        run: |
+          uv run rss-gov try "results/proposals/$NAME.yaml" | tee "$RUNNER_TEMP/try.log"
+          uv run rss-gov site
+
+      - name: Open or update the pull request
+        id: pr
+        env:
+          NAME: ${{ steps.proposal.outputs.name }}
+        run: |
+          branch="proposal/issue-$ISSUE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$branch"
+          git add results
+          git commit -q -m "Simulate proposal $NAME (#$ISSUE)"
+          git push -q -f origin "$branch"
+          {
+            echo "The simulation of proposal \`$NAME\` from #$ISSUE. Merging this publishes it on the site."
+            echo
+            echo '```'
+            grep -v '^wrote ' "$RUNNER_TEMP/try.log" | tail -n 40
+            echo '```'
+            echo
+            echo "Closes #$ISSUE"
+          } > "$RUNNER_TEMP/pr.md"
+          pr=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')
+          if [ -z "$pr" ]; then
+            gh pr create --base main --head "$branch" --title "Proposal: $NAME" --body-file "$RUNNER_TEMP/pr.md"
+            pr=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')
+          else
+            gh pr edit "$pr" --body-file "$RUNNER_TEMP/pr.md"
+          fi
+          echo "number=$pr" >> "$GITHUB_OUTPUT"
+
+      - name: Publish a preview
+        env:
+          PR: ${{ steps.pr.outputs.number }}
+        run: scripts/publish-pages.sh results/site "pr-preview/pr-$PR"
+
+      - name: Report on the issue
+        env:
+          NAME: ${{ steps.proposal.outputs.name }}
+          PR: ${{ steps.pr.outputs.number }}
+        run: |
+          url="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/pr-preview/pr-$PR/"
+          verdict=$(jq -r 'if .accepted then "it adds a trade-off no other design offers" else "it does not add a new trade-off (\(.reason))" end' "results/proposals/$NAME.json")
+          {
+            echo "Simulated as \`$NAME\`: $verdict."
+            echo
+            echo "- See it on a preview of the site (ready a minute or two after this comment): ${url}index.html#design=$NAME"
+            echo "- Pull request with the result: #$PR"
+            echo
+            echo "Every proposal is listed with its numbers once the pull request is merged, whether it adds a trade-off or not."
+          } > "$RUNNER_TEMP/comment.md"
+          gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/comment.md"
+          gh pr comment "$PR" --body "Preview of the site with this proposal: ${url}index.html#design=$NAME"
+
+      - name: Report a failure
+        if: failure()
+        run: |
+          {
+            echo "The simulation did not finish."
+            if [ -s "$RUNNER_TEMP/refused.txt" ]; then
+              echo
+              echo '```'
+              cat "$RUNNER_TEMP/refused.txt"
+              echo '```'
+              echo
+              echo "Edit the YAML in the issue and a maintainer can start it again."
+            fi
+            echo
+            echo "Log: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > "$RUNNER_TEMP/failed.md"
+          gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/failed.md"

@@ -4,15 +4,19 @@
     methods.html   how it works: METHODS.md rendered, so the site never disagrees with it
     propose.html   a form for proposing a reward scheme
     data.js        every number the pages show
+    today.js       today's DReps, for the exact checks on the proposal page (checks.js)
+    accounts.js    their delegating accounts; loaded only for rules that pay delegators
 
 The folder can be opened from disk, served by `rss-gov serve`, or published on any static
 host. Named schemes carry the numbers of the experiment (as in report.md); designs found by
 the search and community proposals carry their numbers from the holdout seeds.
 """
 
+import hashlib
 import json
 import os
 from pathlib import Path
+import re
 
 import markdown
 import numpy as np
@@ -22,7 +26,16 @@ import yaml
 from rss_gov import experiment, mechanisms, proposals, report, search, static
 
 WEB = Path(__file__).with_name("web")
-PAGES = ["index.html", "propose.html", "site.css", "common.js", "dashboard.js", "propose.js"]
+PAGES = [
+    "index.html",
+    "propose.html",
+    "site.css",
+    "common.js",
+    "dashboard.js",
+    "propose.js",
+    "checks.js",
+]
+ASSET = re.compile(r'(src|href)="([\w.-]+\.(?:js|css))"')
 BASELINE = experiment.BASELINE
 # Per axis: plain name, the question it answers, what a change is measured in, unit, decimals.
 DISPLAY = dict(
@@ -426,22 +439,42 @@ def _put(path, text):
     os.replace(part, path)
 
 
+def _version(text):
+    return hashlib.sha256(text.encode()).hexdigest()[:10]
+
+
+def _script(variable, value):
+    return f"window.{variable} = {json.dumps(value, allow_nan=False, separators=(',', ':'))};\n"
+
+
 def write(study, folder=None):
     """Write every page of the site; returns the folder."""
     folder = Path(folder or study.results / "site")
     folder.mkdir(parents=True, exist_ok=True)
-    data = build(study)
-    for name in PAGES:
-        _put(folder / name, (WEB / name).read_text())
+    files = {name: (WEB / name).read_text() for name in PAGES if not name.endswith(".html")}
+    files["data.js"] = _script("RSS", build(study))
+    today, accounts = static.export(study)
+    files["accounts.js"] = _script("RSS_ACCOUNTS", accounts)
+    today["accounts"] = f"accounts.js?v={_version(files['accounts.js'])}"
+    files["today.js"] = _script("RSS_TODAY", today)
     site = study.config.get("site") or {}
     toc, body = methods(site.get("methods", "METHODS.md"))
     edit = ""
     if site.get("repository"):
         url = f"{site['repository'].rstrip('/')}/edit/main/METHODS.md"
         edit = f'<a class="button" href="{url}">Suggest a change to this page</a>'
+    pages = {name: (WEB / name).read_text() for name in PAGES if name.endswith(".html")}
     page = (WEB / "methods.html").read_text()
     page = page.replace("<!--TOC-->", toc).replace("<!--METHODS-->", body)
-    _put(folder / "methods.html", page.replace("<!--EDIT-->", edit))
-    payload = json.dumps(data, allow_nan=False, separators=(",", ":"))
-    _put(folder / "data.js", f"window.RSS = {payload};\n")
+    pages["methods.html"] = page.replace("<!--EDIT-->", edit)
+    # Each page asks for its scripts and styles by content hash, so a browser or a cache
+    # (GitHub Pages keeps files for ten minutes) never mixes a new page with an old file.
+    versions = {name: _version(text) for name, text in files.items()}
+    for name, page in pages.items():
+        files[name] = ASSET.sub(
+            lambda m: f'{m[1]}="{m[2]}?v={versions[m[2]]}"' if m[2] in versions else m[0], page
+        )
+    files[".nojekyll"] = ""  # GitHub Pages: serve the files as they are
+    for name, text in files.items():
+        _put(folder / name, text)
     return folder

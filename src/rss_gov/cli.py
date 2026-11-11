@@ -1,6 +1,7 @@
-"""Command line: rss-gov data|calibrate|static|experiment|search|try|report|site|serve|all."""
+"""Command line: rss-gov data|calibrate|static|experiment|search|try|submit|report|site|serve|all."""
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -18,6 +19,8 @@ def cmd_data(args):
     from rss_gov import dataset, experiment, koios
 
     config = experiment.load_config(args.config)
+    if args.action == "verify":
+        return _verify(Path(args.out or config["data"]), Path(config["results"]))
     if args.action == "pull":
         koios.pull(args.out or config["data"], koios.api_key(), not args.no_delegators, _say)
     data = dataset.load(args.out or config["data"])
@@ -41,6 +44,20 @@ def cmd_data(args):
         _say("no account table: run `rss-gov data pull` without --no-delegators")
     else:
         _say(f"delegating accounts represented {data.delegators.weight.sum():,.0f}")
+
+
+def _verify(folder, results):
+    """Every table matches the pull's manifest and the data the calibration was fitted to."""
+    manifest = json.loads((folder / "manifest.json").read_text())
+    fitted = json.loads((results / "calibration.json").read_text()).get("data", {})
+    wrong = []
+    for name, entry in manifest["tables"].items():
+        digest = hashlib.sha256((folder / "tables" / f"{name}.parquet").read_bytes()).hexdigest()
+        if digest != entry["sha256"] or fitted.get(name, digest) != digest:
+            wrong.append(name)
+    if wrong or set(fitted) - set(manifest["tables"]):
+        sys.exit(f"data in {folder} differs from what the calibration used: {wrong or 'tables'}")
+    _say(f"data for epoch {manifest['tip']['epoch_no']} matches results/calibration.json")
 
 
 def cmd_calibrate(args):
@@ -130,6 +147,22 @@ def cmd_try(args):
     search.try_candidates(study, _scheme_rows(study, args.file), _say, args.processes)
 
 
+def cmd_submit(args):
+    """Store a proposal from YAML or a GitHub issue body; prints the name it was given."""
+    from rss_gov import experiment, proposals
+
+    config = experiment.load_config(args.config)
+    try:
+        payload = proposals.from_text(Path(args.file).read_text())
+        if args.author and not payload.get("author"):
+            payload["author"] = args.author
+        scheme, meta = proposals.accept(config, payload)
+    except (ValueError, yaml.YAMLError) as error:
+        sys.exit(f"refused: {error}")
+    proposals.submit(config["results"], scheme, meta, args.source)
+    _say(scheme.name)
+
+
 def cmd_report(args):
     from rss_gov import report, website
 
@@ -173,7 +206,7 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("data", help="download or summarise the chain data")
-    p.add_argument("action", choices=["pull", "summary"])
+    p.add_argument("action", choices=["pull", "summary", "verify"])
     p.add_argument("--out", help="data folder (default: `data` in the config)")
     p.add_argument("--no-delegators", action="store_true", help="skip the account table")
     p.set_defaults(run=cmd_data)
@@ -196,6 +229,12 @@ def main(argv=None):
     p = sub.add_parser("try", help="test proposed schemes against the current front")
     p.add_argument("file", help="YAML list of schemes")
     p.set_defaults(run=cmd_try)
+
+    p = sub.add_parser("submit", help="check and store a proposal (YAML, or a GitHub issue body)")
+    p.add_argument("file", help="the proposal, or a text file with a ```yaml block")
+    p.add_argument("--author", help="who proposed it, when the proposal does not say")
+    p.add_argument("--source", default="cli", help="where it came from, e.g. 'issue #12'")
+    p.set_defaults(run=cmd_submit)
 
     p = sub.add_parser("report", help="write results/report.md with figures, and the site")
     p.set_defaults(run=cmd_report)

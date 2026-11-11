@@ -75,3 +75,49 @@ def test_a_recorded_result_is_listed_as_done(tmp_path):
     assert row["state"] == "done" and row["reason"] == "no clear gain"
     (tmp_path / "calibration.json").write_text('{"changed": true}')
     assert proposals.listing(tmp_path)[0]["state"] == "stale"
+
+
+ISSUE = """### Hypothesis
+
+Paying the middle ranks should spread power.
+
+### Rule
+
+```yaml
+- name: "middle ranks"
+  author: ""
+  budget_ada: 2500000
+  alpha: 0.5
+  k_exclude: 20
+```
+"""
+
+
+def test_a_github_issue_body_becomes_a_submission():
+    row = proposals.from_text(ISSUE)
+    assert row["hypothesis"] == "Paying the middle ranks should spread power."
+    scheme, meta = proposals.parse(row)
+    assert scheme.name == "middle_ranks" and scheme.k_exclude == 20
+    assert proposals.from_text("budget_ada: 1000000\n")["budget_ada"] == 1_000_000
+    empty = ISSUE.replace("Paying the middle ranks should spread power.", "_No response_")
+    assert "hypothesis" not in proposals.from_text(empty)
+    for text in ("just words", "```yaml\n- a\n- b\n```"):
+        with pytest.raises(ValueError, match="one proposal"):
+            proposals.from_text(text)
+
+
+def test_accept_refuses_a_rule_that_is_already_listed(tmp_path):
+    config = dict(
+        results=str(tmp_path),
+        programme=dict(budget_ada=5_000_000),
+        experiment=dict(schemes=["proportional"]),
+        search=dict(allow_hard_fork=False),
+    )
+    with pytest.raises(ValueError, match="already listed as proportional"):
+        proposals.accept(config, dict(name="copy", budget_ada=5_000_000, alpha=1.0))
+    with pytest.raises(ValueError, match="hard-fork"):
+        proposals.accept(config, {**VALID, "pledge_leverage": 10, "hard_cap": True})
+    scheme, _ = proposals.accept(config, VALID)
+    proposals.submit(tmp_path, scheme, {}, "issue #1")
+    with pytest.raises(ValueError, match="already listed as my_idea"):
+        proposals.accept(config, {**VALID, "name": "again"})

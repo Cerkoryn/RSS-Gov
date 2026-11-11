@@ -1,0 +1,23 @@
+# Publish results/site/ on GitHub Pages (served from the gh-pages branch) whenever main
+# changes it, for example when a proposal's pull request is merged.
+name: Publish the site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - results/site/**
+      - scripts/publish-pages.sh
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Publish results/site to gh-pages
+        run: scripts/publish-pages.sh results/site .

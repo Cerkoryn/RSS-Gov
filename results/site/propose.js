@@ -2,9 +2,11 @@
 const F = D.form;
 const values = { ...F.defaults };
 const OPEN = new Set(["Budget", "How the money is split"]); // always shown; the other groups fold away
-let server = null;
+let server = null; // set when served by `rss-gov serve`, which can simulate on the spot
 let previewTimer = null;
 let listTimer = null;
+const REPO = D.meta.repository ? D.meta.repository.replace(/\/$/, "") : null;
+const YEAR = 73; // epochs a year
 const inputs = {};
 const groups = {};
 
@@ -119,10 +121,10 @@ function payload() {
   if (!out.pledge_leverage) out.hard_cap = false;
   return out;
 }
-function yaml(p) {
+function yaml(p, withIdea = true) {
   const q = (v) => (v === null || v === undefined ? "null" : typeof v === "string" ? JSON.stringify(v) : String(v));
   const lines = [`- name: ${q(p.name || "my_proposal")}`];
-  if (p.hypothesis) lines.push(`  hypothesis: ${q(p.hypothesis)}`);
+  if (p.hypothesis && withIdea) lines.push(`  hypothesis: ${q(p.hypothesis)}`);
   if (p.author) lines.push(`  author: ${q(p.author)}`);
   for (const f of F.fields) lines.push(`  ${f.name}: ${q(p[f.name])}`);
   return lines.join("\n") + "\n";
@@ -141,27 +143,54 @@ function changed() {
   $("#plain").textContent = describe(p, true);
   $("#yaml").textContent = yaml(p);
   clearTimeout(previewTimer);
-  if (server && server.ready) previewTimer = setTimeout(preview, 250);
-  else renderChecks(null);
+  previewTimer = setTimeout(() => renderChecks(check(p)), 150);
 }
 
-// ---------- instant checks (only when served by `rss-gov serve`) ----------
-async function preview() {
-  try {
-    renderChecks(await api("preview", payload()));
-  } catch (e) {
-    renderChecks({ error: e.message });
+// ---------- instant checks: the rule applied to today's DReps, in this browser ----------
+// The same limits proposals.py applies, so a rule that passes here is accepted there.
+function invalid(p) {
+  for (const f of F.fields) {
+    const v = p[f.name];
+    if (f.kind === "bool" || f.kind === "choice" || (f.optional && v === null)) continue;
+    if (typeof v !== "number" || !Number.isFinite(v) || v < f.min || v > f.max) return `${f.label}: between ${readout(f, f.min)} and ${readout(f, f.max)}.`;
+    if (f.kind === "int" && v !== Math.round(v)) return `${f.label}: a whole number.`;
   }
+  return null;
+}
+function sameAs(p) {
+  const keys = F.fields.map((f) => f.name);
+  const same = D.schemes.find((s) => keys.every((k) => (s.scheme[k] ?? null) === (p[k] ?? null)));
+  return same ? same.name : null;
+}
+let accountsLoading = false;
+function check(p) {
+  const today = window.RSS_TODAY;
+  if (!today) return { error: "The instant checks need today.js, which this copy of the site lacks." };
+  const bad = invalid(p);
+  if (bad) return { error: bad };
+  if (p.delegator_share > 0 && !window.RSS_ACCOUNTS) {
+    if (!accountsLoading) { // about 1 MB, so it is fetched only for rules that pay delegators
+      accountsLoading = true;
+      const s = h("script", { src: today.accounts }, document.body);
+      s.addEventListener("load", changed);
+      s.addEventListener("error", () => { accountsLoading = false; renderChecks({ error: "Could not load the delegator accounts." }); });
+    }
+    return { loading: true };
+  }
+  return {
+    pilot_testable: !p.hard_cap,
+    notes: Checks.notes(p),
+    checks: Checks.analyse(p, today, window.RSS_ACCOUNTS),
+    annual_cost: (p.budget_ada * YEAR) / today.epochs,
+    same_as: sameAs(p),
+  };
 }
 function renderChecks(r) {
   const host = $("#checks"), badges = $("#badges");
   host.textContent = "";
   badges.textContent = "";
-  if (!r) {
-    const note = server === null
-      ? "The instant checks run when this page is served by rss-gov serve. You can still download the proposal or open it as an issue."
-      : "The model is loading; the instant checks start in a few seconds.";
-    h("p", { className: "small" }, host, note);
+  if (r.loading) {
+    h("p", { className: "small" }, host, "Loading today's delegators for the delegator checks…");
     return;
   }
   if (r.error) {
@@ -196,7 +225,6 @@ function renderChecks(r) {
     const ul = h("ul", { className: "notes" }, more);
     for (const n of r.notes) h("li", {}, ul, n);
   }
-  h("p", { className: "small", style: "font-family:ui-monospace,monospace" }, more, "Rule in short: " + r.rule);
 }
 
 // ---------- actions ----------
@@ -206,6 +234,18 @@ function actions() {
   if (server && server.submissions) {
     const b = h("button", { className: "primary", type: "button" }, host, "Submit for simulation");
     b.addEventListener("click", submit);
+  } else if (REPO) {
+    // GitHub's issue form for proposals, filled in: the proposer only has to press Submit.
+    const b = h("a", { className: "button primary", target: "_blank", rel: "noopener" }, host, "Submit on GitHub");
+    b.title = "Opens a filled-in proposal on GitHub. Needs a GitHub account.";
+    b.addEventListener("click", (e) => {
+      const p = payload();
+      const bad = p.name ? invalid(p) : "Give the proposal a short name first (step 3).";
+      if (bad) { e.preventDefault(); say(bad, "err"); return; }
+      const q = new URLSearchParams({ template: "proposal.yml", title: "Scheme proposal: " + p.name, hypothesis: p.hypothesis, rule: yaml(p, false) });
+      b.href = `${REPO}/issues/new?${q}`;
+      say("Opened on GitHub: press “Create” there to send it. A maintainer then starts the simulation.", "ok");
+    });
   }
   const dl = h("button", { className: "ghost", type: "button" }, host, "Download");
   dl.title = "Download the proposal as a YAML file, for rss-gov try";
@@ -221,14 +261,6 @@ function actions() {
   cp.addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(yaml(payload())); say("Copied.", "ok"); } catch (e) { say("Copying is blocked here; use the YAML below.", "err"); }
   });
-  if (D.meta.repository) {
-    const issue = h("a", { className: "button", target: "_blank", rel: "noopener" }, host, "Open as a GitHub issue");
-    issue.addEventListener("click", () => {
-      const p = payload();
-      const body = `${p.hypothesis || "(what should it improve, and what does it give up?)"}\n\n\`\`\`yaml\n${yaml(p)}\`\`\`\n\nProposed with the RSS-Gov proposal form.`;
-      issue.href = `${D.meta.repository.replace(/\/$/, "")}/issues/new?labels=proposal&title=${encodeURIComponent("Scheme proposal: " + (p.name || "unnamed"))}&body=${encodeURIComponent(body)}`;
-    });
-  }
 }
 function say(message, kind = "") {
   const s = $("#status");
@@ -297,6 +329,11 @@ async function refreshList() {
     try { rows = (await api("proposals")).proposals; } catch (e) { /* keep what the data file holds */ }
   }
   renderList(rows);
+  if (REPO && !server) {
+    const note = h("p", { className: "small", style: "margin:12px 0 0" }, $("#list"), "Proposals still waiting for review or simulation are ");
+    h("a", { href: `${REPO}/issues?q=${encodeURIComponent("is:issue is:open label:proposal")}`, target: "_blank", rel: "noopener" }, note, "open on GitHub");
+    note.appendChild(document.createTextNode("."));
+  }
   clearTimeout(listTimer);
   if (server && rows.some((p) => p.state === "queued" || p.state === "running")) listTimer = setTimeout(refreshList, 5000);
 }
@@ -307,19 +344,13 @@ async function start() {
   server = await serverStatus();
   const mode = $("#mode");
   const badge = (text, cls = "") => h("span", { className: "badge " + cls }, mode, text);
-  if (!server) {
-    badge("Offline copy: download your proposal" + (D.meta.repository ? " or open it as an issue" : ""));
-  } else if (!server.submissions) {
-    badge("Instant checks only: this server does not accept submissions");
-  } else {
+  if (server && server.submissions) {
     badge("✓ Submissions open: simulated on this server", "good");
     if (server.queued || server.running) badge(`${server.queued + (server.running ? 1 : 0)} in the queue`);
-  }
-  if (server && !server.ready) {
-    const wait = setInterval(async () => {
-      server = await serverStatus();
-      if (server && server.ready) { clearInterval(wait); changed(); }
-    }, 2000);
+  } else if (REPO) {
+    badge("✓ Submissions open: through GitHub, simulated on GitHub's servers", "good");
+  } else {
+    badge("Offline copy: download your proposal");
   }
   actions();
   changed();

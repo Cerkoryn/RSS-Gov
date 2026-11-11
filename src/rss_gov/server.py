@@ -1,4 +1,4 @@
-"""`rss-gov serve`: the site over HTTP, with instant checks and a queue for proposals.
+"""`rss-gov serve`: the site over HTTP, with a queue that simulates proposals on this machine.
 
 By default it listens on every interface (0.0.0.0), so other machines on the local network
 or a VPN can open it. There is no login: anyone who can reach the port can submit
@@ -8,10 +8,12 @@ files instead; the pages then work without this server.
 
 Endpoints (everything else is a file from results/site/):
 
-    GET  /api/status      is the model loaded, are submissions open, how long is the queue
+    GET  /api/status      are submissions open, how long is the queue
     GET  /api/proposals   every proposal and its state
-    POST /api/preview     exact checks for a rule, without simulating
     POST /api/proposals   queue a proposal; it is simulated with `rss-gov try`
+
+The instant checks on the proposal page run in the browser (web/checks.js), so they work
+on a static host too.
 """
 
 from collections import deque
@@ -26,14 +28,12 @@ import sys
 import threading
 from urllib.parse import urlsplit
 
-import yaml
 
-from rss_gov import experiment, mechanisms, proposals, static, website
+from rss_gov import experiment, proposals, website
 
 MAX_BODY = 20_000  # bytes in one request
 PER_CLIENT = 3  # proposals one address may have waiting at once
 TIMEOUT = 3 * 3600  # seconds one simulation may take
-EPOCHS_A_YEAR = 73
 
 
 class Refused(Exception):
@@ -43,9 +43,9 @@ class Refused(Exception):
 
 
 class Service:
-    """Holds the loaded model and the proposal queue; one simulation at a time."""
+    """The proposal queue; one simulation at a time, each in its own `rss-gov try`."""
 
-    def __init__(self, config_path, submissions=True, max_queue=20, study=None, log=print):
+    def __init__(self, config_path, submissions=True, max_queue=20, log=print):
         self.config_path = str(config_path)
         self.config = experiment.load_config(config_path)
         self.results = Path(self.config["results"])
@@ -53,8 +53,7 @@ class Service:
         self.submissions = submissions
         self.max_queue = max_queue
         self.log = log
-        self.study = study
-        self.lock = threading.Lock()  # guards the queue and use of the model
+        self.lock = threading.Lock()  # guards the queue
         self.queue = deque()
         self.owner = {}
         self.running = None
@@ -62,24 +61,14 @@ class Service:
         for row in proposals.listing(self.results):
             if row["state"] == "queued":  # left waiting when the server last stopped
                 self.queue.append(row["name"])
-        if self.study is None:
-            threading.Thread(target=self._load, daemon=True).start()
         threading.Thread(target=self._work, daemon=True).start()
         if self.queue:
             self.wake.set()
-
-    def _load(self):
-        try:
-            self.study = experiment.open_study(self.config_path)
-            self.log("model loaded: instant checks are available")
-        except Exception as error:  # the site is still served; checks say why they fail
-            self.log(f"could not load the model: {error}")
 
     # ---------- answers ----------
     def state(self):
         with self.lock:
             return dict(
-                ready=self.study is not None,
                 submissions=self.submissions,
                 queued=len(self.queue),
                 running=self.running,
@@ -92,46 +81,6 @@ class Service:
                 status[self.running] = "running"
         return proposals.listing(self.results, status)
 
-    def _known(self):
-        """Every design name in use, and the parameters of each known design."""
-        known = {}
-        for row in self.config["experiment"]["schemes"]:
-            scheme = mechanisms.from_config(row, float(self.config["programme"]["budget_ada"]))
-            known[scheme.name] = scheme
-        finalists = self.results / "search_finalists.yaml"
-        if finalists.exists():
-            for row in yaml.safe_load(finalists.read_text()) or []:
-                known[row["name"]] = mechanisms.from_config(row, 0)
-        for name, row in proposals.submitted(self.results).items():
-            known[name] = mechanisms.from_config(proposals.split(row)[0], 0)
-        return known
-
-    def _same(self, scheme):
-        mine = {k: v for k, v in scheme.to_dict().items() if k != "name"}
-        for name, other in self._known().items():
-            if {k: v for k, v in other.to_dict().items() if k != "name"} == mine:
-                return name
-        return None
-
-    def preview(self, payload):
-        if self.study is None:
-            raise Refused(503, "the model is still loading; try again in a few seconds")
-        scheme, _ = proposals.parse(payload)
-        with self.lock:
-            row = static.analyse(self.study, [scheme]).iloc[0]
-        feasibility = scheme.feasibility()
-        keys = [*website.FACTS, "split_gain"]
-        return website._plain(
-            dict(
-                rule=scheme.label(),
-                pilot_testable=feasibility["pilot_testable"],
-                notes=feasibility["notes"],
-                checks={k: row[k] for k in keys},
-                annual_cost=scheme.budget_ada * EPOCHS_A_YEAR / self.study.epochs,
-                same_as=self._same(scheme),
-            )
-        )
-
     def submit(self, payload, client):
         if not self.submissions:
             raise Refused(403, "this server does not accept proposals")
@@ -141,15 +90,7 @@ class Service:
                 raise Refused(429, "the queue is full; please try again later")
             if sum(self.owner.get(name) == client for name in pending) >= PER_CLIENT:
                 raise Refused(429, f"at most {PER_CLIENT} proposals from one address may wait")
-            known = self._known()
-            scheme, meta = proposals.parse(payload, set(known) | proposals.taken(self.results))
-            if not scheme.paid:
-                raise ValueError("a proposal must have a budget")
-            if scheme.hard_cap and not self.config["search"].get("allow_hard_fork", False):
-                raise ValueError("hard-fork designs are switched off in config.yaml")
-            same = self._same(scheme)
-            if same:
-                raise ValueError(f"this rule is already listed as {same}")
+            scheme, meta = proposals.accept(self.config, payload)
             proposals.submit(self.results, scheme, meta, "web")
             self.queue.append(scheme.name)
             self.owner[scheme.name] = client
@@ -244,8 +185,6 @@ def make_handler(service):
             except (ValueError, UnicodeDecodeError):
                 return self._json(400, dict(error="the request is not valid JSON"))
             try:
-                if path == "/api/preview":
-                    return self._json(200, service.preview(payload))
                 if path == "/api/proposals":
                     return self._json(202, service.submit(payload, self.client_address[0]))
             except Refused as refused:
@@ -281,12 +220,10 @@ def addresses():
 def serve(config_path, host, port, submissions, max_queue, log=print):
     config = experiment.load_config(config_path)
     site = Path(config["results"]) / "site"
-    study = None
     if not (site / "data.js").exists():
         log("building the site first (rss-gov site)...")
-        study = experiment.open_study(config_path)
-        website.write(study)
-    service = Service(config_path, submissions, max_queue, study, log)
+        website.write(experiment.open_study(config_path))
+    service = Service(config_path, submissions, max_queue, log)
     handler = partial(make_handler(service), directory=str(site))
     httpd = http.server.ThreadingHTTPServer((host, port), handler)
     httpd.daemon_threads = True

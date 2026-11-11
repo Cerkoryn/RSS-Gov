@@ -101,14 +101,52 @@ def incumbent_split(scheme, rnd, pot):
     return best
 
 
+def _constants(study):
+    return dict(
+        deposit=float(study.data.params.get("drep_deposit", 500_000_000)) / 1e6,
+        capital=float(study.config["sybil"]["newcomer_capital_ada"]),
+        delegator_min=float(study.params.delegator_min_ada),
+        min_payout=float(study.params.min_payout_ada),
+        epochs=int(study.epochs),
+    )
+
+
+def export(study):
+    """Today's round as plain lists, for the same checks in the browser (web/checks.js).
+
+    Returns (round, accounts). Values keep full precision so the browser gets the same
+    answers; tests/test_checks.py holds the two implementations together. The accounts
+    are only needed for delegator payouts: per DRep, its accounts' ADA per account in
+    ascending order, with the account count as an index into a short list of values.
+    """
+    rnd = snapshot(study)
+    w = study.world
+    on_drep = w.acct_target >= 0
+    target, count = w.acct_target[on_drep], w.acct_count[on_drep]
+    unit = w.acct_stake[on_drep] / np.maximum(count, 1)
+    order = np.lexsort((unit, target))
+    palette, which = np.unique(count, return_inverse=True)
+    today = dict(
+        {k: getattr(rnd, k).tolist() for k in ("stake", "activity", "rationale", "delegators")},
+        pledge=rnd.pledge.tolist(),
+        top10=np.argsort(-rnd.stake)[:10].tolist(),
+        **_constants(study),
+    )
+    accounts = dict(
+        per_drep=np.bincount(target, minlength=len(rnd.stake)).tolist(),
+        unit=unit[order].tolist(),
+        palette=palette.tolist(),
+        count=which[order].tolist(),
+    )
+    return today, accounts
+
+
 def analyse(study, schemes):
     """One row per scheme: who would be paid today, how much, and what splitting earns."""
     rnd = snapshot(study)
     w = study.world
-    deposit = float(study.data.params.get("drep_deposit", 500_000_000)) / 1e6
-    capital = float(study.config["sybil"]["newcomer_capital_ada"])
-    min_payout = study.params.min_payout_ada
-    epochs = study.epochs
+    c = _constants(study)
+    deposit, capital, min_payout, epochs = c["deposit"], c["capital"], c["min_payout"], c["epochs"]
     on_drep = w.acct_target >= 0
     unit = w.acct_stake[on_drep] / np.maximum(w.acct_count[on_drep], 1)
     top10 = np.argsort(-rnd.stake)[:10]
@@ -132,7 +170,7 @@ def analyse(study, schemes):
             award, yields = mechanisms.allocate(scheme, rnd, pot)
             paid = award[award > 0]
             best, identities, single = newcomer_split(
-                scheme, rnd, pot, capital, deposit, study.params.delegator_min_ada
+                scheme, rnd, pot, capital, deposit, c["delegator_min"]
             )
             extra, rank, parts = incumbent_split(scheme, rnd, pot)
             claims = yields[w.acct_target[on_drep]] * unit * epochs

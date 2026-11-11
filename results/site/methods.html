@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How RSS-Gov works</title>
 <meta name="description" content="How RSS-Gov compares reward schemes for Cardano governance: data, model, assumptions, validation and how to read the results.">
-<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="site.css?v=c679181857">
 </head>
 <body>
 <nav class="site" aria-label="Site">
@@ -432,8 +432,9 @@ without the designs over the limit.</p>
 corners nobody wants (a very cheap programme that does nothing much). It tracks search
 progress. It does not rank designs: read the shortlist.</p>
 <h2 id="proposed-designs-community-and-agents">Proposed designs: community and agents<a class="headerlink" href="#proposed-designs-community-and-agents" title="Permanent link">#</a></h2>
-<p>Anyone can propose a design in the same family, through the "Propose a scheme" page of
-<code>rss-gov serve</code> or as a YAML file. A proposal gets the exact static checks at once and is
+<p>Anyone can propose a design in the same family, through the "Propose a scheme" page or
+as a YAML file. A proposal gets the exact static checks at once (the page computes them in
+the browser with the same formulas, and a test keeps the two implementations equal) and is
 then simulated on the holdout seeds by <code>rss-gov try</code>, so its numbers are directly
 comparable with the search finalists. Every proposal is kept in <code>results/proposals/</code> with
 its text, its verdict and its runs, and shown on the results page whether or not it joins
@@ -501,13 +502,13 @@ hard cap would rely on.</p>
       <section class="card" style="margin-top:40px; background:var(--accent-bg)">
         <h2 style="border:0; margin-top:0; padding-top:0">Improve this method</h2>
         <p>This page is generated from <code>METHODS.md</code> in the repository, so it always describes the code that produced the results. If something is unclear, wrong or missing, the place to change it is that file. A change to how a number is computed comes with the code change and a rerun of the validation; a change to an assumption comes with the reason for the new value. <code>CONTRIBUTING.md</code> describes what reviewers check.</p>
-        <p class="actions"> <a class="primary" href="propose.html">Propose a reward scheme</a></p>
+        <p class="actions"><a class="button" href="https://github.com/Cerkoryn/RSS-Gov/edit/main/METHODS.md">Suggest a change to this page</a> <a class="primary" href="propose.html">Propose a reward scheme</a></p>
       </section>
     </article>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js"></script>
-<script src="common.js"></script>
+<script src="data.js?v=11fad545e1"></script>
+<script src="common.js?v=2f24132713"></script>
 </body>
 </html>

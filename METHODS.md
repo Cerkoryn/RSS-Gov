@@ -325,8 +325,9 @@ progress. It does not rank designs: read the shortlist.
 
 ## Proposed designs: community and agents
 
-Anyone can propose a design in the same family, through the "Propose a scheme" page of
-`rss-gov serve` or as a YAML file. A proposal gets the exact static checks at once and is
+Anyone can propose a design in the same family, through the "Propose a scheme" page or
+as a YAML file. A proposal gets the exact static checks at once (the page computes them in
+the browser with the same formulas, and a test keeps the two implementations equal) and is
 then simulated on the holdout seeds by `rss-gov try`, so its numbers are directly
 comparable with the search finalists. Every proposal is kept in `results/proposals/` with
 its text, its verdict and its runs, and shown on the results page whether or not it joins

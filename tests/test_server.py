@@ -18,13 +18,10 @@ class FakeService:
         self.submitted = []
 
     def state(self):
-        return dict(ready=False, submissions=False, queued=0, running=None)
+        return dict(submissions=False, queued=0, running=None)
 
     def listing(self):
         return []
-
-    def preview(self, payload):
-        raise server.Refused(503, "the model is still loading")
 
     def submit(self, payload, client):
         raise server.Refused(403, "this server does not accept proposals")
@@ -76,5 +73,6 @@ def test_submissions_are_refused_when_closed(site):
 
 
 def test_bad_requests_are_refused(site):
-    assert post(site + "/api/preview", b"{not json")[0] == 400
-    assert post(site + "/api/preview", b"x" * (server.MAX_BODY + 1))[0] == 413
+    assert post(site + "/api/proposals", b"{not json")[0] == 400
+    assert post(site + "/api/proposals", b"x" * (server.MAX_BODY + 1))[0] == 413
+    assert post(site + "/api/preview", {"budget_ada": 1e6})[0] == 404  # checks run in the page

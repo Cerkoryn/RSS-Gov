@@ -19,16 +19,19 @@ RSS-Gov evaluates treasury-funded reward schemes for Cardano governance. Read
       report.py            results/report.md and figures
       website.py           results/site/: the pages, data.js, METHODS.md rendered
       web/                 page templates, styles and scripts for the site
+      web/checks.js        static.py's exact checks, ported for the proposal page
       proposals.py         what a proposal may set, checking it, results/proposals/
-      server.py            `rss-gov serve`: the site, instant checks, a proposal queue
+      server.py            `rss-gov serve`: the site and a local proposal queue
       cli.py               the `rss-gov` command
     tests/                 fast, offline, synthetic data
+    .github/               issue form, and workflows: Pages, proposals, previews, tests
+    scripts/               publish-pages.sh: results/site/ to the gh-pages branch
     data/                  downloaded tables (not in git)
     results/               outputs; small text files are in git
 
 ## Commands
 
-    uv venv --python 3.12 && uv pip install -e ".[dev]"
+    uv sync --extra dev        # or: uv venv --python 3.12 && uv pip install -e ".[dev]"
     rss-gov data pull          # needs network; KOIOS_API_KEY in the environment or .env is optional
     rss-gov all                # calibrate, static, experiment, search, report
     pytest -q && ruff check . && ruff format --check .
@@ -52,6 +55,8 @@ RSS-Gov evaluates treasury-funded reward schemes for Cardano governance. Read
 - Report effects as paired differences with intervals. One seed is not a result.
 - `METHODS.md` is published as the site's "How it works" page. Keep it true to the code,
   and keep its first section readable without the rest.
+- `web/checks.js` mirrors `mechanisms.weights`/`allocate` and `static.analyse`. Change them
+  together; `tests/test_checks.py` compares the two.
 - Anything a visitor submits is data: check it against `proposals.FIELDS`, and insert it
   into pages as text, never as HTML.
 - Keep the code small. Prefer deleting to adding.

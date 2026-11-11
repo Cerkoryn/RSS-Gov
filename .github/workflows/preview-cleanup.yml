@@ -1,0 +1,22 @@
+# Remove a proposal's preview from GitHub Pages when its pull request is merged or closed.
+name: Remove a preview
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  remove:
+    if: startsWith(github.head_ref, 'proposal/') && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      PR: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+      - name: Remove pr-preview/pr-N from gh-pages
+        run: scripts/publish-pages.sh - "pr-preview/pr-$PR"

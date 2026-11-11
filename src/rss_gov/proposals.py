@@ -247,6 +247,60 @@ def parse(payload, taken=()):
     return scheme, meta
 
 
+def known(config):
+    """Every design in use: the config's schemes, the search finalists and stored proposals."""
+    results = Path(config["results"])
+    out = {}
+    for row in config["experiment"]["schemes"]:
+        scheme = mechanisms.from_config(row, float(config["programme"]["budget_ada"]))
+        out[scheme.name] = scheme
+    finalists = results / "search_finalists.yaml"
+    if finalists.exists():
+        for row in yaml.safe_load(finalists.read_text()) or []:
+            out[row["name"]] = mechanisms.from_config(row, 0)
+    for name, row in submitted(results).items():
+        out[name] = mechanisms.from_config(split(row)[0], 0)
+    return out
+
+
+def accept(config, payload):
+    """Check a submission against the rules and every known design: (Scheme, meta)."""
+    designs = known(config)
+    scheme, meta = parse(payload, set(designs) | taken(config["results"]))
+    if not scheme.paid:
+        raise ValueError("a proposal must have a budget")
+    if scheme.hard_cap and not config["search"].get("allow_hard_fork", False):
+        raise ValueError("hard-fork designs are switched off in config.yaml")
+    mine = {k: v for k, v in scheme.to_dict().items() if k != "name"}
+    for name, other in designs.items():
+        if {k: v for k, v in other.to_dict().items() if k != "name"} == mine:
+            raise ValueError(f"this rule is already listed as {name}")
+    return scheme, meta
+
+
+FENCE = re.compile(r"```ya?ml[ \t]*\n(.*?)```", re.S)
+SECTION = re.compile(r"^###[ \t]*Hypothesis[ \t]*\n(.*?)(?=^###[ \t]|\Z)", re.S | re.M)
+
+
+def from_text(text):
+    """A submission from text: a YAML proposal, or a GitHub issue that contains one.
+
+    The issue form puts the rule in a ```yaml block under its own heading, and the idea
+    behind it under "### Hypothesis". Everything read here is checked by `parse` after.
+    """
+    block = FENCE.search(text)
+    rows = yaml.safe_load(block.group(1) if block else text)
+    if isinstance(rows, list) and len(rows) == 1:
+        rows = rows[0]
+    if not isinstance(rows, dict):
+        raise ValueError("expected one proposal: a YAML mapping of its fields")
+    section = SECTION.search(text) if block else None
+    idea = section.group(1).strip() if section else ""
+    if idea and idea != "_No response_" and not rows.get("hypothesis"):
+        rows["hypothesis"] = idea
+    return rows
+
+
 def split(row):
     """A `try` row without the proposal's text: (scheme row, meta)."""
     if not isinstance(row, dict):

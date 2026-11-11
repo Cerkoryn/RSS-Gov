@@ -1,0 +1,24 @@
+name: Reward scheme proposal
+description: Propose a reward rule to be simulated. The site's Propose page fills this in for you.
+title: "Scheme proposal: "
+labels: [proposal]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The easiest way to fill this in is the [Propose page](https://cerkoryn.github.io/RSS-Gov/propose.html): build the rule there, check it, and press **Submit on GitHub**.
+
+        A maintainer reads each proposal and starts the simulation. It runs on GitHub's servers, usually within a few minutes. The result is posted here as a comment, with a preview of the site including your design.
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+      description: What should the rule improve, and what might it give up?
+  - type: textarea
+    id: rule
+    attributes:
+      label: Rule
+      description: The rule as YAML, as written by the Propose page. Only the fields of the form are accepted.
+      render: yaml
+    validations:
+      required: true

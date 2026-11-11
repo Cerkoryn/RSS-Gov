@@ -10,10 +10,13 @@ A proposal is a rule in the reward family described in `METHODS.md`: how pay gro
 voting power, caps, who qualifies, what share goes to delegators, how pay is tied to a
 DRep's own stake, and the budget. Every rule pays only for explicit votes.
 
-**On the site.** When the site is served with `rss-gov serve`, the "Propose a scheme" page
-builds the rule with a form, shows the exact checks at once (who would be paid, how much
-splitting gains), and queues it for simulation. It appears on the results page a few
-minutes later, next to every other design, whether or not it beats them.
+**On the site.** The [Propose a scheme](https://cerkoryn.github.io/RSS-Gov/propose.html)
+page builds the rule with a form and shows the exact checks at once (who would be paid,
+how much splitting gains). **Submit on GitHub** opens a filled-in issue; you need a GitHub
+account. A maintainer reads it and adds the `approved` label, which starts the simulation
+on GitHub's servers. The result is posted on the issue with a preview of the site, and
+appears on the results page once its pull request is merged, next to every other design,
+whether or not it beats them.
 
 **As a file.** Download the YAML from the form, or write it by hand:
 
@@ -28,8 +31,7 @@ minutes later, next to every other design, whether or not it beats them.
 ```
 
 Then run `rss-gov static --schemes your.yaml` (instant, exact) and `rss-gov try your.yaml`
-(a few minutes). If the repository is on a code host, open an issue with the YAML, or a
-pull request that adds it to `candidates.yaml`; a maintainer runs it.
+(a few minutes). To have it published, open a proposal issue with the YAML.
 
 **What makes a useful proposal.** Say what it should improve and what it is willing to
 give up: every design gives something up. A proposal that fails is a result too: it
@@ -87,7 +89,37 @@ rss-gov serve                # serve it on every interface, port 8000
 rss-gov serve --read-only    # the same, without accepting proposals
 ```
 
-`rss-gov serve` has no login: anyone who can reach the port can queue simulations. Use it
-on networks you trust. To publish results for everyone, put `results/site/` on any static
-host: every page works without the server, and the proposal form then offers the YAML and,
-with `site.repository` set in `config.yaml`, a pre-filled issue.
+`rss-gov serve` has no login: anyone who can reach the port can queue simulations on your
+machine. Use it on networks you trust.
+
+## How the site is published
+
+Everything runs on GitHub, with no server of our own:
+
+| Workflow | When | What it does |
+|---|---|---|
+| `pages.yml` | `results/site/` changes on `main` | copies it to the `gh-pages` branch, which GitHub Pages serves |
+| `proposal.yml` | the `approved` label is added to a `proposal` issue | checks the rule, runs `rss-gov try` and `rss-gov site`, opens a pull request, publishes a preview under `pr-preview/pr-N/`, comments on the issue |
+| `preview-cleanup.yml` | a proposal's pull request is merged or closed | removes its preview |
+| `tests.yml` | every push and pull request | tests and lint |
+
+**Data.** Runs use the mainnet data the calibration was fitted to, published as a release
+named `data-epoch-<tip>` (`data.tar.gz`: `manifest.json`, `tip.json`, `tables/`).
+`rss-gov data verify` checks it against the hashes in `results/calibration.json`. After a
+new data pull and calibration, publish the new release before merging the new results:
+
+```
+tar -czf data.tar.gz -C data/pull manifest.json tip.json tables
+gh release create data-epoch-<tip> data.tar.gz --title "Mainnet data, epoch <tip>"
+```
+
+**Reviewing a proposal.** Read the issue; add `approved` to simulate it (anything else:
+comment or close). Each proposal's pull request changes only its own files in
+`results/proposals/`, `results/ledger.jsonl` and `results/site/`. Two proposals simulated
+before either is merged conflict in those last two; merge one, then re-run the other with
+**Actions → Simulate a proposal → Run workflow** and its issue number. The same re-runs a
+proposal whose rule was edited in the issue.
+
+**Why the runs can be trusted.** Python and package versions come from `uv.lock`, the data
+is checked by hash, and every run is seeded, so a workflow run reproduces what
+`rss-gov try` gives locally. Its log is public.

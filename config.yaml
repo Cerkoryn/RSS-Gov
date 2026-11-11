@@ -135,8 +135,8 @@ experiment:
 
 # The results site (`rss-gov site`, `rss-gov serve`).
 site:
-  repository: null          # e.g. https://github.com/<owner>/RSS-Gov: adds "open as an issue"
-                            # and "suggest a change" links to the pages
+  repository: https://github.com/Cerkoryn/RSS-Gov  # proposals open as issues here
+                            # ("Submit on GitHub"); also "suggest a change" links
   methods: METHODS.md       # rendered as the "How it works" page
   host: 0.0.0.0             # `rss-gov serve` listens on every interface: LAN and VPN included
   port: 8000
