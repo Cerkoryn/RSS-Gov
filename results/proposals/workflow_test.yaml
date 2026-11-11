@@ -1,0 +1,19 @@
+- name: workflow_test
+  budget_ada: 2500000.0
+  alpha: 0.5
+  cap_ada: null
+  k_exclude: 15
+  n_pay: 200
+  min_stake_ada: 0.0
+  min_delegators: 25
+  activity_gate: 0.0
+  rationale_bonus: 0.0
+  delegator_share: 0.0
+  delegator_mode: passthrough
+  pledge_leverage: 0.0
+  hard_cap: false
+  hypothesis: 'Workflow test: a square-root rule that skips the 15 largest DReps and
+    pays the next 200.'
+  author: Cerkoryn
+  submitted: '2026-11-11T23:22:57Z'
+  source: 'issue #1'
