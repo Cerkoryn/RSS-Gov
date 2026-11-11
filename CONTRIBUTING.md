@@ -83,14 +83,8 @@ pytest -q && ruff check . && ruff format --check .
 
 ## Running the site
 
-```
-rss-gov site                 # rebuild results/site/ from the current results
-rss-gov serve                # serve it on every interface, port 8000
-rss-gov serve --read-only    # the same, without accepting proposals
-```
-
-`rss-gov serve` has no login: anyone who can reach the port can queue simulations on your
-machine. Use it on networks you trust.
+`rss-gov site` rebuilds `results/site/` from the current results. Open
+`results/site/index.html` from disk to look at it; every page works without a server.
 
 ## How the site is published
 

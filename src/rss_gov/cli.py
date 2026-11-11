@@ -1,4 +1,4 @@
-"""Command line: rss-gov data|calibrate|static|experiment|search|try|submit|report|site|serve|all."""
+"""Command line: rss-gov data|calibrate|static|experiment|search|try|submit|report|site|all."""
 
 import argparse
 import hashlib
@@ -168,27 +168,13 @@ def cmd_report(args):
 
     study = _study(args)
     _say(f"wrote {report.write(study)}")
-    _say(f"wrote {website.write(study)}/ (open index.html, or run `rss-gov serve`)")
+    _say(f"wrote {website.write(study)}/ (open index.html)")
 
 
 def cmd_site(args):
     from rss_gov import website
 
     _say(f"wrote {website.write(_study(args))}/")
-
-
-def cmd_serve(args):
-    from rss_gov import experiment, server
-
-    site = experiment.load_config(args.config).get("site") or {}
-    server.serve(
-        args.config,
-        args.host or site.get("host", "0.0.0.0"),
-        args.port if args.port is not None else int(site.get("port", 8000)),
-        bool(site.get("submissions", True)) and not args.read_only,
-        int(site.get("max_queue", 20)),
-        _say,
-    )
 
 
 def cmd_all(args):
@@ -241,12 +227,6 @@ def main(argv=None):
 
     p = sub.add_parser("site", help="rebuild the results site in results/site/")
     p.set_defaults(run=cmd_site)
-
-    p = sub.add_parser("serve", help="serve the site on the network, with proposal submission")
-    p.add_argument("--host", help="address to listen on (default: site.host, 0.0.0.0)")
-    p.add_argument("--port", type=int, help="port (default: site.port, 8000)")
-    p.add_argument("--read-only", action="store_true", help="show checks, accept no proposals")
-    p.set_defaults(run=cmd_serve)
 
     p = sub.add_parser("all", help="calibrate, analyse, experiment, search and report")
     p.set_defaults(run=cmd_all)

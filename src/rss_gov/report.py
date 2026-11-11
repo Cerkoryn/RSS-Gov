@@ -387,7 +387,7 @@ def write(study):
         f"Chain data to epoch {data.tip_epoch}. Default programme: "
         f"{study.budget:,.0f} ADA over {study.epochs} epochs. "
         "Regenerate with `rss-gov all`; method in `METHODS.md`. Interactive charts: "
-        "`site/index.html` in this folder, or run `rss-gov serve`.",
+        "`site/index.html` in this folder.",
         "",
         "## The chain today",
         "",

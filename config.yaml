@@ -133,16 +133,11 @@ experiment:
     - {name: capped_2m5, preset: capped, budget_ada: 2500000}
     - {name: capped_10m, preset: capped, budget_ada: 10000000}
 
-# The results site (`rss-gov site`, `rss-gov serve`).
+# The results site (`rss-gov site`), published on GitHub Pages.
 site:
   repository: https://github.com/Cerkoryn/RSS-Gov  # proposals open as issues here
                             # ("Submit on GitHub"); also "suggest a change" links
   methods: METHODS.md       # rendered as the "How it works" page
-  host: 0.0.0.0             # `rss-gov serve` listens on every interface: LAN and VPN included
-  port: 8000
-  submissions: true         # visitors of `rss-gov serve` may queue proposals for simulation.
-                            # There is no login: only serve on networks you trust.
-  max_queue: 20
 
 search:
   seeds: 16

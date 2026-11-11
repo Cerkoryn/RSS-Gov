@@ -40,7 +40,6 @@ on it. Every scheme pays only for explicit votes (Yes, No and Abstain count alik
 | Test designs proposed by a person or an AI agent | `rss-gov try candidates.yaml` | same |
 | Write `results/report.md` with figures, and the results site in `results/site/` | `rss-gov report` | |
 | Check and store a proposal (YAML or a GitHub issue) | `rss-gov submit` | |
-| Serve the site on the network, simulating proposals on this machine | `rss-gov serve` | |
 
 `rss-gov all` runs everything after the download. On a 16-core desktop the whole run takes
 about half an hour; one simulated six-month programme takes 0.1–0.4 seconds.
@@ -74,16 +73,9 @@ The results site in `results/site/` has three pages:
   is listed with its results.
 
 The site is published on GitHub Pages from the `gh-pages` branch (see "How the site is
-published" in `CONTRIBUTING.md`). Locally, open `results/site/index.html` from disk, or
-run `rss-gov serve` and open the address it prints. It listens on every interface
-(0.0.0.0, port 8000; see `site` in `config.yaml`), so other machines on your network or VPN
-can use it. There is no login: anyone who can reach the port can queue simulations, so
-serve it only on networks you trust, or add `--read-only`. If a firewall is active, allow
-the port from your network, for example `sudo ufw allow from 192.168.0.0/24 to any port
-8000 proto tcp`.
-
-On a static host proposals go through GitHub issues; with `rss-gov serve` they are
-simulated on the spot. `results/report.md` has the same results as tables. `METHODS.md` explains how each number is produced and what it does not
+published" in `CONTRIBUTING.md`). Locally, open `results/site/index.html` from disk.
+Proposals go through GitHub issues and are simulated on GitHub's runners.
+`results/report.md` has the same results as tables. `METHODS.md` explains how each number is produced and what it does not
 show. Things to keep in mind:
 
 1. **The unpaid model is fitted and tested.** Started 40 epochs back from data it was not

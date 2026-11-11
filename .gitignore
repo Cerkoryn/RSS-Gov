@@ -11,7 +11,6 @@ results/*
 !results/report.md
 !results/site/
 !results/proposals/
-results/proposals/*.log
 results/site/*.part
 !results/figures/
 !results/calibration.json

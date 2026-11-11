@@ -367,13 +367,10 @@ def record(results, scheme, entry, runs, meta):
     entry = {**entry, **{k: meta[k] for k in META if k in meta}}
     entry.update(evaluated=now(), calibration=fingerprint(results))
     (path / f"{scheme.name}.json").write_text(json.dumps(entry, indent=1, default=float))
-    error = path / f"{scheme.name}.error"
-    if error.exists():
-        error.unlink()
 
 
-def listing(results, status=None):
-    """Every proposal with its state: queued, running, failed, done or stale."""
+def listing(results):
+    """Every proposal with its state: queued (not simulated yet), done or stale."""
     path = folder(results)
     current = fingerprint(results)
     rows = []
@@ -396,10 +393,8 @@ def listing(results, status=None):
                 change=entry.get("change_from_unpaid"),
                 evaluated=entry.get("evaluated"),
             )
-        elif (path / f"{name}.error").exists():
-            item.update(state="failed", reason=(path / f"{name}.error").read_text()[-500:])
         else:
-            item.update(state=(status or {}).get(name, "queued"))
+            item.update(state="queued")
         try:
             scheme_row, _ = split(row)
             item.setdefault("rule", mechanisms.from_config(scheme_row, 0).label())

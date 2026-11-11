@@ -21,7 +21,6 @@ RSS-Gov evaluates treasury-funded reward schemes for Cardano governance. Read
       web/                 page templates, styles and scripts for the site
       web/checks.js        static.py's exact checks, ported for the proposal page
       proposals.py         what a proposal may set, checking it, results/proposals/
-      server.py            `rss-gov serve`: the site and a local proposal queue
       cli.py               the `rss-gov` command
     tests/                 fast, offline, synthetic data
     .github/               issue form, and workflows: Pages, proposals, previews, tests

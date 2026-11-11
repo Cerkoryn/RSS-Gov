@@ -7,9 +7,9 @@
     today.js       today's DReps, for the exact checks on the proposal page (checks.js)
     accounts.js    their delegating accounts; loaded only for rules that pay delegators
 
-The folder can be opened from disk, served by `rss-gov serve`, or published on any static
-host. Named schemes carry the numbers of the experiment (as in report.md); designs found by
-the search and community proposals carry their numbers from the holdout seeds.
+The folder can be opened from disk or published on any static host. Named schemes carry
+the numbers of the experiment (as in report.md); designs found by the search and community
+proposals carry their numbers from the holdout seeds.
 """
 
 import hashlib
@@ -433,7 +433,7 @@ def methods(path="METHODS.md", repository=None):
 
 
 def _put(path, text):
-    """Replace a file in one step, so a server never hands out half of it."""
+    """Replace a file in one step, so no reader ever sees half of it."""
     part = path.with_name(path.name + ".part")
     part.write_text(text)
     os.replace(part, path)

@@ -2,9 +2,7 @@
 const F = D.form;
 const values = { ...F.defaults };
 const OPEN = new Set(["Budget", "How the money is split"]); // always shown; the other groups fold away
-let server = null; // set when served by `rss-gov serve`, which can simulate on the spot
 let previewTimer = null;
-let listTimer = null;
 const REPO = D.meta.repository ? D.meta.repository.replace(/\/$/, "") : null;
 const YEAR = 73; // epochs a year
 const inputs = {};
@@ -231,10 +229,7 @@ function renderChecks(r) {
 function actions() {
   const host = $("#actions");
   host.textContent = "";
-  if (server && server.submissions) {
-    const b = h("button", { className: "primary", type: "button" }, host, "Submit for simulation");
-    b.addEventListener("click", submit);
-  } else if (REPO) {
+  if (REPO) {
     // GitHub's issue form for proposals, filled in: the proposer only has to press Submit.
     const b = h("a", { className: "button primary", target: "_blank", rel: "noopener" }, host, "Submit on GitHub");
     b.title = "Opens a filled-in proposal on GitHub. Needs a GitHub account.";
@@ -267,27 +262,11 @@ function say(message, kind = "") {
   s.className = "status " + kind;
   s.textContent = message;
 }
-async function submit(e) {
-  const b = e.target;
-  b.disabled = true;
-  say("Sending…");
-  try {
-    const r = await api("proposals", payload());
-    say(`Queued as ${r.name}. ${r.ahead ? `${r.ahead} proposal${r.ahead === 1 ? "" : "s"} ahead of it. ` : ""}It appears in the list below when it has been simulated.`, "ok");
-    await refreshList();
-  } catch (err) {
-    say(err.message, "err");
-  } finally {
-    setTimeout(() => { b.disabled = false; }, 1500);
-  }
-}
 
 // ---------- the list of proposals ----------
 const STATE = {
   queued: ["var(--neutral)", "Waiting"],
-  running: ["var(--c1)", "Simulating…"],
   done: ["var(--good)", "Simulated"],
-  failed: ["var(--bad)", "Failed"],
   stale: ["var(--neutral)", "Needs re-running"],
 };
 function renderList(rows) {
@@ -315,7 +294,6 @@ function renderList(rows) {
     h("span", { className: "dot", style: `background:${colour}` }, span);
     span.appendChild(document.createTextNode(label));
     if (p.state === "done" && !D.schemes.some((s) => s.name === p.name)) h("div", { className: "small" }, st, "reload the results page to see it");
-    if (p.state === "failed" && p.reason) h("div", { className: "small", style: "max-width:260px" }, st, p.reason.split("\n").filter(Boolean).slice(-1)[0]);
     for (const a of shown) {
       const v = p.change ? p.change[a] : null;
       h("td", { className: "num" }, tr, v === null || v === undefined ? "–" : fmt(a, v, !AX[a].exact));
@@ -323,37 +301,27 @@ function renderList(rows) {
     h("td", { className: "small" }, tr, p.accepted === true ? "Yes" : p.accepted === false ? "No: " + (p.reason || "") : "–");
   }
 }
-async function refreshList() {
-  let rows = D.proposals || [];
-  if (server) {
-    try { rows = (await api("proposals")).proposals; } catch (e) { /* keep what the data file holds */ }
-  }
-  renderList(rows);
-  if (REPO && !server) {
+function showList() {
+  renderList(D.proposals || []);
+  if (REPO) {
     const note = h("p", { className: "small", style: "margin:12px 0 0" }, $("#list"), "Proposals still waiting for review or simulation are ");
     h("a", { href: `${REPO}/issues?q=${encodeURIComponent("is:issue is:open label:proposal")}`, target: "_blank", rel: "noopener" }, note, "open on GitHub");
     note.appendChild(document.createTextNode("."));
   }
-  clearTimeout(listTimer);
-  if (server && rows.some((p) => p.state === "queued" || p.state === "running")) listTimer = setTimeout(refreshList, 5000);
 }
 
-async function start() {
+function start() {
   buildForm();
   presets();
-  server = await serverStatus();
   const mode = $("#mode");
   const badge = (text, cls = "") => h("span", { className: "badge " + cls }, mode, text);
-  if (server && server.submissions) {
-    badge("✓ Submissions open: simulated on this server", "good");
-    if (server.queued || server.running) badge(`${server.queued + (server.running ? 1 : 0)} in the queue`);
-  } else if (REPO) {
+  if (REPO) {
     badge("✓ Submissions open: through GitHub, simulated on GitHub's servers", "good");
   } else {
     badge("Offline copy: download your proposal");
   }
   actions();
   changed();
-  refreshList();
+  showList();
 }
 start();
