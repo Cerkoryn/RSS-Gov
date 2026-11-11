@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RSS-Gov results</title>
+<meta name="description" content="What happens if Cardano DReps are paid to vote? Reward designs compared on participation, decentralisation, skin in the game, cost and Sybil risk.">
+<link rel="stylesheet" href="site.css?v=c679181857">
+</head>
+<body>
+<a href="#best" class="skip">Skip to the results</a>
+<nav class="site" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true">R</span><span class="word">RSS-Gov</span></a>
+    <a class="page" href="index.html" aria-current="page">Results</a>
+    <a class="page" href="methods.html"><span class="long">How it works</span><span class="short">Method</span></a>
+    <a class="page" href="propose.html"><span class="long">Propose a scheme</span><span class="short">Propose</span></a>
+    <span class="spacer"></span>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch theme"></button>
+  </div>
+</nav>
+<main>
+  <header class="hero">
+    <h1>What happens if DReps are paid to vote?</h1>
+    <p class="lead">We simulated many ways Cardano could reward governance. Each one gains something and gives something up.</p>
+    <div class="meta" id="meta"></div>
+  </header>
+  <div id="banner"></div>
+
+  <section class="block" id="best" aria-labelledby="best-title">
+    <div class="section-head title-row">
+      <h2 id="best-title">The best trade-offs found so far</h2>
+      <button class="info" type="button" aria-label="About this chart" data-info="The switches above the chart pick which designs count, in every tab.||Each dot is one reward design, simulated over six months and placed by how much it changes two measures compared with paying nothing. In the Comparison tab you pick the two measures; each one keeps the same scale whichever axis it is on and whatever the reaction strength.||The line joins the designs that no other design beats on both measures at once: the best trade-offs on offer. Anything inside the shaded area is beaten by something on the line.||Designs that need a hard fork or cross the Sybil limit are left out at first. Switch them on above the chart.||The line only looks at the two measures shown. Check the other three in the table further down."></button>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="control-group" id="lead-tabs">
+          <div class="chips" id="presets" role="group" aria-label="Chart"></div>
+          <div class="control-group" id="axis-pick"></div>
+        </div>
+        <div class="control-group" id="best-scenario">
+          <span class="label">Reaction to rewards</span>
+          <span class="seg scenario"></span>
+          <button class="info" type="button" aria-label="What is the reaction to rewards?" data-info="Nobody knows yet how strongly DReps and delegators will react to being paid.||So every design is simulated three times: with a weak, a medium and a strong reaction. Switch between them to see how much a result depends on it.||Only real-world data can say which is right."></button>
+        </div>
+      </div>
+      <div class="legend" id="best-legend"></div>
+      <div class="lead-grid" id="pair">
+        <div>
+          <div class="legend" id="pair-key"></div>
+          <div id="scatter"></div>
+        </div>
+        <aside class="side">
+          <div id="frontier-list"></div>
+        </aside>
+      </div>
+      <div class="lead-grid" id="combined" hidden>
+        <div>
+          <div id="coverage-chart"></div>
+          <div id="contrib"></div>
+        </div>
+        <aside class="side"><div class="coverage" id="coverage"></div></aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="measures-title">
+    <div class="section-head">
+      <div class="title-row">
+        <h2 id="measures-title">How designs are scored</h2>
+        <button class="info" type="button" aria-label="Mainnet versus simulated values" data-info="The big numbers are measured on Cardano mainnet today.||Designs are compared with a simulation of the next six months with no rewards (the value in each card's i), not with mainnet directly. That way both sides of every comparison come from the same model."></button>
+      </div>
+      <p>Five measures, shown here as they stand on Cardano mainnet today.</p>
+    </div>
+    <div class="measures" id="measures"></div>
+  </section>
+
+  <section class="block" id="compare" aria-labelledby="compare-title">
+    <div class="section-head title-row">
+      <h2 id="compare-title">Compare all designs</h2>
+      <button class="info" type="button" aria-label="How to read the table" data-info="Each cell is the change compared with paying nothing.||Green is better, red is worse, grey is no clear difference. A solid arrow (▲▼) holds under every reaction strength; a hollow one (△▽) only under some.||Click a column heading, or use Sort by, to reorder the designs. Click a design to see what it does, in plain words."></button>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="control-group">
+          <span class="control-group" id="kinds"></span>
+          <button class="toggle" id="pilot-only" type="button" aria-pressed="false" style="--kind: var(--ink)"><span class="dot"></span>No hard fork needed</button>
+        </div>
+        <div class="control-group">
+          <span class="seg scenario"></span>
+          <span class="seg" id="view" role="group" aria-label="View">
+            <button type="button" data-v="table">Table</button>
+            <button type="button" data-v="chart">Chart</button>
+          </span>
+        </div>
+      </div>
+      <div class="table-tools" id="table-tools"></div>
+      <div id="view-table" class="tablewrap"></div>
+      <div id="view-chart" hidden>
+        <div class="legend" id="score-legend"></div>
+        <div id="scorecard"></div>
+      </div>
+      <div class="pager" id="pager"></div>
+    </div>
+  </section>
+
+  <section class="block" id="deeper" aria-labelledby="deeper-title">
+    <div class="section-head">
+      <h2 id="deeper-title">Behind the numbers</h2>
+    </div>
+    <div class="card">
+      <div class="tabs" role="tablist" id="tabs">
+        <button role="tab" type="button" data-tab="assumptions">What drives each result</button>
+        <button role="tab" type="button" data-tab="budget">Bigger budgets</button>
+        <button role="tab" type="button" data-tab="model">Model check</button>
+        <button role="tab" type="button" data-tab="glossary">Glossary</button>
+      </div>
+      <div class="tabpanel" role="tabpanel" data-panel="assumptions">
+        <div class="card-head" style="margin-bottom:6px">
+          <div class="chips" id="heat-axis"></div>
+          <button class="info" type="button" aria-label="About this table" data-info="There are four ways people might react to rewards. Each column switches on just one of them; the last switches on all four.||If a result shows up in only one column, it rests on that single assumption.||Grey: smaller than a meaningful change. Darker colour: a larger change.||Click a column heading to sort by it."></button>
+        </div>
+        <div class="legend" id="heat-legend"></div>
+        <div class="table-tools"><span class="small count-note" id="heat-count"></span></div>
+        <div class="tablewrap"><div id="heat"></div></div>
+        <div class="pager" id="heat-pager"></div>
+      </div>
+      <div class="tabpanel" role="tabpanel" data-panel="budget" hidden>
+        <div class="title-row" style="margin-bottom:8px"><span class="small" id="ladder-note"></span><button class="info" type="button" id="ladder-info" aria-label="About this chart"></button></div>
+        <div id="ladder" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px"></div>
+        <div class="tablewrap" id="ladder-table" style="margin-top:14px"></div>
+      </div>
+      <div class="tabpanel" role="tabpanel" data-panel="model" hidden>
+        <div class="title-row" style="margin-bottom:8px"><span class="small" id="valid-note"></span><button class="info" type="button" id="valid-info" aria-label="How the model is checked"></button></div>
+        <div class="legend">
+          <span><svg width="16" height="8"><line x1="1" y1="4" x2="15" y2="4" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/></svg>mainnet</span>
+          <span><svg width="16" height="8"><line x1="1" y1="4" x2="15" y2="4" stroke="var(--c1)" stroke-width="2" stroke-linecap="round"/></svg>model average</span>
+          <span><svg width="16" height="10"><rect x="0" y="0" width="16" height="10" rx="2" fill="var(--c1)" opacity="0.14"/></svg>95% of model runs</span>
+        </div>
+        <div id="bands" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px"></div>
+        <details class="more" style="margin-top:14px"><summary>Every check, in numbers</summary><div class="tablewrap" id="checks"></div></details>
+      </div>
+      <div class="tabpanel" role="tabpanel" data-panel="glossary" hidden>
+        <dl class="glossary" id="glossary"></dl>
+        <p class="small"><a href="methods.html">The full methodology</a> · <a href="propose.html">Propose a scheme of your own</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="site"><div class="inner"></div></footer>
+
+<div class="backdrop" id="backdrop"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="detail-title" aria-hidden="true">
+  <div class="drawer-top">
+    <span id="drawer-kind" class="small"></span>
+    <button class="icon-btn" id="drawer-close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="drawer-body" id="detail"></div>
+</aside>
+<div id="tip" role="tooltip"></div>
+<script src="data.js?v=11fad545e1"></script>
+<script src="common.js?v=2f24132713"></script>
+<script src="dashboard.js?v=4f230f60eb"></script>
+</body>
+</html>
