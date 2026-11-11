@@ -1,4 +1,5 @@
-# Remove a proposal's preview from GitHub Pages when its pull request is merged or closed.
+# Remove a preview from GitHub Pages when its pull request (a proposal or a data refresh)
+# is merged or closed.
 name: Remove a preview
 
 on:
@@ -10,7 +11,9 @@ permissions:
 
 jobs:
   remove:
-    if: startsWith(github.head_ref, 'proposal/') && github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      (startsWith(github.head_ref, 'proposal/') || startsWith(github.head_ref, 'refresh/')) &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     env:
       PR: ${{ github.event.pull_request.number }}

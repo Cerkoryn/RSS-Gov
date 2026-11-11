@@ -27,8 +27,11 @@ permissions:
   issues: write
   pull-requests: write
 
+# One group per issue: proposals run side by side on their own branches, while a second
+# approval of the same issue waits for the first. (A shared group would keep only one
+# waiting run and cancel the others.)
 concurrency:
-  group: proposals
+  group: proposal-${{ github.event.issue.number || inputs.issue }}
   cancel-in-progress: false
 
 jobs:

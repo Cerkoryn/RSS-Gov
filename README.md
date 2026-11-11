@@ -99,54 +99,6 @@ show. Things to keep in mind:
    must not cross are `guardrails` in `config.yaml`; moving one re-labels the shortlist
    without re-running anything.
 
-## What the current run says
-
-Chain data to epoch 666, a 5M ADA programme over 36 epochs, 100 seeds per scheme. Full
-tables are in `results/report.md`. Changes are against unpaid, in the `central` scenario,
-with the low-to-high range where it matters. Everything about behaviour under payment is
-conditional on the assumed responses; cost and splitting gains are exact.
-
-- **Today, voting power has almost nothing behind it.** Accounts linked on chain to DReps
-  hold 51M ADA against 5.4B ADA of voting power: 0.87% backing, about 115 times leverage.
-  Most of the 20 largest DReps show under 0.001%.
-- **Every vote-based rule buys participation, and most differ little in how much**: +2.6
-  to +4.6 points of delegated stake voting (from 25.3%), +1.5 to +3.2 with a low response,
-  +3.9 to +6.9 with a high one. Most of it comes from DReps voting more, not from stake
-  moving.
-- **Proportional pay concentrates power**: 2 fewer DReps hold two thirds of the vote (1 to
-  3.4 fewer across scenarios), entirely through awards buying reach. It cannot be gamed by
-  splitting.
-- **Equal pay cannot be defended**: an outsider with 1M ADA and fake DReps takes 88% of
-  the budget.
-- **Caps, square roots and "skip the largest" look like the middle way and are not
-  free**: they stop the concentration, but an existing large DRep gains 15–30% of the
-  budget by splitting into several, the way stake pools did. This insider side of the
-  Sybil problem was invisible in the first version.
-- **Paying delegators** moves about one extra point of stake into voting DReps, sends two
-  thirds of delegator claims below 5 ADA, and needs some 23,000 payments instead of a few
-  hundred. Spread flat across all voting DReps it concentrates power as much as
-  proportional pay does.
-- **A soft own-stake rule at 1000x barely moves backing** (+0.02 points). **A hard cap at
-  1000x** raises it by 2 points and removes 82% of today's voting power, which costs 17
-  points of participation and hands the remaining power to the few DReps with real own
-  stake. Both rest on the linked-account proxy.
-- **More money buys little more**: 1M ADA buys +3.1 points of participation, 10M buys
-  +5.0. The cost per point rises from 0.6M to 4.0M ADA a year.
-- **Three designs stay inside both guardrails, all at small budgets.** Of 34 finalists,
-  three neither gain more than 10% by splitting nor do measurably worse than unpaid on any
-  axis in any scenario. The best for participation (`g10_2`: linear, counted stake capped
-  at 2M, the 200 largest paid, half the budget to delegators flat; 2.5M ADA) gives +3.4
-  points of participation for 5.1M ADA a year. The only one that also spreads power
-  (`g9_19`: skip the 20 largest, pay the next 400, own-stake limit 100x; 1M ADA) gives
-  +1.6 DReps but only +0.9 points of participation. They pass partly because their losses
-  in decentralisation (0.2 to 0.8 fewer DReps) are below the 1-DRep `meaningful` threshold,
-  and the delegator-sharing ones send most delegator claims below 5 ADA. Designs that
-  spread power much further (+7 to +16 DReps) carry splitting gains of 15–32%.
-
-The choice any reward programme has to make is therefore which downside to accept, and the
-response most worth measuring is whether awards really turn into reach, because the case against
-proportional pay rests on that one assumption.
-
 ## Scope and limits
 
 - DReps and their delegators only. SPO and Constitutional Committee votes are not

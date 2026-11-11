@@ -1,0 +1,162 @@
+# Refresh every result on the latest mainnet data, once a month (or by hand).
+#
+# Pulls the chain data from Koios, refits and re-checks the model, re-scores every design,
+# re-runs the search and every community proposal, and rebuilds the report and site. The
+# data is published as the release `data-epoch-<tip>`; the results arrive as a pull request
+# with a preview of the site. Nothing goes live until that pull request is merged, so a
+# failed model check or a changed shortlist is seen before visitors see it.
+#
+# KOIOS_API_KEY (a repository secret) is optional: without it the public tier is used,
+# which is slower and more likely to be rate limited.
+name: Refresh the data
+
+on:
+  schedule:
+    - cron: "17 6 1 * *" # 06:17 UTC on the 1st of each month
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - name: Is there a new epoch?
+        id: tip
+        env:
+          KOIOS_API_KEY: ${{ secrets.KOIOS_API_KEY }}
+        run: |
+          old=$(jq -r .tip_epoch results/calibration.json)
+          auth=()
+          [ -n "$KOIOS_API_KEY" ] && auth=(-H "authorization: Bearer $KOIOS_API_KEY")
+          tip=$(curl -fsS "${auth[@]}" https://api.koios.rest/api/v1/tip | jq -r '.[0].epoch_no')
+          [[ $tip =~ ^[0-9]+$ ]] || { echo "unexpected tip: $tip" >&2; exit 1; }
+          echo "results are at epoch $old; mainnet is at epoch $tip"
+          if [ "$tip" -le "$old" ]; then
+            echo "nothing new" && echo "new=false" >> "$GITHUB_OUTPUT"
+          elif gh pr list --head "refresh/epoch-$tip" --state open --json number --jq '.[0].number' | grep -q .; then
+            echo "a refresh to epoch $tip is already open for review" && echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        if: steps.tip.outputs.new == 'true'
+
+      - name: Pull the latest mainnet data
+        if: steps.tip.outputs.new == 'true'
+        env:
+          KOIOS_API_KEY: ${{ secrets.KOIOS_API_KEY }}
+        run: |
+          uv sync --frozen
+          uv run rss-gov data pull
+          tip=$(jq -r .tip.epoch_no data/pull/manifest.json)
+          echo "TIP=$tip" >> "$GITHUB_ENV"
+          echo "OLD=$(jq -r .tip_epoch results/calibration.json)" >> "$GITHUB_ENV"
+          if gh release view "data-epoch-$tip" > /dev/null 2>&1; then
+            echo "The release data-epoch-$tip already exists from an earlier refresh that was not merged." >&2
+            echo "Delete that release (and its tag) to refresh again within the same epoch." >&2
+            exit 1
+          fi
+
+      - name: Fit the model and check it against history
+        if: steps.tip.outputs.new == 'true'
+        run: uv run rss-gov calibrate | tee "$RUNNER_TEMP/calibrate.log"
+
+      - name: Re-score every design and search again
+        if: steps.tip.outputs.new == 'true'
+        run: |
+          uv run rss-gov static
+          uv run rss-gov experiment
+          uv run rss-gov search | tee "$RUNNER_TEMP/search.log"
+
+      - name: Re-run the community proposals
+        if: steps.tip.outputs.new == 'true'
+        run: |
+          shopt -s nullglob
+          : > "$RUNNER_TEMP/proposals.log"
+          for file in results/proposals/*.yaml; do
+            uv run rss-gov try "$file" | tee -a "$RUNNER_TEMP/proposals.log"
+          done
+
+      - name: Write the report and the site
+        if: steps.tip.outputs.new == 'true'
+        run: uv run rss-gov report
+
+      - name: Publish the data as a release
+        if: steps.tip.outputs.new == 'true'
+        run: |
+          tar -czf "$RUNNER_TEMP/data.tar.gz" -C data/pull manifest.json tip.json tables
+          gh release create "data-epoch-$TIP" "$RUNNER_TEMP/data.tar.gz" \
+            --title "Mainnet data, epoch $TIP" \
+            --notes "Koios mainnet tables up to epoch $TIP, pulled by the monthly refresh. Unpack into data/pull/ and run rss-gov data verify."
+
+      - name: Open the pull request
+        id: pr
+        if: steps.tip.outputs.new == 'true'
+        run: |
+          branch="refresh/epoch-$TIP"
+          passed=$(jq -r .validation.passed results/calibration.json)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$branch"
+          git add results
+          git commit -q -m "Refresh results on mainnet data to epoch $TIP"
+          git push -q -f origin "$branch"
+          {
+            echo "Every result recomputed on mainnet data to epoch $TIP (was $OLD). Data: release \`data-epoch-$TIP\`."
+            echo
+            if [ "$passed" = true ]; then
+              echo "**Model check: passed.**"
+            else
+              echo "**Model check: FAILED.** The refitted model does not reproduce recent history within the tolerances in config.yaml. Read the validation table before merging."
+            fi
+            echo
+            echo "Merging publishes it. Proposal pull requests opened before this one should be re-run afterwards."
+            echo
+            echo "<details><summary>Model check</summary>"
+            echo
+            echo '```'
+            tail -n 40 "$RUNNER_TEMP/calibrate.log"
+            echo '```'
+            echo "</details>"
+            echo
+            echo "<details><summary>Search</summary>"
+            echo
+            echo '```'
+            tail -n 20 "$RUNNER_TEMP/search.log"
+            echo '```'
+            echo "</details>"
+            echo
+            echo "<details><summary>Community proposals</summary>"
+            echo
+            echo '```'
+            grep -v '^wrote ' "$RUNNER_TEMP/proposals.log" || echo "(none)"
+            echo '```'
+            echo "</details>"
+          } > "$RUNNER_TEMP/pr.md"
+          title="Refresh: mainnet data to epoch $TIP"
+          [ "$passed" = true ] || title="$title (model check FAILED)"
+          gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/pr.md"
+          echo "number=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')" >> "$GITHUB_OUTPUT"
+
+      - name: Publish a preview
+        if: steps.tip.outputs.new == 'true'
+        env:
+          PR: ${{ steps.pr.outputs.number }}
+        run: |
+          scripts/publish-pages.sh results/site "pr-preview/pr-$PR"
+          gh pr comment "$PR" --body "Preview of the refreshed site: https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/pr-preview/pr-$PR/"

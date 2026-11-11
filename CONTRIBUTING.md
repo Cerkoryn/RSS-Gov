@@ -100,13 +100,23 @@ Everything runs on GitHub, with no server of our own:
 |---|---|---|
 | `pages.yml` | `results/site/` changes on `main` | copies it to the `gh-pages` branch, which GitHub Pages serves |
 | `proposal.yml` | the `approved` label is added to a `proposal` issue | checks the rule, runs `rss-gov try` and `rss-gov site`, opens a pull request, publishes a preview under `pr-preview/pr-N/`, comments on the issue |
-| `preview-cleanup.yml` | a proposal's pull request is merged or closed | removes its preview |
+| `refresh.yml` | the 1st of each month, or by hand | pulls the latest mainnet data, refits and checks the model, re-runs the search and every proposal, publishes the data release and opens a pull request with a preview |
+| `preview-cleanup.yml` | a proposal or refresh pull request is merged or closed | removes its preview |
 | `tests.yml` | every push and pull request | tests and lint |
 
 **Data.** Runs use the mainnet data the calibration was fitted to, published as a release
 named `data-epoch-<tip>` (`data.tar.gz`: `manifest.json`, `tip.json`, `tables/`).
-`rss-gov data verify` checks it against the hashes in `results/calibration.json`. After a
-new data pull and calibration, publish the new release before merging the new results:
+`rss-gov data verify` checks it against the hashes in `results/calibration.json`.
+
+**Monthly refresh.** `refresh.yml` takes a few hours on GitHub's runners and does nothing
+when mainnet has not reached a new epoch. Its pull request says whether the model check
+passed; if it failed, read the validation table before merging. After merging, re-run any
+proposal pull requests that were opened before it. The Koios API key, if any, is the
+repository secret `KOIOS_API_KEY`. GitHub pauses scheduled workflows in a repository with
+no activity for 60 days; **Actions → Refresh the data → Enable workflow** resumes it.
+
+After a data pull and calibration on your own machine, publish the release yourself
+before merging the new results:
 
 ```
 tar -czf data.tar.gz -C data/pull manifest.json tip.json tables
