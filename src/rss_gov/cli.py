@@ -22,7 +22,11 @@ def cmd_data(args):
     if args.action == "verify":
         return _verify(Path(args.out or config["data"]), Path(config["results"]))
     if args.action == "pull":
-        koios.pull(args.out or config["data"], koios.api_key(), not args.no_delegators, _say)
+        folder = args.out or config["data"]
+        try:
+            koios.pull(folder, koios.api_key(), not args.no_delegators, _say, args.fresh)
+        except FileExistsError as error:
+            sys.exit(str(error))
     data = dataset.load(args.out or config["data"])
     series = data.series()
     closed = data.closed()
@@ -178,7 +182,7 @@ def cmd_site(args):
 
 
 def cmd_all(args):
-    args.action, args.out, args.no_delegators = "summary", None, False
+    args.action, args.out, args.no_delegators, args.fresh = "summary", None, False, False
     args.schemes = args.seeds = None
     for step in (cmd_data, cmd_calibrate, cmd_static, cmd_experiment, cmd_search, cmd_report):
         _say(f"\n== {step.__name__[4:]} ==")
@@ -195,6 +199,9 @@ def main(argv=None):
     p.add_argument("action", choices=["pull", "summary", "verify"])
     p.add_argument("--out", help="data folder (default: `data` in the config)")
     p.add_argument("--no-delegators", action="store_true", help="skip the account table")
+    p.add_argument(
+        "--fresh", action="store_true", help="delete the earlier pull and start at the current tip"
+    )
     p.set_defaults(run=cmd_data)
 
     p = sub.add_parser("calibrate", help="fit the unpaid model and validate it on held-out epochs")

@@ -99,12 +99,11 @@ section.block { margin-top: 56px; }
 /* ---------- the five measures ---------- */
 .measures { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 1080px) { .measures { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
-@media (max-width: 600px) { .measures { grid-template-columns: 1fr 1fr; gap: 10px; } .measure { padding: 14px; } .measure .m-q { min-height: 0; font-size: 12.5px; } .measure .m-value { font-size: 24px; } }
+@media (max-width: 600px) { .measures { grid-template-columns: 1fr 1fr; gap: 10px; } .measure { padding: 14px; } .measure .m-value { font-size: 24px; } }
 .measure { background: var(--surface); border-radius: var(--radius); box-shadow: inset 0 0 0 1px var(--ring); padding: 16px; display: flex; flex-direction: column; gap: 4px; }
 .measure .m-title { font-weight: 680; font-size: 15.5px; }
 .measure .dir { align-self: flex-start; margin-top: auto; font-size: 11.5px; font-weight: 600; color: var(--ink-2); background: var(--wash); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
 .measure .m-note { margin-bottom: 10px; }
-.measure .m-q { font-size: 13px; color: var(--ink-2); line-height: 1.4; min-height: 4.2em; }
 .measure .m-value { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 6px; font-variant-numeric: tabular-nums; }
 .measure .m-note { font-size: 12.5px; color: var(--muted); }
 
@@ -119,17 +118,8 @@ section.block { margin-top: 56px; }
 .shortlist { margin-top: 12px; background: var(--accent-bg); border-radius: var(--radius); box-shadow: inset 0 0 0 1px var(--ring); padding: 20px; }
 .shortlist h3 { font-size: 18px; }
 .shortlist .designs { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin: 12px 0 8px; }
-.design-card { text-align: left; border: 0; background: var(--surface); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--ring); padding: 12px 14px; cursor: pointer; color: var(--ink); display: flex; flex-direction: column; gap: 4px; }
-.design-card:hover { box-shadow: inset 0 0 0 1.5px var(--ring-2), var(--shadow); }
-.design-card .name { font-weight: 680; display: flex; align-items: center; gap: 8px; }
-.design-card .desc { font-size: 13px; color: var(--ink-2); }
-.design-card .nums { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12.5px; color: var(--ink-2); margin-top: 2px; font-variant-numeric: tabular-nums; }
-.design-card .nums b { color: var(--ink); font-weight: 650; }
-.caveat { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: var(--wash); color: var(--ink-2); font-size: 14px; }
-.caveat svg { flex: none; margin-top: 2px; }
 
 /* ---------- controls ---------- */
-.explore { position: relative; margin-top: 40px; }
 .controls { position: sticky; top: 0; z-index: 6; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center;
   padding: 12px 0; background: color-mix(in oklab, var(--page) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--grid); }
 @media (max-width: 760px) { .controls { position: static; } }
@@ -207,7 +197,6 @@ table.compare td { vertical-align: middle; padding: 10px; }
 table.compare td.design { min-width: 230px; max-width: 340px; }
 .dname { font-weight: 650; display: flex; align-items: center; gap: 7px; }
 .dname .kind { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-.ddesc { font-size: 12.5px; color: var(--ink-2); margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .cell { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 92px; padding: 4px 9px; border-radius: 8px; font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 560; }
 .cell .sym { font-size: 11px; }
 .cell.good { background: var(--good-bg); } .cell.good .sym { color: var(--good); }
@@ -241,13 +230,6 @@ svg .grid { stroke: var(--grid); stroke-width: 1; shape-rendering: crispEdges; }
 svg .base { stroke: var(--baseline); stroke-width: 1; shape-rendering: crispEdges; }
 svg .hit { fill: transparent; cursor: pointer; }
 svg .rowsel { fill: var(--wash); }
-.chart-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
-@media (max-width: 900px) { .chart-grid { grid-template-columns: minmax(0, 1fr); } }
-.howto { font-size: 13.5px; color: var(--ink-2); }
-.howto h3 { font-size: 14px; color: var(--ink); }
-.howto ul { margin: 6px 0 12px; padding-left: 18px; }
-.howto li { margin: 4px 0; }
-.legend.stack { flex-direction: column; gap: 6px; }
 .axis-pick { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin: 10px 0 0; }
 .axis-pick label { display: inline-flex; align-items: center; gap: 6px; }
 
@@ -301,9 +283,6 @@ ul.notes { margin: 6px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 
 #tip .l { color: var(--ink-2); }
 #tip .row { display: flex; gap: 8px; align-items: center; }
 #tip .key { width: 12px; height: 2px; border-radius: 1px; flex: none; }
-.guide { columns: 2 340px; column-gap: 32px; color: var(--ink-2); font-size: 14px; }
-.guide p { break-inside: avoid; }
-.guide strong { color: var(--ink); }
 dl.glossary { display: grid; grid-template-columns: minmax(140px, 200px) minmax(0, 1fr); gap: 8px 18px; font-size: 14px; margin: 0 0 20px; }
 dl.glossary dt { font-weight: 650; }
 dl.glossary dd { margin: 0; color: var(--ink-2); }
@@ -414,7 +393,6 @@ button.front-item:hover { background: var(--wash); }
 .front-item .vals { grid-column: 2; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .measure .m-when { font-size: 11.5px; font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-top: 10px; }
 .measure .m-value { margin-top: 0; }
-.design-card .more-link { font-size: 12.5px; color: var(--c1); margin-top: 2px; }
 
 .cov-keys { display: grid; gap: 6px; margin: 12px 0 0; font-size: 13px; }
 .cov-keys div { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; }

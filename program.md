@@ -22,7 +22,8 @@ is to propose better designs and to explain why they should work.
 The five axes are in `config.yaml` under `axes`: participation, decentralisation, skin in
 the game, cost and Sybil resistance. A proposal is accepted only when
 it widens the front: it raises the holdout hypervolume by an amount whose 95% interval
-excludes zero. Most proposals will be rejected. That is expected. An accepted proposal is
+excludes zero, and no design already on the front matches or beats it on every axis (within
+each axis's meaningful margin). Most proposals will be rejected. That is expected. An accepted proposal is
 not a recommendation: the report's shortlist also applies the guardrails.
 
 ## Proposal format

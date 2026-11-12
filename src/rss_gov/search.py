@@ -23,7 +23,6 @@ HOLDOUT_OFFSET = 1_000_000  # holdout seeds never overlap search seeds
 FINALISTS = 20
 BOOTSTRAPS = 400
 BASELINE = experiment.BASELINE
-GENERATED = proposals.GENERATED  # names the search gives its own designs
 
 CHOICES = dict(
     alpha=[0.0, 0.25, 0.5, 0.75, 1.0],
@@ -94,8 +93,11 @@ def scores(cube, names, axes):
 
 
 def front_of(points, names, axes, members=None):
-    """Names on the front: not beaten on every axis by a meaningful margin."""
-    members = [n for n in (members or names) if n in names]
+    """Names on the front: not beaten on every axis by a meaningful margin.
+
+    `members` limits the contest to those names (None: every name; an empty list: none).
+    """
+    members = [n for n in (names if members is None else members) if n in names]
     rows = [names.index(n) for n in members]
     keep = epsilon_front(points[rows], [a.step for a in axes])
     return [members[i] for i in keep]
@@ -112,9 +114,8 @@ def within_limit(cube, names, axes, limit, members=None):
     """Members whose splitting gain is inside the Sybil guardrail (it is exact, so seed-free)."""
     j = [a.name for a in axes].index("split_gain")
     gain = np.nanmean(cube[:, :, j], axis=1)
-    return [
-        n for n in (members or names) if n != BASELINE and gain[names.index(n)] <= limit + 1e-12
-    ]
+    members = names if members is None else members
+    return [n for n in members if n != BASELINE and gain[names.index(n)] <= limit + 1e-12]
 
 
 def bootstrap(cube, names, statistic, rng, draws=BOOTSTRAPS):
@@ -312,7 +313,7 @@ def judge(study, holdout, schemes, log=print):
     rng = np.random.default_rng(7)
     size = volume(cube, names, axes, candidates)
     low, high = bootstrap(cube, names, lambda c, n: volume(c, n, axes, candidates), rng)
-    presets = [n for n in candidates if not GENERATED.fullmatch(n)]
+    presets = [n for n in candidates if not proposals.GENERATED.fullmatch(n)]
     gain = size - volume(cube, names, axes, presets)
     gain_low, gain_high = bootstrap(
         cube,
@@ -377,6 +378,7 @@ def try_candidates(study, rows, log=print, processes=None):
     stored = proposals.submitted(out)
     taken = set(holdout.scheme.unique())
     rng = np.random.default_rng(11)
+    widened = False
     for row in rows:
         row, meta = proposals.split(row)
         scheme = study.schemes([row])[0]
@@ -428,6 +430,7 @@ def try_candidates(study, rows, log=print, processes=None):
                 pilot_testable=scheme.feasibility()["pilot_testable"],
             )
             if accepted:
+                widened = True
                 holdout = both
                 front.append(scheme.to_dict())
                 finalists = yaml.safe_load((out / "search_finalists.yaml").read_text())
@@ -449,3 +452,6 @@ def try_candidates(study, rows, log=print, processes=None):
                 log(f"  outside the split-gain guardrail ({split:.2f} > {limit})")
     holdout.to_parquet(out / "search_holdout_runs.parquet")
     (out / "front.yaml").write_text(yaml.safe_dump(front, sort_keys=False))
+    if widened:  # the site's coverage and front counts come from the judged finalists
+        rejudge(study, log=lambda *_: None)
+        log("the front changed: re-judged the finalists with the accepted proposals")

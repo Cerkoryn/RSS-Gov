@@ -1,13 +1,16 @@
 """Download Cardano governance history from the public Koios API into parquet tables.
 
 Every request is a read. Raw pages are cached on disk, so an interrupted pull resumes
-and a finished pull can be rebuilt offline. Nothing here is modelled or estimated.
+and a finished pull can be rebuilt offline. The cache belongs to one tip: many requests
+do not name an epoch, so a pull to a newer tip must start empty (`fresh`). Nothing here is
+modelled or estimated.
 """
 
 import gzip
 import hashlib
 import json
 import os
+import shutil
 import time
 import urllib.error
 import urllib.request
@@ -70,7 +73,7 @@ class Koios:
             except urllib.error.HTTPError as error:
                 if error.code not in (429, 500, 502, 503, 504) or attempt == 7:
                     raise RuntimeError(f"Koios {error.code} for {endpoint}") from None
-                wait = float(error.headers.get("retry-after") or 2 ** (attempt + 1))
+                wait = _seconds(error.headers.get("retry-after"), 2 ** (attempt + 1))
                 self.log(f"  Koios {error.code} on {endpoint}; retrying in {min(wait, 120):.0f}s")
             except (urllib.error.URLError, TimeoutError):
                 if attempt == 7:
@@ -116,9 +119,37 @@ class Koios:
             offset += PAGE
 
 
-def pull(out, key=None, delegators=True, log=print):
-    """Fetch everything the study needs. `delegators=False` skips the account cross-section."""
+def _seconds(retry_after, default):
+    """A Retry-After header in seconds; the HTTP-date form falls back to `default`."""
+    try:
+        return float(retry_after)
+    except (TypeError, ValueError):
+        return default
+
+
+def pull(out, key=None, delegators=True, log=print, fresh=False):
+    """Fetch everything the study needs. `delegators=False` skips the account cross-section.
+
+    Without `fresh`, an earlier pull in `out` is resumed (or, if it finished, rebuilt from
+    its cache) at its own tip; tables without their cache (an unpacked release) are refused,
+    since re-fetching them would mix today's chain into an older epoch. With `fresh`, the
+    earlier pull is deleted first and the pull starts at the current tip.
+    """
     out = Path(out)
+    if fresh:
+        for name in ("raw", "tables"):
+            shutil.rmtree(out / name, ignore_errors=True)
+        for name in ("tip.json", "manifest.json"):
+            (out / name).unlink(missing_ok=True)
+    elif (out / "manifest.json").exists():
+        done = json.loads((out / "manifest.json").read_text())["tip"]["epoch_no"]
+        if not any((out / "raw").glob("*.json.gz")):
+            raise FileExistsError(
+                f"{out} holds tables for epoch {done} without the pages they were built from. "
+                "`rss-gov data pull --fresh` replaces them with the latest data."
+            )
+        log(f"{out} holds a finished pull to epoch {done}: rebuilding it from its cache.")
+        log("To pull the latest data instead, run `rss-gov data pull --fresh`.")
     k = Koios(out / "raw", key, log=log)
     tip = k_tip(out)
     epoch = tip["epoch_no"]

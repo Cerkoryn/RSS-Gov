@@ -108,10 +108,6 @@ def load_config(path="config.yaml"):
     return yaml.safe_load(Path(path).read_text())
 
 
-def model_settings(config):
-    return {**config["conventions"], **config["assumptions"]}
-
-
 def open_study(config_path="config.yaml"):
     """Load data and the saved calibration, and build the starting state at the tip."""
     config = load_config(config_path)

@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from rss_gov import experiment, mechanisms, proposals, report, search, static
+from rss_gov import experiment, mechanisms, model, proposals, report, search, static
 
 WEB = Path(__file__).with_name("web")
 PAGES = [
@@ -274,7 +274,7 @@ def build(study):
     summary = summary.set_index(["scheme", "scenario"])
     facts = static.analyse(study, list(schemes.values())).set_index("scheme")
 
-    generated = titles({n: s for n, s in schemes.items() if search.GENERATED.fullmatch(n)})
+    generated = titles({n: s for n, s in schemes.items() if proposals.GENERATED.fullmatch(n)})
     designs = []
     for name, scheme in schemes.items():
         results = {}
@@ -288,7 +288,7 @@ def build(study):
         }
         if name in community:
             kind = "proposed"
-        elif search.GENERATED.fullmatch(name):
+        elif proposals.GENERATED.fullmatch(name):
             kind = "search"
         elif name in ladder:
             kind = "ladder"
@@ -377,6 +377,7 @@ def build(study):
                 tip_epoch=study.data.tip_epoch,
                 budget=study.budget,
                 epochs=study.epochs,
+                epochs_per_year=model.EPOCHS_PER_YEAR,
                 treasury=study.data.treasury,
                 seeds=int(base.seeds),
                 scenarios=ranking,
@@ -420,7 +421,7 @@ def build(study):
     )
 
 
-def methods(path="METHODS.md", repository=None):
+def methods(path="METHODS.md"):
     """METHODS.md as HTML: (contents list, body)."""
     text = Path(path).read_text()
     md = markdown.Markdown(

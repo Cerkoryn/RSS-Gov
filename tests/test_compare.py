@@ -1,6 +1,6 @@
 import numpy as np
 
-from rss_gov import search
+from rss_gov import proposals, search
 from rss_gov.experiment import Axis
 
 GAIN = Axis("participation", "Participation", "share voting", "higher", 0.01, (-0.05, 0.20))
@@ -49,8 +49,9 @@ def test_front_keeps_trade_offs_and_drops_what_is_beaten_on_every_axis():
     assert search.volume(cube, names, axes, ["cheap", "wasteful"]) == search.volume(
         cube, names, axes, ["cheap"]
     )
+    assert search.front_of(points, names, axes, []) == []  # none allowed means none, not all
 
 
 def test_generated_names_are_told_apart_from_named_schemes():
-    assert search.GENERATED.fullmatch("g3_17")
-    assert not search.GENERATED.fullmatch("gated_sqrt")
+    assert proposals.GENERATED.fullmatch("g3_17")
+    assert not proposals.GENERATED.fullmatch("gated_sqrt")

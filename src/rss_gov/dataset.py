@@ -4,7 +4,7 @@ Everything in `Data` is an observation or simple arithmetic on observations. Amo
 converted from lovelace to ADA here.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 from pathlib import Path
 
@@ -28,17 +28,17 @@ THRESHOLD_COLUMN = {
 @dataclass
 class Data:
     tip_epoch: int
-    proposals: pd.DataFrame  # one row per governance action, with close epoch and turnout
+    proposals: pd.DataFrame  # one row per governance action: close epoch, outcome, support
     votes: pd.DataFrame  # latest DRep ballot per (DRep, action)
     power: pd.DataFrame  # epoch x DRep voting power in ADA (registered DReps only)
     special: pd.DataFrame  # epoch x {abstain, no_confidence} in ADA
-    dreps: pd.DataFrame  # current DRep registry, indexed by id
     updates: pd.DataFrame  # registration / update / deregistration events
     params: pd.Series  # protocol parameters at the tip
     delegators: pd.DataFrame | None  # current account-level delegation, or None
     own: pd.Series | None  # ADA in accounts linked to each DRep (funder or declared), or None
     manifest: dict
     treasury: float | None = None  # ADA in the treasury at the latest recorded epoch
+    cache: dict = field(default_factory=dict, repr=False, compare=False)  # derived, reusable
 
     def series(self):
         """Per-epoch concentration and delegation totals: the facts a baseline must match."""
@@ -122,45 +122,17 @@ def load(folder):
 
     params = read("params").set_index("epoch_no").iloc[-1]
     proposals = read("proposals")
+    # How the DReps that voted split: what an action resampled by the model carries with it.
     summary = read("voting_summary")
-    for column in summary.columns:
-        if column.endswith("_power"):
-            summary[column] = summary[column].astype(float) / 1e6
-    summary["voted_power"] = (
-        summary.drep_active_yes_vote_power
-        + summary.drep_active_no_vote_power
-        + summary.drep_active_abstain_vote_power
+    yes, no, abstain = (
+        summary[f"drep_active_{vote}_vote_power"].astype(float) / 1e6
+        for vote in ("yes", "no", "abstain")
     )
-    summary["active_power"] = (
-        summary.drep_yes_vote_power
-        + summary.drep_no_vote_power
-        + summary.drep_active_abstain_vote_power
-    )
-    summary["turnout"] = summary.voted_power / summary.active_power.where(summary.active_power > 0)
-    cast = summary.drep_active_yes_vote_power + summary.drep_active_no_vote_power
-    summary["support"] = summary.drep_active_yes_vote_power / cast.where(cast > 0)
-    summary["abstain_share"] = summary.drep_active_abstain_vote_power / summary.voted_power.where(
-        summary.voted_power > 0
-    )
-    summary["yes_share"] = summary.drep_yes_pct / 100
-    summary["ballots"] = (
-        summary.drep_yes_votes_cast + summary.drep_no_votes_cast + summary.drep_abstain_votes_cast
-    )
+    cast, voted = yes + no, yes + no + abstain
+    summary["support"] = yes / cast.where(cast > 0)
+    summary["abstain_share"] = abstain / voted.where(voted > 0)
     proposals = proposals.merge(
-        summary[
-            [
-                "proposal_id",
-                "turnout",
-                "yes_share",
-                "support",
-                "abstain_share",
-                "ballots",
-                "active_power",
-                "voted_power",
-            ]
-        ],
-        on="proposal_id",
-        how="left",
+        summary[["proposal_id", "support", "abstain_share"]], on="proposal_id", how="left"
     )
     proposals["close"] = proposals.ratified_epoch.fillna(proposals.expired_epoch).fillna(
         proposals.dropped_epoch
@@ -181,10 +153,6 @@ def load(folder):
         float(params.get(THRESHOLD_COLUMN.get(kind, ""), np.nan))
         for kind in proposals.proposal_type
     ]
-    proposals["withdrawal_ada"] = proposals.pop("withdrawal_lovelace") / 1e6
-
-    dreps = read("dreps").set_index("drep_id")
-    dreps["amount"] = dreps["amount"] / 1e6
 
     delegators = None
     if (tables / "delegators.parquet").exists():
@@ -209,7 +177,6 @@ def load(folder):
         votes=votes,
         power=power,
         special=special,
-        dreps=dreps,
         updates=read("drep_updates"),
         params=params,
         delegators=delegators,

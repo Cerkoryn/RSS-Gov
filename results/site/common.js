@@ -83,12 +83,14 @@ function tickLabel(v, step) {
 function betterWord(axis) { return AX[axis].better === "higher" ? "higher is better" : "lower is better"; }
 
 // ---------- words for designs ----------
+// Names the search gives its own designs (proposals.GENERATED); the first number is the round.
+const GENERATED = /^g(\d+)_\d+$/;
 // A design's name as people read it: "middle_out" becomes "Middle out".
 const TITLES = Object.fromEntries((D.schemes || []).filter((s) => s.title).map((s) => [s.name, s.title]));
 function pretty(name) {
   if (!name) return "";
   if (TITLES[name]) return TITLES[name];
-  if (/^g\d+_\d+$/.test(name)) return "Search design " + name;
+  if (GENERATED.test(name)) return "Search design " + name;
   const s = name.replace(/_/g, " ");
   return s.charAt(0).toUpperCase() + s.slice(1);
 }

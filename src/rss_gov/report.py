@@ -9,11 +9,12 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
+from rss_gov.proposals import GENERATED  # noqa: E402
+
 
 SURFACE, INK, MUTED, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e6e5e0"
 BLUE, ORANGE = "#2a78d6", "#eb6834"  # validated together for colour-vision deficiency
 NEUTRAL = "#a3a19a"
-GENERATED = r"g\d+_\d+"  # names the search gives its own designs
 LABELS = dict(
     tau67="DReps needed for 2/3 of power",
     effective_n="Effective number of DReps",
@@ -330,14 +331,14 @@ RECENT_EPOCHS = 12  # window for today's observed participation
 def today(study):
     """Facts about the chain at the snapshot every scheme starts from."""
     data, world = study.data, study.world
-    last = data.series().iloc[-1]
+    series = data.series()
+    last = series.iloc[-1]
     on_drep = world.acct_target >= 0
     stake = np.bincount(
         world.acct_target[on_drep], weights=world.acct_stake[on_drep], minlength=len(world.p)
     )
     # Participation as the model defines it: voting power that voted on an action, over all
     # delegated stake (always-abstain and no-confidence included), for recently closed actions.
-    series = data.series()
     recent = data.closed(int(series.index[-1]) - RECENT_EPOCHS + 1)
     participation = None
     if len(recent):

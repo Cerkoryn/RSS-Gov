@@ -190,22 +190,26 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
 
         # 3. The reward round, computed from what the chain shows at the start of the epoch.
         pot = budget_per_epoch + carry
-        counted = acct_count * (acct_stake >= params.delegator_min_ada * acct_count)
+        delegators = np.zeros(len(live))  # read by a rule only through min_delegators
+        if scheme.min_delegators > 0:
+            counted = acct_count * (acct_stake >= params.delegator_min_ada * acct_count)
+            delegators = _by_drep(target, counted, D)[live]
         rnd = mechanisms.Round(
             stake=stake[live],
             activity=activity[live],
             rationale=rationale_share[live],
-            delegators=_by_drep(target, counted, D)[live],
+            delegators=delegators,
             pledge=pledge[live],
         )
         award, yields = mechanisms.allocate(scheme, rnd, pot)
         received = award + yields * rnd.stake
         carry = pot - received.sum()
         drep_total[live] += award
-        held = target >= 0
-        yield_by_slot = np.zeros(D)
-        yield_by_slot[live] = yields
-        acct_total[held] += yield_by_slot[target[held]] * acct_stake[held]
+        if scheme.delegator_share > 0:  # otherwise every yield is zero
+            held = target >= 0
+            yield_by_slot = np.zeros(D)
+            yield_by_slot[live] = yields
+            acct_total[held] += yield_by_slot[target[held]] * acct_stake[held]
         if received.sum() > 0:
             spent += received.sum()
             paid += (received > 0).sum()
@@ -369,8 +373,10 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
 
 
 def _by_drep(target, values, size):
-    on_drep = target >= 0
-    return np.bincount(target[on_drep], weights=values[on_drep], minlength=size)
+    """Sum per DRep slot. The codes below zero are shifted into bins of their own and dropped,
+    which sums every slot in the same order as selecting its rows first, without the copy."""
+    shift = -NO_CONFIDENCE  # the lowest code
+    return np.bincount(target + shift, weights=values, minlength=size + shift)[shift:]
 
 
 def _activity(window, activity, rationale_share):
@@ -467,12 +473,18 @@ def _move(
     position[live] = np.arange(len(live))
     stake_now = stake[live].copy()
     pool = yield_pp[live] * stake_now  # annual percentage points x ADA on each DRep
+    pays = np.flatnonzero(pool > 0)  # elsewhere nothing is offered and the boost is exp(0) = 1
     for chunk in np.array_split(movers, max(1, len(movers) // MOVE_BATCH)):
-        offered = pool[None, :] / (stake_now[None, :] + unit[chunk][:, None])
-        boost = np.exp(scenario.delegator_response * np.minimum(offered, params.max_yield_pp))
-        to_dreps = (1 - abstain[chunk] - params.no_confidence_share)[:, None] * base[None, :]
-        weights = np.column_stack(
-            [abstain[chunk], np.full(len(chunk), params.no_confidence_share), to_dreps * boost]
+        weights = np.empty((len(chunk), len(codes)))
+        weights[:, 0] = abstain[chunk]
+        weights[:, 1] = params.no_confidence_share
+        to_dreps = weights[:, 2:]
+        np.multiply(
+            (1 - abstain[chunk] - params.no_confidence_share)[:, None], base[None, :], out=to_dreps
+        )
+        offered = pool[None, pays] / (stake_now[None, pays] + unit[chunk][:, None])
+        to_dreps[:, pays] *= np.exp(
+            scenario.delegator_response * np.minimum(offered, params.max_yield_pp)
         )
         cdf = np.cumsum(weights, axis=1)
         choice = (cdf < (u_pick[chunk] * cdf[:, -1])[:, None]).sum(axis=1)

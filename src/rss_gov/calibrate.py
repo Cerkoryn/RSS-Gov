@@ -51,9 +51,9 @@ def ahead(data, first, last, half_life, strength, lag):
     shift that reconciles the forecast with the turnout the action really drew; it carries
     both how much attention the action got and how far vote rates wandered over the lag.
     """
-    key = (id(data), first, last, half_life, strength, lag)
-    if key in _AHEAD:
-        return _AHEAD[key]
+    key = ("ahead", first, last, half_life, strength, lag)
+    if key in data.cache:
+        return data.cache[key]
     rows = []
     for epoch in sorted(data.closed(first + 1, last).close.unique().astype(int)):
         p, _ = propensity(data, epoch - lag, epoch, half_life, strength)
@@ -73,11 +73,8 @@ def ahead(data, first, last, half_life, strength, lag):
                     salience=_salience(p[e], power[e], actual),
                 )
             )
-    _AHEAD[key] = pd.DataFrame(rows)
-    return _AHEAD[key]
-
-
-_AHEAD = {}
+    data.cache[key] = pd.DataFrame(rows)
+    return data.cache[key]
 
 
 def _salience(p, power, turnout):

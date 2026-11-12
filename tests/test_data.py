@@ -1,7 +1,38 @@
+import json
+
 import numpy as np
+import pytest
 
 from rss_gov import calibrate, dataset, experiment, koios, model, static
 from tests.conftest import make_params
+
+
+def test_a_retry_after_date_falls_back_to_the_default_wait():
+    assert koios._seconds("7", 2) == 7.0
+    assert koios._seconds("Wed, 21 Oct 2026 07:28:00 GMT", 2) == 2
+    assert koios._seconds(None, 4) == 4
+
+
+def test_a_pull_never_mixes_epochs(tmp_path, monkeypatch):
+    (tmp_path / "tables").mkdir()
+    (tmp_path / "manifest.json").write_text(json.dumps({"tip": {"epoch_no": 600}}))
+    (tmp_path / "tip.json").write_text(json.dumps({"epoch_no": 600}))
+    with pytest.raises(FileExistsError, match="--fresh"):  # tables without their pages
+        koios.pull(tmp_path, log=lambda *_: None)
+
+    class Stop(Exception):
+        pass
+
+    def tip(out):
+        raise Stop
+
+    monkeypatch.setattr(koios, "k_tip", tip)
+    (tmp_path / "raw").mkdir()
+    (tmp_path / "raw" / "page.json.gz").write_bytes(b"")
+    with pytest.raises(Stop):
+        koios.pull(tmp_path, log=lambda *_: None, fresh=True)
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["raw"]  # the cache, empty again
+    assert not any((tmp_path / "raw").iterdir())
 
 
 def test_epoch_arithmetic():
@@ -9,7 +40,7 @@ def test_epoch_arithmetic():
     assert koios.epoch_of(koios.SHELLEY_START + 432000 * 10 + 5) == 218
 
 
-def test_load_derives_outcomes_and_turnout(pull):
+def test_load_derives_outcomes_and_support(pull):
     data = dataset.load(pull)
     assert data.tip_epoch == 570
     assert list(data.proposals.outcome) == [
@@ -19,7 +50,8 @@ def test_load_derives_outcomes_and_turnout(pull):
         "expired",
         "ratified",
     ]
-    assert data.proposals.turnout.iloc[0] == 0.8
+    assert data.proposals.support.iloc[0] == 1.0  # every active vote was Yes
+    assert data.proposals.abstain_share.iloc[0] == 0.0
     assert data.proposals.threshold.iloc[0] == 0.67
     assert data.special.loc[570, dataset.ABSTAIN] == 5e6
     assert data.series().loc[570, "dreps"] == 6

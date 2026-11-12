@@ -109,8 +109,9 @@ proposal pull requests that were opened before it. The Koios API key, if any, is
 repository secret `KOIOS_API_KEY`. GitHub pauses scheduled workflows in a repository with
 no activity for 60 days; **Actions → Refresh the data → Enable workflow** resumes it.
 
-After a data pull and calibration on your own machine, publish the release yourself
-before merging the new results:
+To refresh on your own machine instead, run `rss-gov data pull --fresh` (without
+`--fresh`, a finished pull in `data/pull/` is rebuilt from its cache at its old epoch),
+then `rss-gov all`, and publish the release yourself before merging the new results:
 
 ```
 tar -czf data.tar.gz -C data/pull manifest.json tip.json tables

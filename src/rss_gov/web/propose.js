@@ -4,7 +4,7 @@ const values = { ...F.defaults };
 const OPEN = new Set(["Budget", "How the money is split"]); // always shown; the other groups fold away
 let previewTimer = null;
 const REPO = D.meta.repository ? D.meta.repository.replace(/\/$/, "") : null;
-const YEAR = 73; // epochs a year
+const YEAR = D.meta.epochs_per_year;
 const inputs = {};
 const groups = {};
 
@@ -313,6 +313,7 @@ function showList() {
 function start() {
   buildForm();
   presets();
+  if (D.search) $("#runs").textContent = num(D.search.holdout_seeds, 0); // proposals run on the holdout seeds
   const mode = $("#mode");
   const badge = (text, cls = "") => h("span", { className: "badge " + cls }, mode, text);
   if (REPO) {

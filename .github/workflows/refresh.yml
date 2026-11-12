@@ -19,6 +19,12 @@ permissions:
   contents: write
   pull-requests: write
 
+# `bash` (not the default `bash -e`) adds `-o pipefail`: a command that fails while piped
+# into `tee` must fail its step, not hand half-finished results to the next one.
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: refresh
   cancel-in-progress: false
@@ -45,9 +51,10 @@ jobs:
           tip=$(curl -fsS "${auth[@]}" https://api.koios.rest/api/v1/tip | jq -r '.[0].epoch_no')
           [[ $tip =~ ^[0-9]+$ ]] || { echo "unexpected tip: $tip" >&2; exit 1; }
           echo "results are at epoch $old; mainnet is at epoch $tip"
+          waiting=$(gh pr list --head "refresh/epoch-$tip" --state open --json number --jq '.[0].number')
           if [ "$tip" -le "$old" ]; then
             echo "nothing new" && echo "new=false" >> "$GITHUB_OUTPUT"
-          elif gh pr list --head "refresh/epoch-$tip" --state open --json number --jq '.[0].number' | grep -q .; then
+          elif [ -n "$waiting" ]; then
             echo "a refresh to epoch $tip is already open for review" && echo "new=false" >> "$GITHUB_OUTPUT"
           else
             echo "new=true" >> "$GITHUB_OUTPUT"

@@ -11,7 +11,10 @@ const state = {
   heatv: { sort: null, dir: 1, page: 0, per: 25, sig: "" }, tab: "assumptions",
 };
 const LIMIT = D.meta.split_limit;
-const YEAR = 73 / D.meta.epochs; // programmes per year
+const YEAR = D.meta.epochs_per_year / D.meta.epochs; // programmes per year
+// Simulated runs behind a design's numbers: named designs come from the experiment, search
+// designs and proposals from the holdout seeds.
+const runsOf = (s) => (D.search && (s.kind === "search" || s.kind === "proposed") ? D.search.holdout_seeds : D.meta.seeds);
 
 // ---------- data helpers ----------
 function res(s, scen, axis) {
@@ -377,7 +380,7 @@ function detail() {
       h("td", { className: "num" }, tr, q ? fmt(a.name, q[0], !a.exact) + ci : "–");
     }
   }
-  h("p", { className: "small" }, more1, "± is the 95% interval over 100 simulated runs with different random luck.");
+  h("p", { className: "small" }, more1, `± is the 95% interval over ${num(runsOf(s), 0)} simulated runs with different random luck.`);
 
   const f = s.facts;
   const more2 = h("details", { className: "more" }, host);
@@ -393,7 +396,7 @@ function detail() {
   row("Voting power kept", pct(f.power_kept));
   if (f.delegator_claimants) row(`Delegator payments under ${D.meta.min_payout} ADA`, pct(f.delegator_dust_share));
   const pay = s.results[state.scenario] && s.results[state.scenario].payments;
-  if (pay) row("Payments a year", num(pay * (73 / D.meta.epochs), 0));
+  if (pay) row("Payments a year", num(pay * YEAR, 0));
 
   const more3 = h("details", { className: "more" }, host);
   h("summary", {}, more3, "What it would take to run");
@@ -648,13 +651,14 @@ function scatter() {
   // the area the best designs cover, and the line along its edge
   const front = frontier(pts, ax, ay);
   const rx = right ? m.l : W - m.r, ry = upward ? H - m.b : m.t;
+  let line = null;
   if (front.length) {
     const edge = [[rx, front[0].py]];
     front.forEach((p, i) => { edge.push([p.px, p.py]); if (i + 1 < front.length) edge.push([p.px, front[i + 1].py]); });
     edge.push([front[front.length - 1].px, ry]);
     const path = edge.map(([a, b], i) => `${i ? "L" : "M"}${a},${b}`).join(" ");
     el("path", { d: `${path} L${rx},${ry} Z`, fill: "var(--front-fill)" }, svg);
-    var line = path;
+    line = path;
   }
   for (const t of dx.t) if (t >= dx.lo && t <= dx.hi) {
     el("line", { x1: x(t), x2: x(t), y1: m.t, y2: H - m.b, class: "grid" }, svg);
@@ -824,7 +828,7 @@ function ranked(names) {
   return result;
 }
 // Which search round first tried a design: generated names carry it, named designs start in round 0.
-const roundOf = (name) => { const m = /^g(\d+)_\d+$/.exec(name); return m ? +m[1] : 0; };
+const roundOf = (name) => { const m = GENERATED.exec(name); return m ? +m[1] : 0; };
 const fromRound = (s, round) => s.kind !== "proposed" && roundOf(s.name) === round;
 function coverage() {
   const s = D.search, side = $("#coverage"), host = $("#coverage-chart");
@@ -1243,6 +1247,9 @@ function validation() {
 // ---------- glossary and notes ----------
 function glossary() {
   const s = D.search;
+  const runs = s && s.holdout_seeds !== D.meta.seeds
+    ? `${num(D.meta.seeds, 0)} times (named designs) or ${num(s.holdout_seeds, 0)} times (search designs and proposals)`
+    : `${num(D.meta.seeds, 0)} times`;
   const terms = [
     ["Paying nothing", "Governance as it would run over the next six months with no rewards, simulated from chain history. Every number on this page is a change from it."],
     ["Reaction to rewards", "How strongly DReps and delegators change what they do when paid is not known yet. Every design is simulated with a weak, a medium and a strong reaction. A result that only shows up with a strong reaction is a hope, not a finding."],
@@ -1250,14 +1257,12 @@ function glossary() {
     ["Sybil attack", "One person posing as many independent DReps to collect more rewards. Rules that favour small DReps, or cap large ones, invite it."],
     ["Found by search", s ? `An automated search tried ${num(s.evaluated, 0)} variations of the rules and kept the best trade-offs, then re-checked them on ${num(s.holdout_seeds, 0)} fresh random runs it never saw.` : "Designs found by an automated search over the rules."],
     ["Community proposal", "Submitted by anyone on the Propose page and simulated in exactly the same way."],
-    ["± and intervals", "Each design is simulated 100 times with different random luck. The ± is the 95% range of the average; differences smaller than it are not differences."],
-  ];
-  terms.push(
+    ["± and intervals", `Each design is simulated ${runs} with different random luck. The ± is the 95% range of the average; differences smaller than it are not differences.`],
     ["Exact versus assumed", "Cost and Sybil risk are exact properties of a rule applied to today's DReps. The other three measures depend on the assumed reactions; the first tab shows which one."],
     ["Sybil tests", `Sybil risk is the larger of two tests: an outsider bringing ${ada(D.meta.capital)} ADA as many look-alike DReps, and an existing DRep splitting into 2–20 with its delegators following. The second is an upper bound.`],
     ["Own stake", "Estimated from accounts linked to a DRep on chain (the funder of its registration, its declared payment address). It misses stake held elsewhere; a real programme would need signed declarations."],
     ["Hard fork", "Limiting voting power itself changes how votes are counted, which needs a hard fork. Such designs are simulated mechanically: delegators of a capped DRep are not modelled as moving away."],
-  );
+  ];
   const dl = $("#glossary");
   for (const [k, v] of terms) { h("dt", {}, dl, k); h("dd", {}, dl, v); }
 }

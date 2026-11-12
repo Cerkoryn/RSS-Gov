@@ -27,6 +27,12 @@ permissions:
   issues: write
   pull-requests: write
 
+# `bash` (not the default `bash -e`) adds `-o pipefail`: a command that fails while piped
+# into `tee` must fail its step, not hand half-finished results to the next one.
+defaults:
+  run:
+    shell: bash
+
 # One group per issue: proposals run side by side on their own branches, while a second
 # approval of the same issue waits for the first. (A shared group would keep only one
 # waiting run and cancel the others.)
@@ -98,7 +104,7 @@ jobs:
             echo "The simulation of proposal \`$NAME\` from #$ISSUE. Merging this publishes it on the site."
             echo
             echo '```'
-            grep -v '^wrote ' "$RUNNER_TEMP/try.log" | tail -n 40
+            { grep -v '^wrote ' "$RUNNER_TEMP/try.log" || true; } | tail -n 40
             echo '```'
             echo
             echo "Closes #$ISSUE"

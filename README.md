@@ -54,7 +54,7 @@ about half an hour; one simulated six-month programme takes 0.1–0.4 seconds.
 To work on the published results instead of a fresh pull, download the data they were
 computed from: `gh release download data-epoch-666 -p data.tar.gz` (the epoch is
 `tip_epoch` in `results/calibration.json`), unpack it into `data/pull/`, and check it with
-`rss-gov data verify`.
+`rss-gov data verify`. To replace it with the latest data, run `rss-gov data pull --fresh`.
 
 Settings live in `config.yaml`: the programme budget and length, the axes and what counts
 as a meaningful difference on each, the response scenarios, the guardrails, and the
