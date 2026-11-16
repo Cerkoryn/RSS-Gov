@@ -5,11 +5,18 @@
   "alpha": 1.0,
   "cap_ada": null,
   "k_exclude": 0,
+  "top_weight": 0.0,
   "n_pay": 0,
+  "roll_down": false,
   "min_stake_ada": 0.0,
+  "min_share": 0.0,
   "min_delegators": 0,
   "activity_gate": 0.5,
   "rationale_bonus": 0.0,
+  "basis": "stake",
+  "equal_share": 0.0,
+  "per_vote_ada": 0.0,
+  "max_award_share": 0.0,
   "delegator_share": 0.0,
   "delegator_mode": "passthrough",
   "pledge_leverage": 0.0,
@@ -17,10 +24,10 @@
  },
  "rule": "linear, gate 50%; 2.5M ADA",
  "accepted": false,
- "hypervolume_gain": 3.964537650840219e-05,
+ "hypervolume_gain": 3.047890277454307e-05,
  "hypervolume_gain_ci": [
-  3.640990990554441e-05,
-  4.3501019575485895e-05
+  2.8163976893406854e-05,
+  3.313300648016444e-05
  ],
  "reason": "matched or beaten by a design already on the front",
  "change_from_unpaid": {
@@ -28,11 +35,11 @@
   "tau67": -2.1362962962962975,
   "backing": -7.971174381613162e-05,
   "annual_cost_ada": 5069577.817472224,
-  "split_gain": 2.7755575615628914e-17
+  "split_gain": 1.3877787807814457e-17
  },
  "pilot_testable": true,
  "hypothesis": "Half the budget buys most of the participation of the full one.",
  "author": "",
- "evaluated": "2026-11-16T21:53:10Z",
+ "evaluated": "2026-11-16T23:42:59Z",
  "calibration": "78b9eabc24094a75"
 }

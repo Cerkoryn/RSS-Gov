@@ -60,6 +60,18 @@ FIELDS = [
         help="DReps with less delegated voting power than this are not paid.",
     ),
     dict(
+        name="min_share",
+        group="Who qualifies",
+        kind="share",
+        min=0,
+        max=0.2,
+        step=0.001,
+        label="Minimum share of all DRep voting power",
+        help="DReps holding less than this share of the voting power delegated to all DReps "
+        "are not paid. 1% (one in a hundred) is the Threshold(k) rule with k = 100: few DReps "
+        "reach it, and each new one must win real delegation to get there.",
+    ),
+    dict(
         name="min_delegators",
         group="Who qualifies",
         kind="int",
@@ -92,6 +104,26 @@ FIELDS = [
         "power are paid.",
     ),
     dict(
+        name="roll_down",
+        group="Who qualifies",
+        kind="bool",
+        label="Pass a paid place down when a DRep above does not vote",
+        help="Each action pays the first this-many voters below the skipped DReps, so a DRep "
+        "just outside the paid ranks is paid whenever one above it stays silent. Needs a limit "
+        "on how many are paid.",
+    ),
+    dict(
+        name="top_weight",
+        group="Who qualifies",
+        kind="share",
+        min=0,
+        max=1,
+        step=0.05,
+        label="Pay to the skipped largest DReps, relative to the rest",
+        help="0%: the largest DReps are skipped entirely. 25%: they are paid a quarter of what "
+        "their votes and size would otherwise earn.",
+    ),
+    dict(
         name="alpha",
         group="How the money is split",
         kind="number",
@@ -101,6 +133,52 @@ FIELDS = [
         label="How pay grows with voting power",
         help="0: every paid DRep gets the same. 1: in proportion to voting power. 0.5: square "
         "root, in between. Above 1 favours large DReps even more.",
+    ),
+    dict(
+        name="basis",
+        group="How the money is split",
+        kind="choice",
+        choices=[
+            ["stake", "Voting power"],
+            ["delegators", "Number of delegators"],
+        ],
+        label="What size means",
+        help="What the setting above applies to. Counting delegators favours DReps with many "
+        "small holders, but accounts are cheap to create, so it invites fake delegators.",
+    ),
+    dict(
+        name="equal_share",
+        group="How the money is split",
+        kind="share",
+        min=0,
+        max=1,
+        step=0.05,
+        label="Share of the DReps' money split equally",
+        help="This part is split by vote rate alone, whatever a DRep's size; the rest by the "
+        "rule above. 50% with proportional pay is a base-plus-stake hybrid.",
+    ),
+    dict(
+        name="per_vote_ada",
+        group="How the money is split",
+        kind="ada",
+        min=0,
+        max=10_000,
+        step=1,
+        label="Fixed pay per vote (0: split the whole budget)",
+        help="Every paid DRep earns this much for each vote, whatever its size, and the budget "
+        "becomes a ceiling: what is not earned is not spent. If votes would cost more than the "
+        "budget, every payment is scaled down. Needs everyone paid the same (setting above at "
+        "0) and nothing for delegators.",
+    ),
+    dict(
+        name="max_award_share",
+        group="How the money is split",
+        kind="share",
+        min=0,
+        max=1,
+        step=0.01,
+        label="Most any one DRep may receive (share of the DReps' money; 0: no limit)",
+        help="Pay above this is not handed to anyone else: it stays in the budget.",
     ),
     dict(
         name="cap_ada",

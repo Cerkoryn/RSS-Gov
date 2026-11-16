@@ -22,7 +22,8 @@ def test_every_preset_pays_out_at_most_the_pot(name):
     total = award.sum() + (yields * r.stake).sum()
     assert (award >= 0).all() and (yields >= 0).all()
     assert total <= 100.0 + 1e-9
-    if award.sum() > 0:
+    ceiling = scheme.per_vote_ada or scheme.max_award_share  # these may leave money unspent
+    if award.sum() > 0 and not ceiling:
         assert total == pytest.approx(100.0)
 
 
@@ -106,7 +107,7 @@ def test_every_vote_earns_the_same_increment():
 
 def test_one_more_vote_is_worth_something_to_a_drep_that_has_not_voted():
     r = make_round()
-    value = m.vote_value(m.preset("proportional", 1), r, 100.0, 1.0)
+    value = m.vote_value(m.preset("proportional", 1), r, 100.0)
     assert value[3] > 0
     assert value[0] > value[2]
 
@@ -130,3 +131,69 @@ def test_from_config_accepts_names_and_overrides():
         m.preset("nope", 1)
     with pytest.raises(ValueError):
         m.Scheme(hard_cap=True)
+
+
+def test_min_share_pays_only_dreps_over_that_share_of_all_power():
+    r = make_round()  # total 180.5M: 10% is 18.05M
+    award, _ = m.allocate(m.Scheme(budget_ada=1, alpha=0, min_share=0.1), r, 30.0)
+    assert (award > 0).tolist() == [True, True, True, False, False]
+
+
+def test_threshold_k_pays_at_most_one_kth_each_and_keeps_the_rest():
+    scheme = m.preset("threshold_k", 1)
+    r = make_round()
+    award, _ = m.allocate(m.replace(scheme, min_share=0.1, max_award_share=0.1), r, 100.0)
+    assert award == pytest.approx([10, 10, 10, 0, 0])  # B/k each; 70 stays in the pot
+
+
+def test_pay_per_vote_is_a_rate_until_the_pot_runs_out():
+    r = m.replace(make_round(), actions=4.0)
+    scheme = m.Scheme(budget_ada=1, alpha=0, per_vote_ada=2.0)
+    award, _ = m.allocate(scheme, r, 1000.0)
+    assert award == pytest.approx([8, 4, 8, 0, 8])  # 2 ADA x 4 actions x vote rate
+    short, _ = m.allocate(scheme, r, 14.0)
+    assert short == pytest.approx(np.array([8, 4, 8, 0, 8]) * 14 / 28)
+    assert m.vote_value(scheme, r, 1000.0) == pytest.approx([2, 2, 2, 2, 2])
+    with pytest.raises(ValueError):
+        m.Scheme(budget_ada=1, alpha=1, per_vote_ada=2.0)
+
+
+def test_award_cap_is_not_passed_on_to_others():
+    award, _ = m.allocate(m.Scheme(budget_ada=1, alpha=1, max_award_share=0.3), make_round(), 100)
+    weights = np.array([100, 25, 20, 0, 0.5])
+    assert award == pytest.approx(np.minimum(100 * weights / weights.sum(), 30))
+
+
+def test_top_weight_pays_the_largest_a_fraction_instead_of_nothing():
+    r = make_round()
+    award, _ = m.allocate(m.Scheme(budget_ada=1, alpha=0, k_exclude=1, top_weight=0.5), r, 35)
+    assert award == pytest.approx(np.array([5, 5, 10, 0, 10]) * 35 / 30)
+
+
+def test_roll_down_passes_a_slot_down_when_a_drep_above_may_not_vote():
+    r = make_round()  # by stake: 0 (votes always), 1 (half), 2, 3 (never), 4
+    hard = m.weights(m.Scheme(budget_ada=1, alpha=0, n_pay=2), r)
+    rolled = m.weights(m.Scheme(budget_ada=1, alpha=0, n_pay=2, roll_down=True), r)
+    assert hard == pytest.approx([1, 0.5, 0, 0, 0])
+    assert rolled == pytest.approx([1, 0.5, 0.5, 0, 0])  # 1.5 voters expected above rank 3
+    with pytest.raises(ValueError):
+        m.Scheme(budget_ada=1, roll_down=True)
+
+
+def test_equal_share_blends_equal_and_stake_parts():
+    r = make_round()
+    award, _ = m.allocate(m.Scheme(budget_ada=1, alpha=1, equal_share=0.5), r, 100)
+    votes = r.activity
+    weights = r.stake * r.activity
+    want = 50 * votes / votes.sum() + 50 * weights / weights.sum()
+    assert award == pytest.approx(want)
+
+
+def test_delegator_basis_weighs_by_delegator_count():
+    r = make_round()
+    award, _ = m.allocate(m.Scheme(budget_ada=1, alpha=1, basis="delegators"), r, 100)
+    weights = r.delegators * r.activity
+    assert award == pytest.approx(100 * weights / weights.sum())
+    assert "invites fake ones" in " ".join(
+        m.preset("delegator_count_sqrt", 1).feasibility()["notes"]
+    )

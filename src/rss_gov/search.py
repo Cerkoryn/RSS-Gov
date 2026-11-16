@@ -36,6 +36,13 @@ CHOICES = dict(
     delegator_share=[0.0, 0.0, 0.25, 0.5, 0.8],
     delegator_mode=["passthrough", "flat"],
     pledge_leverage=[0.0, 0.0, 0.0, 100.0, 1000.0, 10000.0],
+    min_share=[0.0, 0.0, 0.0, 0.002, 0.005, 0.01],
+    top_weight=[0.0, 0.0, 0.25, 0.5],
+    roll_down=[False, True],
+    basis=["stake", "stake", "stake", "delegators"],
+    equal_share=[0.0, 0.0, 0.25, 0.5],
+    per_vote_ada=[0.0, 0.0, 0.0, 5.0, 10.0, 25.0, 50.0],
+    max_award_share=[0.0, 0.0, 0.0, 0.01, 0.02, 0.05],
 )
 HARD_FORK_CHOICES = dict(hard_cap=[False, False, True])
 
@@ -54,6 +61,10 @@ def _make(values, name):
         values.pop("cap_ada", None)
     if values.get("hard_cap") and not values.get("pledge_leverage"):
         values["hard_cap"] = False
+    if values.get("roll_down") and not values.get("n_pay"):
+        values["roll_down"] = False
+    if values.get("alpha") or values.get("delegator_share"):
+        values["per_vote_ada"] = 0.0  # pay per vote is the same for every DRep
     return mechanisms.Scheme(name=name, **values)
 
 
@@ -358,7 +369,8 @@ def try_candidates(study, rows, log=print, processes=None):
         if (
             holder is not None
             and scheme.name not in taken
-            and proposals.split(holder)[0] == scheme.to_dict()
+            # through Scheme, so fields added since it was stored read as their default
+            and study.schemes([proposals.split(holder)[0]])[0] == scheme
         ):
             meta = {**proposals.split(holder)[1], **meta}  # the same proposal: refresh its results
         elif scheme.name in taken or holder is not None:

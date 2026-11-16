@@ -190,8 +190,8 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
 
         # 3. The reward round, computed from what the chain shows at the start of the epoch.
         pot = budget_per_epoch + carry
-        delegators = np.zeros(len(live))  # read by a rule only through min_delegators
-        if scheme.min_delegators > 0:
+        delegators = np.zeros(len(live))  # read only through min_delegators or basis
+        if scheme.min_delegators > 0 or scheme.basis == "delegators":
             counted = acct_count * (acct_stake >= params.delegator_min_ada * acct_count)
             delegators = _by_drep(target, counted, D)[live]
         rnd = mechanisms.Round(
@@ -200,6 +200,7 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
             rationale=rationale_share[live],
             delegators=delegators,
             pledge=pledge[live],
+            actions=world.action_rate,
         )
         award, yields = mechanisms.allocate(scheme, rnd, pot)
         received = award + yields * rnd.stake
@@ -229,7 +230,7 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
             missing = np.maximum(stake[live] / scheme.pledge_leverage - pledge[live], 0)
             pledge[live] += top_up * missing * ((award > 0) | scheme.hard_cap)
         if pot > 0 and scenario.drep_response > 0:
-            value = mechanisms.vote_value(scheme, rnd, pot, world.action_rate)
+            value = mechanisms.vote_value(scheme, rnd, pot)
             shift[live] = scenario.drep_response * np.log1p(value / params.vote_cost_ada)
             if scheme.rationale_bonus > 0:
                 extra = value * scheme.rationale_bonus / (1 + scheme.rationale_bonus)
@@ -400,6 +401,7 @@ def _newcomer_award(scheme, rnd, pot, stake):
         rationale=np.append(rnd.rationale, 0.0),
         delegators=np.append(rnd.delegators, 1.0),
         pledge=np.append(rnd.pledge, stake),
+        actions=rnd.actions,
     )
     return float(mechanisms.allocate(scheme, plus, pot)[0][-1])
 

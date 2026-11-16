@@ -28,7 +28,11 @@
 <li><a href="#the-question">The question</a></li>
 <li><a href="#the-axes">The axes</a></li>
 <li><a href="#data">Data</a></li>
-<li><a href="#the-reward-family-mechanismspy">The reward family (mechanisms.py)</a></li>
+<li><a href="#the-reward-family-mechanismspy">The reward family (mechanisms.py)</a><ul>
+<li><a href="#named-designs">Named designs</a></li>
+<li><a href="#what-the-family-cannot-express">What the family cannot express</a></li>
+</ul>
+</li>
 <li><a href="#tier-a-static-analysis-staticpy">Tier A: static analysis (static.py)</a></li>
 <li><a href="#tier-b-the-model-modelpy">Tier B: the model (model.py)</a><ul>
 <li><a href="#what-is-fitted-and-from-what-calibratepy">What is fitted, and from what (calibrate.py)</a></li>
@@ -225,12 +229,31 @@ table and <code>calibration.json</code> copies those hashes.</p>
 <p><strong>Only explicit votes are paid.</strong> Yes, No and Abstain count alike; not voting earns
 nothing; nothing is paid for merely being registered or holding delegation. Each epoch a
 DRep's weight is</p>
-<pre><code>eligible × min(stake, cap, leverage × own stake)^alpha × vote rate × (1 + bonus × rationale share)
+<pre><code>eligible × rank × size^alpha × vote rate × (1 + bonus × rationale share)
 </code></pre>
 <p>where <code>vote rate</code> is the share of actions closed in the last 12 epochs that the DRep voted
-on, and <code>eligible</code> applies a minimum stake, a minimum number of delegators, a minimum vote
-rate, and an optional "skip the K largest, pay the next N". Weight is linear in the vote
+on, and <code>size</code> is its voting power, limited by <code>cap</code> and by <code>leverage × own stake</code>, or,
+with <code>basis: delegators</code>, its number of delegating accounts. Weight is linear in the vote
 rate, so every vote earns the same increment.</p>
+<ul>
+<li><code>eligible</code> applies a minimum voting power in ADA, a minimum share of all DRep voting
+  power (<code>min_share</code>), a minimum number of delegators and a minimum vote rate.</li>
+<li><code>rank</code> handles "skip the K largest, pay the next N". The K largest are weighted by
+  <code>top_weight</code> (0 skips them; 0.25 pays them a quarter). With <code>roll_down</code>, a place among
+  the N passes down when a DRep above does not vote: a DRep keeps the part of a place left
+  after the DReps ranked above it are expected to vote (their vote rates), which is the
+  expected value of paying the first N voters on each action.</li>
+</ul>
+<p>The weights split the DReps' pot. <code>equal_share</code> splits that fraction of it by vote rate
+alone, and the rest by the full weight. Two settings stop the pot being spent in full;
+the unspent ADA stays in the budget:</p>
+<ul>
+<li><code>per_vote_ada</code> pays a fixed amount per vote instead of a share. Votes are the vote rate
+  times the actions closing per epoch on average. If the votes would cost more than the
+  pot, every payment is scaled down. It needs <code>alpha</code> 0 and no delegator share.</li>
+<li><code>max_award_share</code> limits any one DRep to that share of the DReps' pot. The excess is not
+  handed to the others.</li>
+</ul>
 <p>A share of the pot can go to delegators, always through a DRep that voted: <code>passthrough</code>
 shares each DRep's own award with its delegators, <code>flat</code> pays one yield per ADA and per
 unit of the DRep's vote rate. Delegating to always-abstain or to a DRep that does not vote
@@ -238,6 +261,88 @@ earns nothing.</p>
 <p><code>leverage</code> ties the stake that counts for rewards to the DRep's own stake (a soft
 requirement). With <code>hard_cap</code> it limits <em>voting power</em> itself. That changes ratification
 and needs a hard fork; such schemes are simulated and flagged <code>pilot_testable: false</code>.</p>
+<h3 id="named-designs">Named designs<a class="headerlink" href="#named-designs" title="Permanent link">#</a></h3>
+<p>Besides the generic shapes (<code>proportional</code>, <code>equal</code>, <code>sqrt</code>, <code>capped</code>, gates, floors,
+rationale bonus, delegator and own-stake designs), the named designs come from published
+proposals. Each is the closest point in the family, not an exact copy.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Rule</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>middle_out</code></td>
+<td>equal pay, skip the 10 largest, pay the next 100</td>
+<td><a href="https://github.com/Cerkoryn/ExcludeKPayN/blob/main/paper.md">ExcludeKPayN</a></td>
+</tr>
+<tr>
+<td><code>exclude_k_pay_n</code></td>
+<td>10 ADA per vote, skip 10, pay the next 200 with roll-down</td>
+<td>ExcludeKPayN, per-proposal form</td>
+</tr>
+<tr>
+<td><code>top_m_equal</code>, <code>top_m_proportional</code></td>
+<td>the 100 largest, equal or by voting power</td>
+<td><a href="https://docs.google.com/document/d/1_uadn9Ord3mAYQGWHQySR73CQciVk2YNc5rt8npJ6Aw">IO Research, Reward Schemes for DReps in Voltaire</a>, variants 1a and 2a</td>
+</tr>
+<tr>
+<td><code>threshold_k</code></td>
+<td>DReps with at least 1/k of all voting power (k = 100) get 1/k of the pot each; the rest is not spent</td>
+<td><a href="https://arxiv.org/abs/2406.10525">Birmpas et al., FC 2025</a> Threshold(k); IO Research variant 1b</td>
+</tr>
+<tr>
+<td><code>threshold_k_proportional</code></td>
+<td>the same DReps, paid by voting power</td>
+<td>Birmpas et al. variant 2; IO Research variant 2b</td>
+</tr>
+<tr>
+<td><code>equal_plus_stake</code></td>
+<td>half equal, half by voting power</td>
+<td><a href="https://github.com/cardano-foundation/CIPs/pull/1117">CIP PR #1117</a> hybrid split</td>
+</tr>
+<tr>
+<td><code>top_haircut</code></td>
+<td>proportional, 70% vote rate and 10 delegators to qualify, the 20 largest at 25%</td>
+<td><a href="https://forum.cardano.org/t/lessons-in-decentralized-governance-what-cardano-can-learn-from-dao-incentive-models/154264">Cardano forum: DAO incentive models</a>, DRep side of experiment 1</td>
+</tr>
+<tr>
+<td><code>top_100_gated</code></td>
+<td>the 100 largest with a 70% vote rate, equal pay</td>
+<td>Optimism's top-100 participation rewards (<a href="https://forum.scroll.io/t/delegate-incentive-programs-daostar-research/470">DAOstar survey</a>)</td>
+</tr>
+<tr>
+<td><code>delegators_first</code></td>
+<td>90% to delegators of DReps voting 70%, flat; DReps by voting power, at most 10% of their part each</td>
+<td>ENS-style split (same forum post)</td>
+</tr>
+<tr>
+<td><code>delegator_count_sqrt</code></td>
+<td>square root of the number of delegators, at most 5% each</td>
+<td>the same forum post, experiment 4</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="what-the-family-cannot-express">What the family cannot express<a class="headerlink" href="#what-the-family-cannot-express" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Pay that depends on how a DRep voted</strong>: rewarding the winning side
+  (<a href="https://arxiv.org/abs/2610.07959">Beccuti &amp; Schneider</a>), prediction-market accuracy
+  scores, penalties for the losing side. The model draws vote direction from history and
+  has no "correct" outcome, so this would reward conformity, not judgement.</li>
+<li><strong>Judged quality</strong>: peer-review juries, retroactive rewards, rubric scores, delegator
+  ratings. None is computable from the chain; a rationale anchor is the closest.</li>
+<li><strong>Linking DReps run by one operator</strong>: the chain has no identity.</li>
+<li><strong>Delegator mechanics</strong>: time-weighted balances, one-time bonuses for leaving
+  always-abstain, matching new delegation, caps per delegator, and a pool that grows with
+  participation. Each needs a response assumption with no data behind it.</li>
+<li><strong>A base for everyone plus a bonus for the top m</strong> (IO Research variant 3): the family
+  applies one eligibility rule to the whole pot.</li>
+</ul>
+<p>Pay per action is approximated per epoch: <code>roll_down</code> uses expected votes, and
+<code>per_vote_ada</code> uses the average number of actions per epoch.</p>
 <h2 id="tier-a-static-analysis-staticpy">Tier A: static analysis (<code>static.py</code>)<a class="headerlink" href="#tier-a-static-analysis-staticpy" title="Permanent link">#</a></h2>
 <p>The rule is applied to today's real DReps with no behaviour change. Reported: how many
 are paid, the size of awards, the share going to the ten largest DReps, the share of
@@ -386,6 +491,10 @@ its mean over <code>low</code>, <code>central</code> and <code>high</code>. The 
 credible only if its verdicts hold from <code>low</code> to <code>high</code>.</p>
 <p>Not modelled: delegators leaving a DRep whose voting power is capped, vote buying,
 collusion, changes in vote <em>direction</em> or quality, and price effects.</p>
+<p>A DRep reacts to what one more vote is worth at its current size. It does not campaign
+for delegation to reach a threshold. Rules that pay only above a size (<code>threshold_k</code>,
+top-m) are therefore judged without the climb they are meant to cause, beyond what movers
+already give DReps that vote more.</p>
 <h2 id="comparing-schemes-fairly-experimentpy">Comparing schemes fairly (<code>experiment.py</code>)<a class="headerlink" href="#comparing-schemes-fairly-experimentpy" title="Permanent link">#</a></h2>
 <ol>
 <li><strong>Same start.</strong> Every scheme starts from the same chain snapshot.</li>
@@ -507,7 +616,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=396134bef0"></script>
-<script src="common.js?v=6643c41d6d"></script>
+<script src="data.js?v=769d7da790"></script>
+<script src="common.js?v=ef5a8e4d11"></script>
 </body>
 </html>

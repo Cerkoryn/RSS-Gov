@@ -89,3 +89,15 @@ def test_an_accepted_proposal_is_judged_with_the_front(study, monkeypatch):
     assert name in [s["name"] for s in yaml.safe_load((study.results / "front.yaml").read_text())]
     judged = pd.read_csv(study.results / "search_front.csv")
     assert name in set(judged.scheme)
+
+
+def test_a_stored_proposal_is_refreshed_in_place_after_the_family_grows(study):
+    """The refresh workflow re-tries every stored file: one written before a field existed
+    must keep its name, not come back as a copy."""
+    name = _try(study, PROPOSAL)
+    path = study.results / "proposals" / f"{name}.yaml"
+    row = yaml.safe_load(path.read_text())[0]
+    del row["per_vote_ada"], row["top_weight"]  # as if stored before these fields existed
+    path.write_text(yaml.safe_dump([row], sort_keys=False))
+    search.try_candidates(study, yaml.safe_load(path.read_text()), QUIET, processes=1)
+    assert sorted(p.stem for p in path.parent.glob("*.yaml")) == [name]

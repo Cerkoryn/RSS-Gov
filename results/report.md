@@ -62,6 +62,16 @@ Exact arithmetic on the current snapshot. `outsider's take` is the share of the 
 | delegator_passthrough_sqrt | stake^0.5, 80% to delegators (passthrough); 5M ADA | 193 | 1,489 | 28% | 5% | 5% | 15% | 100% | 70% |
 | pledge_soft | linear, reward cap 1000x own stake; 5M ADA | 186 | 33,810 | 48% | 0% | 0% | 0% | 100% |  |
 | pledge_hard_cap | linear, power cap 1000x own stake; 5M ADA | 186 | 33,810 | 48% | 0% | 0% | 0% | 18% |  |
+| top_m_equal | equal, pay 100; 5M ADA | 100 | 1,804 | 9% | 0% | 0% | 23% | 100% |  |
+| top_m_proportional | linear, pay 100; 5M ADA | 100 | 19,006 | 55% | 0% | 0% | 0% | 100% |  |
+| threshold_k | equal, award cap 1%, min 1.00% of power; 5M ADA | 21 | 1,389 | 43% | 0% | 0% | 4% | 100% |  |
+| threshold_k_proportional | linear, min 1.00% of power; 5M ADA | 21 | 23,361 | 68% | 0% | 0% | 0% | 100% |  |
+| equal_plus_stake | linear, 50% equal; 5M ADA | 193 | 9,968 | 30% | 44% | 44% | 6% | 100% |  |
+| exclude_k_pay_n | equal, 10 ADA per vote, skip top 10, pay 200 (roll-down); 5M ADA | 184 | 12 | 0% | 1% | 1% | 0% | 100% |  |
+| top_haircut | linear, top 20 at 25%, min 10 delegators, gate 70%; 5M ADA | 80 | 12,619 | 33% | 0% | 0% | 19% | 100% |  |
+| top_100_gated | equal, pay 100, gate 70%; 5M ADA | 100 | 1,435 | 6% | 8% | 7% | 19% | 100% |  |
+| delegators_first | linear, award cap 10%, gate 70%, 90% to delegators (flat); 5M ADA | 102 | 1,389 | 50% | 0% | 0% | 1% | 100% | 62% |
+| delegator_count_sqrt | delegators^0.5, award cap 5%; 5M ADA | 190 | 6,944 | 27% | 64% | 59% | 22% | 100% |  |
 | capped_1m | linear, cap 20M; 1M ADA | 193 | 636 | 16% | 0% | 0% | 30% | 100% |  |
 | capped_2m5 | linear, cap 20M; 2.5M ADA | 193 | 1,591 | 16% | 0% | 0% | 30% | 100% |  |
 | capped_10m | linear, cap 20M; 10M ADA | 193 | 6,362 | 16% | 0% | 0% | 30% | 100% |  |
@@ -84,6 +94,16 @@ Exact arithmetic on the current snapshot. `outsider's take` is the share of the 
 | delegator_passthrough_sqrt | +4.1 ± 0.1 ▲ | -0.9 ± 0.3 ▽ | -0.01 ± 0.02 | 10.2M | 15% |
 | pledge_soft | +3.8 ± 0.1 ▲ | -1.8 ± 0.2 ▽ | +0.02 ± 0.01 | 10.1M | 0% |
 | pledge_hard_cap | -17.0 ± 0.2 ▼ | -1.3 ± 0.3 ▼ | +1.97 ± 0.11 ▲ | 10.1M | 0% |
+| top_m_equal | +4.3 ± 0.1 ▲ | -0.3 ± 0.1 | -0.01 ± 0.01 | 10.1M | 23% |
+| top_m_proportional | +4.4 ± 0.1 ▲ | -2.1 ± 0.2 ▼ | -0.01 ± 0.00 | 10.1M | 0% |
+| threshold_k | +3.5 ± 0.1 ▲ | -2.8 ± 0.2 ▼ | -0.01 ± 0.01 | 9.2M | 4% |
+| threshold_k_proportional | +3.5 ± 0.1 ▲ | -3.3 ± 0.2 ▼ | -0.01 ± 0.01 | 10.1M | 0% |
+| equal_plus_stake | +4.3 ± 0.1 ▲ | -1.5 ± 0.2 ▽ | +0.22 ± 0.05 △ | 10.1M | 44% |
+| exclude_k_pay_n | +0.2 ± 0.0 | +0.2 ± 0.1 | +0.02 ± 0.02 | 0.1M | 1% |
+| top_haircut | +4.6 ± 0.1 ▲ | -1.3 ± 0.2 ▽ | -0.01 ± 0.01 | 10.1M | 19% |
+| top_100_gated | +4.3 ± 0.1 ▲ | -0.4 ± 0.2 | +0.03 ± 0.02 | 10.1M | 19% |
+| delegators_first | +4.2 ± 0.1 ▲ | -2.4 ± 0.3 ▼ | -0.08 ± 0.01 | 10.2M | 1% |
+| delegator_count_sqrt | +4.2 ± 0.1 ▲ | -1.1 ± 0.2 ▽ | +0.10 ± 0.03 | 10.1M | 59% |
 
 ![scorecard](figures/scorecard.png)
 
@@ -107,6 +127,16 @@ Participation: change in Delegated stake casting an explicit vote (points)
 | delegator_passthrough_sqrt | +3.1 | +0.8 | +0.2 | +0.0 | +4.1 |
 | pledge_soft | +2.1 | +0.0 | -0.0 | +0.0 | +3.8 |
 | pledge_hard_cap | -20.2 | -21.5 | -21.1 | -18.7 | -17.0 |
+| top_m_equal | +4.2 | +0.0 | +0.2 | +0.0 | +4.3 |
+| top_m_proportional | +4.3 | +0.0 | +0.2 | +0.0 | +4.4 |
+| threshold_k | +3.3 | +0.0 | +0.2 | +0.0 | +3.5 |
+| threshold_k_proportional | +3.3 | +0.0 | +0.3 | +0.0 | +3.5 |
+| equal_plus_stake | +4.2 | +0.0 | +0.2 | +0.0 | +4.3 |
+| exclude_k_pay_n | +0.2 | +0.0 | +0.0 | +0.0 | +0.2 |
+| top_haircut | +4.5 | +0.0 | +0.3 | +0.0 | +4.6 |
+| top_100_gated | +4.1 | +0.0 | +0.3 | +0.0 | +4.3 |
+| delegators_first | +2.7 | +1.4 | +0.2 | +0.0 | +4.2 |
+| delegator_count_sqrt | +4.1 | +0.0 | +0.2 | +0.0 | +4.2 |
 
 Decentralisation: change in DReps needed for 2/3 of voting power (DReps)
 
@@ -124,6 +154,16 @@ Decentralisation: change in DReps needed for 2/3 of voting power (DReps)
 | delegator_passthrough_sqrt | +0.1 | +0.3 | -1.2 | +0.0 | -0.9 |
 | pledge_soft | +0.1 | +0.0 | -0.9 | +0.0 | -1.8 |
 | pledge_hard_cap | -12.1 | -12.2 | -13.5 | +0.8 | -1.3 |
+| top_m_equal | +0.1 | +0.0 | -0.6 | +0.0 | -0.3 |
+| top_m_proportional | -0.0 | +0.0 | -2.3 | +0.0 | -2.1 |
+| threshold_k | -0.3 | +0.0 | -2.6 | +0.0 | -2.8 |
+| threshold_k_proportional | -0.4 | +0.0 | -3.2 | +0.0 | -3.3 |
+| equal_plus_stake | +0.2 | +0.0 | -1.7 | +0.0 | -1.5 |
+| exclude_k_pay_n | +0.1 | +0.0 | +0.1 | +0.0 | +0.2 |
+| top_haircut | +0.0 | +0.0 | -1.6 | +0.0 | -1.3 |
+| top_100_gated | +0.2 | +0.0 | -0.8 | +0.0 | -0.4 |
+| delegators_first | -0.1 | -0.7 | -1.5 | +0.0 | -2.4 |
+| delegator_count_sqrt | +0.1 | +0.0 | -1.4 | +0.0 | -1.1 |
 
 Skin in the game: change in Voting power backed by the DRep's own stake (points)
 
@@ -141,6 +181,16 @@ Skin in the game: change in Voting power backed by the DRep's own stake (points)
 | delegator_passthrough_sqrt | +0.01 | -0.02 | -0.00 | +0.00 | -0.01 |
 | pledge_soft | +0.01 | +0.00 | +0.00 | +0.01 | +0.02 |
 | pledge_hard_cap | +4.58 | +4.66 | +4.03 | +2.03 | +1.97 |
+| top_m_equal | +0.00 | +0.00 | -0.01 | +0.00 | -0.01 |
+| top_m_proportional | -0.00 | +0.00 | -0.01 | +0.00 | -0.01 |
+| threshold_k | -0.00 | +0.00 | -0.01 | +0.00 | -0.01 |
+| threshold_k_proportional | -0.00 | +0.00 | -0.01 | +0.00 | -0.01 |
+| equal_plus_stake | +0.24 | +0.00 | -0.01 | +0.00 | +0.22 |
+| exclude_k_pay_n | +0.02 | +0.00 | -0.00 | +0.00 | +0.02 |
+| top_haircut | -0.00 | +0.00 | -0.01 | +0.00 | -0.01 |
+| top_100_gated | +0.04 | +0.00 | -0.01 | +0.00 | +0.03 |
+| delegators_first | -0.00 | -0.08 | -0.01 | +0.00 | -0.08 |
+| delegator_count_sqrt | +0.11 | +0.00 | -0.01 | +0.00 | +0.10 |
 
 ### What more money buys
 
@@ -155,91 +205,81 @@ The `capped` rule at four budgets, `central` scenario. The response to a reward 
 
 ## Search over the scheme family
 
-230 designs simulated over 10 generations, with the budget as one of the searched parameters. The finalists were re-run on 100 seeds the search never saw; all numbers here are from those seeds, averaged over `low`, `central`, `high`. Marks: ▲ better than unpaid in every scenario, ▼ worse in at least one.
+223 designs simulated over 10 generations, with the budget as one of the searched parameters. The finalists were re-run on 100 seeds the search never saw; all numbers here are from those seeds, averaged over `low`, `central`, `high`. Marks: ▲ better than unpaid in every scenario, ▼ worse in at least one.
 
-- 22 of 34 finalists are unbeaten: no other design is at least as good on all 5 axes.
-- Guardrail: no axis other than cost and Sybil resistance may be worse than unpaid in any scenario; those two are exact trade-offs, weighed on the front like the others. **20 of 34 finalists stay inside it.**
-- Hypervolume of the front (progress measure, in the units of `axes.scale`): **0.01654** (95% 0.01623–0.01686); unpaid alone 0.00455. The search adds **0.00838** over the named schemes (95% 0.00818–0.00858).
+- 24 of 45 finalists are unbeaten: no other design is at least as good on all 5 axes.
+- Guardrail: no axis other than cost and Sybil resistance may be worse than unpaid in any scenario; those two are exact trade-offs, weighed on the front like the others. **23 of 45 finalists stay inside it.**
+- Hypervolume of the front (progress measure, in the units of `axes.scale`): **0.01514** (95% 0.01461–0.01570); unpaid alone 0.00455. The search adds **0.00624** over the named schemes (95% 0.00599–0.00665).
 
 ### Shortlist: inside every guardrail and unbeaten
 
 | scheme | rule | Participation | Decentralisation | Skin in the game | Reward sustainability | Sybil resistance |
 |---|---|---|---|---|---|---|
-| g10_6 | stake^0.25, cap 50M, skip top 20, min 10k, gate 50%, rationale +100%, 25% to delegators (passthrough); 10M ADA | +3.7 ± 0.1 ▲ | +7.6 ± 0.2 ▲ | +0.15 ± 0.05 | 20.3M | 32% |
-| g4_19 | stake^0.25, cap 50M, skip top 20, min 100k, gate 25%, 80% to delegators (passthrough), reward cap 1000x own stake; 10M ADA | +5.4 ± 0.1 ▲ | +15.7 ± 0.4 ▲ | -0.14 ± 0.01 | 20.3M | 15% |
-| g6_9 | equal, cap 2M, skip top 20, min 1M, gate 75%, rationale +100%, 80% to delegators (passthrough); 2.5M ADA | +2.7 ± 0.1 ▲ | +4.6 ± 0.2 ▲ | -0.09 ± 0.01 | 5.1M | 34% |
+| g0_10 | equal, skip top 10, pay 400, min 25 delegators, rationale +50%, 80% to delegators (flat), reward cap 100x own stake; 10M ADA | +6.2 ± 0.2 ▲ | +3.7 ± 0.2 ▲ | -0.08 ± 0.01 | 20.3M | 26% |
+| g4_17 | stake^0.75, cap 50M, skip top 5, pay 400, min 10k, rationale +100%, 50% to delegators (passthrough), reward cap 100x own stake; 10M ADA | +5.0 ± 0.1 ▲ | +2.5 ± 0.3 ▲ | +0.09 ± 0.02 | 20.3M | 10% |
+| g6_23 | stake^0.5, 25% equal, cap 200M, skip top 20, min 1M, gate 75%, rationale +200%, 25% to delegators (passthrough), reward cap 1000x own stake; 10M ADA | +4.2 ± 0.1 ▲ | +7.3 ± 0.2 ▲ | -0.08 ± 0.01 | 20.3M | 22% |
+| g7_5 | equal, skip top 20, pay 100, 25% to delegators (passthrough); 5M ADA | +2.6 ± 0.1 ▲ | +4.8 ± 0.2 ▲ | -0.04 ± 0.00 | 10.1M | 25% |
+| g9_2 | stake^0.5, 25% equal, cap 200M, award cap 1%, skip top 20, min 1M, min 10 delegators, gate 75%, rationale +200%, 25% to delegators (passthrough), reward cap 1000x own stake; 2.5M ADA | +2.2 ± 0.1 ▲ | +3.5 ± 0.2 ▲ | -0.04 ± 0.01 | 5.0M | 23% |
+| capped_1m | linear, cap 20M; 1M ADA | +3.3 ± 0.1 ▲ | -0.4 ± 0.2 | -0.00 ± 0.00 | 2.0M | 30% |
 | capped_2m5 | linear, cap 20M; 2.5M ADA | +4.0 ± 0.1 ▲ | -0.4 ± 0.2 | -0.00 ± 0.00 | 5.1M | 30% |
 | equal | equal; 5M ADA | +3.6 ± 0.1 ▲ | +0.3 ± 0.2 | +0.37 ± 0.06 | 10.1M | 87% |
-| g10_0 | equal, cap 2M, min 100k, reward cap 100x own stake; 5M ADA | +3.8 ± 0.1 ▲ | +0.1 ± 0.1 | +0.20 ± 0.00 | 10.1M | 14% |
-| g10_2 | linear, cap 2M, pay 200, 50% to delegators (flat); 2.5M ADA | +3.4 ± 0.1 ▲ | -0.2 ± 0.2 | -0.02 ± 0.00 | 5.1M | 9% |
-| g1_14 | linear, cap 2M, pay 200, min 10 delegators, gate 75%, 50% to delegators (flat); 10M ADA | +6.1 ± 0.1 ▲ | -0.8 ± 0.2 | -0.09 ± 0.01 | 20.3M | 11% |
-| g7_16 | stake^0.25, cap 10M, min 1M, min 5 delegators, rationale +50%, 50% to delegators (flat); 5M ADA | +4.5 ± 0.1 ▲ | -0.4 ± 0.2 | -0.05 ± 0.01 | 10.2M | 12% |
-| g7_20 | linear, cap 2M, pay 200, min 10 delegators, gate 75%, 50% to delegators (flat), reward cap 100x own stake; 1M ADA | +2.2 ± 0.1 ▲ | -0.5 ± 0.2 | +0.13 ± 0.00 | 2.0M | 0% |
-| g8_0 | stake^0.75, cap 2M, skip top 5, min 10 delegators; 1M ADA | +2.1 ± 0.1 ▲ | +0.6 ± 0.2 | -0.00 ± 0.00 | 2.0M | 21% |
-| g9_20 | linear, cap 10M, min 100k, gate 25%, rationale +200%, 25% to delegators (passthrough), reward cap 100x own stake; 10M ADA | +4.8 ± 0.1 ▲ | -0.2 ± 0.2 | +0.15 ± 0.01 | 20.3M | 21% |
-| middle_out | equal, skip top 10, pay 100; 5M ADA | +2.7 ± 0.1 ▲ | +1.9 ± 0.2 | -0.00 ± 0.00 | 10.1M | 24% |
-| g9_10 | linear, skip top 20, pay 400, min 25 delegators, gate 75%, rationale +50%, 25% to delegators (flat), reward cap 100x own stake; 2.5M ADA | +1.5 ± 0.1 | +2.7 ± 0.2 | -0.01 ± 0.00 | 5.1M | 11% |
-| g9_18 | linear, cap 10M, skip top 10, min 100k, min 5 delegators, gate 75%, reward cap 1000x own stake; 2.5M ADA | +1.8 ± 0.1 | +1.1 ± 0.2 | +0.00 ± 0.00 | 5.1M | 3% |
-| g9_19 | linear, skip top 20, pay 400, min 25 delegators, gate 75%, rationale +50%, 25% to delegators (passthrough), reward cap 100x own stake; 1M ADA | +0.9 ± 0.1 | +1.6 ± 0.2 | +0.01 ± 0.00 | 2.0M | 0% |
-| capped_1m | linear, cap 20M; 1M ADA | +3.3 ± 0.1 ▲ | -0.4 ± 0.2 | -0.00 ± 0.00 | 2.0M | 30% |
+| g1_8 | stake^0.75, cap 50M, skip top 5, pay 400, min 10k, rationale +100%, 25% to delegators (passthrough), reward cap 100x own stake; 5M ADA | +3.3 ± 0.1 ▲ | +0.4 ± 0.2 | +0.13 ± 0.02 | 10.1M | 10% |
+| g2_20 | stake^0.5, 25% equal, cap 200M, skip top 20, pay 100 (roll-down), min 1M, gate 50%, rationale +200%, 25% to delegators (passthrough), reward cap 1000x own stake; 2.5M ADA | +2.0 ± 0.1 | +3.2 ± 0.2 ▲ | -0.02 ± 0.00 | 5.1M | 20% |
+| g5_22 | stake^0.75, cap 50M, skip top 5, pay 400, min 100k, rationale +100%, 25% to delegators (flat), reward cap 100x own stake; 2.5M ADA | +2.7 ± 0.1 ▲ | -0.1 ± 0.2 | +0.11 ± 0.00 | 5.1M | 7% |
+| g6_12 | linear, 50% equal, award cap 1%, skip top 10, reward cap 100x own stake; 5M ADA | +2.6 ± 0.1 ▲ | +1.7 ± 0.2 | +0.42 ± 0.06 | 10.1M | 44% |
+| g7_14 | stake^0.5, 50% equal, cap 50M, skip top 20, min 1M; 1M ADA | +1.4 ± 0.0 | +2.0 ± 0.2 ▲ | -0.00 ± 0.00 | 2.0M | 30% |
+| g7_22 | stake^0.25, cap 50M, top 20 at 25%, pay 400 (roll-down), min 10k, gate 50%, rationale +100%, 25% to delegators (passthrough); 10M ADA | +4.8 ± 0.1 ▲ | +3.3 ± 0.2 | +0.19 ± 0.05 | 20.3M | 29% |
+| g8_18 | linear, 25% equal, skip top 10, pay 400 (roll-down), min 10k, gate 75%, 25% to delegators (flat), reward cap 10000x own stake; 5M ADA | +3.3 ± 0.1 ▲ | +1.7 ± 0.2 | +0.20 ± 0.05 | 10.1M | 15% |
+| g9_10 | stake^0.5, 50% equal, cap 10M, award cap 1%, pay 100 (roll-down), min 10k, rationale +100%, 25% to delegators (passthrough); 2.5M ADA | +3.6 ± 0.1 ▲ | +0.0 ± 0.2 | -0.01 ± 0.00 | 5.1M | 20% |
+| g8_1 | stake^0.75, 50% equal, cap 50M, min 1M, rationale +100%, 80% to delegators (flat); 1M ADA | +1.9 ± 0.1 | -0.5 ± 0.2 | -0.02 ± 0.00 | 2.0M | 5% |
+| top_100_gated | equal, pay 100, gate 70%; 5M ADA | +4.2 ± 0.1 ▲ | -0.3 ± 0.2 | +0.05 ± 0.02 | 10.1M | 19% |
 
 By response scenario:
 
 | scheme | Participation (low) | Participation (central) | Participation (high) | Decentralisation (low) | Decentralisation (central) | Decentralisation (high) |
 |---|---|---|---|---|---|---|
-| g10_6 | +1.9 | +3.4 | +5.8 | +2.9 | +6.7 | +13.1 |
-| g4_19 | +2.5 | +4.8 | +8.7 | +5.9 | +13.8 | +27.5 |
-| g6_9 | +1.2 | +2.4 | +4.4 | +1.4 | +3.6 | +8.8 |
+| g0_10 | +2.7 | +5.4 | +10.4 | +1.8 | +3.5 | +5.9 |
+| g4_17 | +2.4 | +4.6 | +7.9 | +1.1 | +2.4 | +3.9 |
+| g6_23 | +2.0 | +3.8 | +6.6 | +2.9 | +6.4 | +12.6 |
+| g7_5 | +1.2 | +2.3 | +4.1 | +1.8 | +4.1 | +8.6 |
+| g9_2 | +1.1 | +2.0 | +3.5 | +1.2 | +2.9 | +6.4 |
+| capped_1m | +1.8 | +3.1 | +4.8 | -0.3 | -0.3 | -0.5 |
 | capped_2m5 | +2.4 | +3.9 | +5.7 | -0.2 | -0.4 | -0.5 |
 | equal | +2.1 | +3.5 | +5.2 | +0.0 | +0.3 | +0.5 |
-| g10_0 | +2.2 | +3.7 | +5.5 | +0.0 | +0.2 | +0.2 |
-| g10_2 | +1.8 | +3.2 | +5.3 | -0.2 | -0.3 | -0.2 |
-| g1_14 | +3.6 | +5.9 | +9.0 | -0.8 | -0.9 | -0.7 |
-| g7_16 | +2.5 | +4.3 | +6.8 | -0.3 | -0.4 | -0.5 |
-| g7_20 | +1.2 | +2.0 | +3.2 | -0.3 | -0.5 | -0.8 |
-| g8_0 | +1.1 | +2.0 | +3.3 | +0.3 | +0.5 | +0.9 |
-| g9_20 | +2.8 | +4.7 | +6.8 | -0.6 | -0.4 | +0.4 |
-| middle_out | +1.5 | +2.6 | +3.9 | +0.9 | +1.9 | +3.0 |
-| g9_10 | +0.8 | +1.4 | +2.5 | +1.0 | +2.2 | +4.9 |
-| g9_18 | +1.0 | +1.7 | +2.6 | +0.5 | +0.9 | +2.0 |
-| g9_19 | +0.4 | +0.8 | +1.6 | +0.6 | +1.1 | +3.0 |
-| capped_1m | +1.8 | +3.1 | +4.8 | -0.3 | -0.3 | -0.5 |
+| g1_8 | +1.7 | +3.1 | +5.0 | +0.2 | +0.4 | +0.6 |
+| g2_20 | +1.0 | +1.8 | +3.1 | +1.2 | +2.7 | +5.5 |
+| g5_22 | +1.4 | +2.6 | +4.1 | +0.0 | +0.0 | -0.3 |
+| g6_12 | +1.3 | +2.5 | +3.9 | +1.0 | +1.4 | +2.6 |
+| g7_14 | +0.7 | +1.3 | +2.2 | +1.0 | +1.8 | +3.3 |
+| g7_22 | +2.7 | +4.6 | +7.1 | +0.9 | +2.8 | +6.2 |
+| g8_18 | +1.7 | +3.1 | +5.1 | +0.9 | +1.7 | +2.5 |
+| g9_10 | +1.9 | +3.5 | +5.5 | -0.1 | -0.0 | +0.2 |
+| g8_1 | +0.9 | +1.7 | +3.0 | -0.2 | -0.4 | -0.8 |
+| top_100_gated | +2.5 | +4.2 | +6.0 | -0.2 | -0.4 | -0.2 |
 
 ### Accepting a cost in decentralisation
 
-5 unbeaten among the finalists that give up exactly this.
+6 unbeaten among the finalists that give up exactly this.
 
 | scheme | rule | Participation | Decentralisation | Skin in the game | Reward sustainability | Sybil resistance |
 |---|---|---|---|---|---|---|
-| g6_10 | linear, cap 2M, pay 200, min 10 delegators, gate 75%, 50% to delegators (flat), reward cap 100x own stake; 10M ADA | +5.3 ± 0.1 ▲ | -1.5 ± 0.2 ▼ | +0.05 ± 0.01 | 20.3M | 0% |
-| g7_23 | linear, cap 10M, pay 400, min 25 delegators, gate 75%, rationale +50%, 80% to delegators (flat), reward cap 1000x own stake; 5M ADA | +4.1 ± 0.1 ▲ | -1.8 ± 0.2 ▼ | -0.07 ± 0.01 | 10.2M | 0% |
-| g10_18 | linear, cap 50M, min 10k, rationale +200%, 25% to delegators (passthrough), reward cap 100x own stake; 2.5M ADA | +3.4 ± 0.1 ▲ | -1.8 ± 0.2 ▼ | +0.18 ± 0.00 | 5.1M | 0% |
-| delegator_passthrough_sqrt | stake^0.5, 80% to delegators (passthrough); 5M ADA | +4.3 ± 0.1 ▲ | -0.7 ± 0.2 ▼ | -0.02 ± 0.01 | 10.2M | 15% |
-| g6_0 | stake^0.25, pay 100, min 5 delegators, 25% to delegators (flat); 1M ADA | +3.1 ± 0.1 ▲ | -0.8 ± 0.2 ▼ | -0.01 ± 0.00 | 2.0M | 16% |
+| g1_3 | linear; 5M ADA | +4.4 ± 0.1 ▲ | -2.2 ± 0.2 ▼ | -0.01 ± 0.00 | 10.1M | 0% |
+| g4_10 | linear, cap 50M, rationale +100%, reward cap 100x own stake; 2.5M ADA | +3.4 ± 0.1 ▲ | -1.8 ± 0.2 ▼ | +0.19 ± 0.00 | 5.1M | 0% |
+| g6_19 | stake^0.75, cap 50M, top 5 at 50%, pay 400, min 10k, rationale +100%, 25% to delegators (passthrough), reward cap 100x own stake; 5M ADA | +4.1 ± 0.1 ▲ | -1.0 ± 0.2 ▼ | +0.19 ± 0.02 | 10.1M | 10% |
+| g7_21 | equal, pay 400, min 25 delegators, rationale +50%, 80% to delegators (flat), reward cap 100x own stake; 10M ADA | +5.9 ± 0.1 ▲ | -1.0 ± 0.2 ▼ | +0.06 ± 0.01 | 20.3M | 15% |
+| g2_14 | stake^0.75, 50% equal, min 1M, gate 50%, rationale +100%; 1M ADA | +3.3 ± 0.1 ▲ | -1.2 ± 0.2 ▼ | -0.01 ± 0.00 | 2.0M | 18% |
+| g9_23 | delegators^0.25, pay 50, min 10k, min 25 delegators, gate 50%, rationale +50%, 50% to delegators (passthrough), reward cap 100x own stake; 1M ADA | +2.7 ± 0.1 ▲ | -1.1 ± 0.2 ▼ | +0.17 ± 0.00 | 2.0M | 38% |
 
 By response scenario:
 
 | scheme | Participation (low) | Participation (central) | Participation (high) | Decentralisation (low) | Decentralisation (central) | Decentralisation (high) |
 |---|---|---|---|---|---|---|
-| g6_10 | +3.0 | +5.0 | +7.9 | -1.2 | -1.5 | -1.9 |
-| g7_23 | +2.2 | +3.9 | +6.4 | -1.0 | -1.7 | -2.6 |
-| g10_18 | +1.8 | +3.3 | +5.0 | -0.8 | -1.6 | -2.8 |
-| delegator_passthrough_sqrt | +2.3 | +4.0 | +6.6 | -0.4 | -0.6 | -1.1 |
-| g6_0 | +1.7 | +3.0 | +4.7 | -0.4 | -0.6 | -1.3 |
-
-### Accepting a cost in skin in the game
-
-1 unbeaten among the finalists that give up exactly this.
-
-| scheme | rule | Participation | Decentralisation | Skin in the game | Reward sustainability | Sybil resistance |
-|---|---|---|---|---|---|---|
-| g10_20 | stake^0.25, cap 2M, skip top 20, pay 200, min 10 delegators, gate 75%, 50% to delegators (flat), reward cap 1000x own stake; 10M ADA | +6.5 ± 0.2 ▲ | +8.8 ± 0.3 ▲ | -0.19 ± 0.01 ▼ | 20.3M | 31% |
-
-By response scenario:
-
-| scheme | Participation (low) | Participation (central) | Participation (high) | Decentralisation (low) | Decentralisation (central) | Decentralisation (high) |
-|---|---|---|---|---|---|---|
-| g10_20 | +3.2 | +5.9 | +10.5 | +4.2 | +8.5 | +13.7 |
+| g1_3 | +2.8 | +4.4 | +5.9 | -1.1 | -2.1 | -3.3 |
+| g4_10 | +2.0 | +3.4 | +4.9 | -0.9 | -1.7 | -2.9 |
+| g6_19 | +2.3 | +4.0 | +6.0 | -0.5 | -1.0 | -1.4 |
+| g7_21 | +3.0 | +5.4 | +9.2 | -0.6 | -1.0 | -1.4 |
+| g2_14 | +1.9 | +3.2 | +4.8 | -0.6 | -1.1 | -2.0 |
+| g9_23 | +1.5 | +2.6 | +4.1 | -0.5 | -1.0 | -1.6 |
 
 ### Accepting a cost in participation, decentralisation (needs a hard fork)
 
@@ -259,21 +299,31 @@ By response scenario:
 
 | scheme | gives up | unbeaten among designs giving up the same |
 |---|---|---|
+| capped_1m | nothing | yes |
 | capped_2m5 | nothing | yes |
 | equal | nothing | yes |
-| middle_out | nothing | yes |
-| capped_1m | nothing | yes |
+| top_100_gated | nothing | yes |
 | pledge_hard_cap | participation, decentralisation | yes |
 | activity_gate | decentralisation | no |
 | capped | nothing | no |
 | capped_10m | nothing | no |
+| delegator_count_sqrt | decentralisation | no |
 | delegator_flat | decentralisation | no |
-| delegator_passthrough_sqrt | decentralisation | yes |
+| delegator_passthrough_sqrt | decentralisation | no |
+| delegators_first | decentralisation | no |
+| equal_plus_stake | decentralisation | no |
+| middle_out | nothing | no |
 | pledge_soft | decentralisation | no |
 | proportional | decentralisation | no |
 | rationale_bonus | decentralisation | no |
 | small_drep_floor | decentralisation | no |
 | sqrt | decentralisation | no |
+| threshold_k | decentralisation | no |
+| threshold_k_proportional | decentralisation | no |
+| top_haircut | decentralisation | no |
+| top_m_equal | nothing | no |
+| top_m_proportional | decentralisation | no |
+| exclude_k_pay_n | nothing | yes |
 
 The guardrails are judgement calls in `config.yaml`. Moving one and running `rss-gov report` regroups these tables without simulating anything.
 

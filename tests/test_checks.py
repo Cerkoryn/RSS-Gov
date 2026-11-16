@@ -17,6 +17,9 @@ RULES = [
     dict(alpha=1.0, activity_gate=0.5, rationale_bonus=2.0, min_stake_ada=50_000),
     dict(alpha=0.75, delegator_share=0.5, delegator_mode="flat", min_delegators=3),
     dict(alpha=1.0, delegator_share=0.3, pledge_leverage=50),
+    dict(alpha=0.0, k_exclude=2, top_weight=0.5, n_pay=15, roll_down=True, per_vote_ada=3.0),
+    dict(alpha=0.5, equal_share=0.3, min_share=0.002, max_award_share=0.05),
+    dict(alpha=0.75, basis="delegators", delegator_share=0.4, rationale_bonus=1.0),
 ]
 
 

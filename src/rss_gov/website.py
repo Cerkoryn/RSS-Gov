@@ -102,13 +102,25 @@ def _features(s):
     small_cap = cap is not None and np.isfinite(cap) and cap <= 2e6
     if share >= 0.5:
         out.append("half to delegators" if share == 0.5 else f"{share:.0%} to delegators")
+    if s["per_vote_ada"]:
+        out.append(f"{s['per_vote_ada']:g} ADA a vote")
+    if s["min_share"]:
+        out.append(f"≥{s['min_share']:.1%} of power")
+    if s["basis"] == "delegators":
+        out.append("by delegators")
     k, n = int(s["k_exclude"]), int(s["n_pay"])
+    top = f"top {k} at {s['top_weight']:.0%}" if s["top_weight"] else f"skip top {k}"
+    rolled = " roll-down" if s["roll_down"] else ""
     if k and n:
-        out.append(f"ranks {k + 1}–{k + n}")
+        out.append(f"ranks {k + 1}–{k + n}{rolled}" + (f", {top}" if s["top_weight"] else ""))
     elif k:
-        out.append(f"skip top {k}")
+        out.append(top)
     elif n:
-        out.append(f"top {n} only")
+        out.append(f"top {n} only{rolled}")
+    if s["equal_share"]:
+        out.append(f"{s['equal_share']:.0%} equal")
+    if s["max_award_share"]:
+        out.append(f"≤{s['max_award_share']:.0%} each")
     if small_cap:
         out.append(f"{_amount(cap)} cap")
     if s["rationale_bonus"] >= 1:

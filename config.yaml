@@ -128,6 +128,17 @@ experiment:
     - delegator_passthrough_sqrt
     - pledge_soft
     - pledge_hard_cap
+    # Named designs from published proposals (METHODS.md, "Named designs").
+    - top_m_equal
+    - top_m_proportional
+    - threshold_k
+    - threshold_k_proportional
+    - equal_plus_stake
+    - exclude_k_pay_n
+    - top_haircut
+    - top_100_gated
+    - delegators_first
+    - delegator_count_sqrt
     # The same rule at other budgets: what more or less money buys.
     - {name: capped_1m, preset: capped, budget_ada: 1000000}
     - {name: capped_2m5, preset: capped, budget_ada: 2500000}

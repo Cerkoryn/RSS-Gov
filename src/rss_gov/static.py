@@ -30,6 +30,7 @@ def snapshot(study):
         rationale=rationale,
         delegators=np.bincount(w.acct_target[on_drep], weights=counted[on_drep], minlength=n),
         pledge=w.pledge,
+        actions=w.action_rate,
     )
 
 
@@ -52,6 +53,7 @@ def _with(rnd, drop, stake, activity, rationale, delegators, pledge, copies):
         rationale=join(rnd.rationale, rationale),
         delegators=join(rnd.delegators, delegators),
         pledge=join(rnd.pledge, pledge),
+        actions=rnd.actions,
     )
 
 
@@ -129,6 +131,7 @@ def export(study):
     today = dict(
         {k: getattr(rnd, k).tolist() for k in ("stake", "activity", "rationale", "delegators")},
         pledge=rnd.pledge.tolist(),
+        actions=rnd.actions,
         top10=np.argsort(-rnd.stake)[:10].tolist(),
         **_constants(study),
     )
