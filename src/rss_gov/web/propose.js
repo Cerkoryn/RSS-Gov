@@ -198,17 +198,16 @@ function renderChecks(r) {
   h("span", { className: "badge" }, badges, r.pilot_testable ? "Works on today's Cardano" : "Needs a hard fork");
   if (r.same_as) h("span", { className: "badge bad" }, badges, "Same rule as " + pretty(r.same_as));
   const c = r.checks;
-  const limit = D.meta.split_limit;
-  const ok = c.split_gain <= limit + 1e-9;
   const kpis = h("div", { className: "kpis" }, host);
-  const kpi = (label, value, cls = "") => { const k = h("div", { className: "kpi " + cls }, kpis); h("div", { className: "k" }, k, label); h("div", { className: "v" }, k, value); };
+  const kpi = (label, value) => { const k = h("div", { className: "kpi" }, kpis); h("div", { className: "k" }, k, label); h("div", { className: "v" }, k, value); };
   kpi("DReps paid today", num(c.paid_dreps, 0));
   kpi("Cost a year, about", ada(r.annual_cost) + " ADA");
   kpi("Largest award per epoch", c.max_award === null ? "–" : ada(c.max_award) + " ADA");
-  kpi(`Sybil risk (limit ${pct(limit)})`, (ok ? "✓ " : "✕ ") + pct(c.split_gain), ok ? "good" : "bad");
-  h("p", { className: "small" }, host, ok
-    ? "Posing as several DReps would not pay: this rule stays within the Sybil limit."
-    : `Posing as several DReps would gain ${pct(c.split_gain)} of the budget, over the ${pct(limit)} limit. It will be simulated anyway, and flagged.`);
+  kpi("Sybil risk", pct(c.split_gain));
+  const worst = AX.split_gain.scale[0];
+  h("p", { className: "small" }, host, c.split_gain < 1e-9
+    ? "Posing as several DReps would not pay with this rule."
+    : `Posing as several DReps would gain ${pct(c.split_gain)} of the budget. Like cost, this is weighed against the other measures, not pass or fail; ${c.split_gain >= worst ? "at" : "from"} ${pct(worst)} it counts as no Sybil resistance at all.`);
   const more = h("details", { className: "more" }, host);
   h("summary", {}, more, "More exact checks");
   const dl = h("dl", { className: "facts" }, more);

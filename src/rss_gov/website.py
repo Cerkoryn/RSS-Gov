@@ -196,6 +196,7 @@ def _axes(study):
                 factor=factor,
                 meaningful=f"{axis.meaningful * factor:g} {long_unit}".strip(),
                 threshold=axis.meaningful * factor,
+                scale=list(axis.scale),  # (worst, best) as a difference from unpaid
                 exact=axis.name in EXACT,
                 basis=basis,
                 pilot=pilot,
@@ -234,11 +235,11 @@ def _scores(study, runs):
     return {n: [round(float(v), 9) for v in points[i]] for i, n in enumerate(names)}
 
 
-def _judged(summary, name, axes, ranking, guard, split_gain):
+def _judged(summary, name, axes, ranking, guard):
     worst = {
         a.name: min(int(summary.loc[(name, s), f"{a.name}_verdict"]) for s in ranking) for a in axes
     }
-    return search.breaks(split_gain, worst, axes, guard)
+    return search.breaks(worst, axes, guard)
 
 
 def build(study):
@@ -315,9 +316,7 @@ def build(study):
         )
         if name in community:
             _, entry, _ = community[name]
-            design["breaks"] = _judged(
-                summary, name, axes, ranking, guard, float(facts.loc[name, "split_gain"])
-            )
+            design["breaks"] = _judged(summary, name, axes, ranking, guard)
             design["proposal"] = {
                 k: entry.get(k) for k in ("hypothesis", "author", "accepted", "reason", "evaluated")
             }
@@ -358,16 +357,12 @@ def build(study):
                     generation=h["generation"],
                     evaluated=h["evaluated"],
                     hypervolume=h["hypervolume"],
-                    hypervolume_guarded=h.get("hypervolume_guarded"),
                 )
                 for h in found["history"]
             ],
             scores=_scores(
                 study, pd.concat([holdout, *[runs for _, _, runs in community.values()]])
             ),
-            hypervolume_guarded=found.get("hypervolume_guarded"),
-            hypervolume_guarded_ci=found.get("hypervolume_guarded_ci"),
-            hypervolume_named_guarded=found.get("hypervolume_named_guarded"),
         )
     site = config.get("site") or {}
     defaults = {k: v for k, v in mechanisms.Scheme().to_dict().items() if k != "name"}
@@ -388,7 +383,6 @@ def build(study):
                 ],
                 validation_passed=study.validation_passed,
                 validation=calibration,
-                split_limit=guard["max_split_gain"],
                 capital=config["sybil"]["newcomer_capital_ada"],
                 min_payout=study.params.min_payout_ada,
                 ladder_parent=parent,

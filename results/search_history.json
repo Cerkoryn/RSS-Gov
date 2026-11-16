@@ -3,77 +3,66 @@
   "generation": 0,
   "evaluated": 39,
   "front": 18,
-  "hypervolume": 0.01280539980939889,
-  "hypervolume_guarded": 0.006557037432640448
+  "hypervolume": 0.01036555579740222
  },
  {
   "generation": 1,
   "evaluated": 58,
   "front": 24,
-  "hypervolume": 0.014653674759763154,
-  "hypervolume_guarded": 0.00667962640202848
+  "hypervolume": 0.012110367765133911
  },
  {
   "generation": 2,
   "evaluated": 77,
   "front": 25,
-  "hypervolume": 0.01514223560781907,
-  "hypervolume_guarded": 0.00667962640202848
+  "hypervolume": 0.012557726451858826
  },
  {
   "generation": 3,
   "evaluated": 94,
   "front": 27,
-  "hypervolume": 0.015032319649908223,
-  "hypervolume_guarded": 0.006930110256095987
+  "hypervolume": 0.012481980418664121
  },
  {
   "generation": 4,
   "evaluated": 114,
   "front": 32,
-  "hypervolume": 0.01619333123513956,
-  "hypervolume_guarded": 0.008924946885988168
+  "hypervolume": 0.01419894209335688
  },
  {
   "generation": 5,
   "evaluated": 133,
   "front": 37,
-  "hypervolume": 0.016265900702620833,
-  "hypervolume_guarded": 0.008953730310677855
+  "hypervolume": 0.014279699903420612
  },
  {
   "generation": 6,
   "evaluated": 152,
   "front": 37,
-  "hypervolume": 0.017109600300088748,
-  "hypervolume_guarded": 0.009015017203180672
+  "hypervolume": 0.01473103911722238
  },
  {
   "generation": 7,
   "evaluated": 169,
   "front": 35,
-  "hypervolume": 0.01731667576345884,
-  "hypervolume_guarded": 0.008913725436217457
+  "hypervolume": 0.01483637933557669
  },
  {
   "generation": 8,
   "evaluated": 192,
   "front": 38,
-  "hypervolume": 0.017405150747456195,
-  "hypervolume_guarded": 0.009045508840013447
+  "hypervolume": 0.014826227026873402
  },
  {
   "generation": 9,
   "evaluated": 210,
   "front": 40,
-  "hypervolume": 0.018405743717350775,
-  "hypervolume_guarded": 0.010949057383439686
+  "hypervolume": 0.015830327573261752
  },
  {
   "generation": 10,
   "evaluated": 230,
   "front": 42,
-  "hypervolume": 0.018591541555143257,
-  "hypervolume_guarded": 0.011163049957084838
+  "hypervolume": 0.016071685907771627
  }
 ]

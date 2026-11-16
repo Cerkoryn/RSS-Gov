@@ -30,10 +30,9 @@
   "annual_cost_ada": 10138942.620944448,
   "split_gain": 0.3418529681052403
  },
- "within_split_guardrail": false,
  "pilot_testable": true,
  "hypothesis": "A cap invites the largest DReps to split; a floor of 50 delegators per DRep makes each extra identity costly without giving up the participation the cap buys.",
  "author": "",
- "evaluated": "2026-11-11T17:06:39Z",
+ "evaluated": "2026-11-16T21:52:58Z",
  "calibration": "78b9eabc24094a75"
 }

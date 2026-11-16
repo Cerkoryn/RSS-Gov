@@ -110,14 +110,6 @@ def volume(cube, names, axes, members):
     return hypervolume(points[rows], np.zeros(len(axes)))
 
 
-def within_limit(cube, names, axes, limit, members=None):
-    """Members whose splitting gain is inside the Sybil guardrail (it is exact, so seed-free)."""
-    j = [a.name for a in axes].index("split_gain")
-    gain = np.nanmean(cube[:, :, j], axis=1)
-    members = names if members is None else members
-    return [n for n in members if n != BASELINE and gain[names.index(n)] <= limit + 1e-12]
-
-
 def bootstrap(cube, names, statistic, rng, draws=BOOTSTRAPS):
     """Resample seeds (the same seeds for every scheme) and recompute a statistic."""
     n = cube.shape[1]
@@ -132,7 +124,6 @@ def run(study, log=print, processes=None):
     options = _options(study)
     rng = np.random.default_rng(20260101)
     seeds = range(int(config["seeds"]))
-    limit = study.config["guardrails"]["max_split_gain"]
     baseline = study.schemes([BASELINE])[0]
 
     presets = [s for s in study.schemes(study.config["experiment"]["schemes"]) if s.paid]
@@ -157,20 +148,14 @@ def run(study, log=print, processes=None):
         points = scores(cube, names, axes)
         front = [n for n in front_of(points, names, axes) if n != BASELINE]
         size = volume(cube, names, axes, front)
-        guarded = front_of(points, names, axes, within_limit(cube, names, axes, limit))
-        guarded_size = volume(cube, names, axes, guarded)
         history.append(
             dict(
-                generation=generation,
-                evaluated=len(names) - 1,
-                front=len(front),
-                hypervolume=size,
-                hypervolume_guarded=guarded_size,
+                generation=generation, evaluated=len(names) - 1, front=len(front), hypervolume=size
             )
         )
         log(
             f"generation {generation}: {len(fresh)} new, {len(names) - 1} in total, "
-            f"front {len(front)}, hypervolume {size:.5f} ({guarded_size:.5f} within the Sybil limit)"
+            f"front {len(front)}, hypervolume {size:.5f}"
         )
         by_name = {s.name: s for s in known.values()}
         parents = [by_name[n] for n in front] or presets
@@ -182,11 +167,7 @@ def run(study, log=print, processes=None):
         ]
 
     # Keep the finalists that add the most hypervolume, then judge them on unseen seeds.
-    # The same again inside the Sybil guardrail, so the safer front is judged too.
     finalists = _largest_contributors(cube, names, axes, front, FINALISTS)
-    for name in _largest_contributors(cube, names, axes, guarded, FINALISTS):
-        if name not in finalists:
-            finalists.append(name)
     for preset in presets:  # familiar schemes stay in for comparison
         if preset.name not in finalists:
             finalists.append(preset.name)
@@ -209,7 +190,7 @@ def run(study, log=print, processes=None):
 
 
 def rejudge(study, log=print):
-    """Judge the saved holdout runs again, e.g. after a guardrail or an axis scale moved.
+    """Judge the saved holdout runs again, e.g. after a guardrail moved.
 
     Nothing is simulated: the verdicts are recomputed from the stored runs.
     """
@@ -240,21 +221,22 @@ def _largest_contributors(cube, names, axes, front, limit):
     return chosen
 
 
-def breaks(split_gain, worst, axes, guard):
+EXACT = ("annual_cost_ada", "split_gain")  # exact trade-offs of a rule, never guardrails
+
+
+def breaks(worst, axes, guard):
     """The guardrails a design crosses, given its worst verdict per axis over the scenarios."""
-    out = ["sybil resistance"] if split_gain > guard["max_split_gain"] else []
-    if guard.get("no_axis_worse_than_unpaid", True):
-        exact = ("annual_cost_ada", "split_gain")
-        out += [a.family.lower() for a in axes if a.name not in exact and worst[a.name] == -1]
-    return ", ".join(out)
+    if not guard.get("no_axis_worse_than_unpaid", True):
+        return ""
+    return ", ".join(a.family.lower() for a in axes if a.name not in EXACT and worst[a.name] == -1)
 
 
 def judge(study, holdout, schemes, log=print):
     """Score finalists on holdout seeds: every axis with its interval and a verdict.
 
     Verdicts compare with unpaid: +1 better, -1 worse, 0 no meaningful or no clear
-    difference. `breaks` lists the guardrails a scheme crosses: the splitting limit, and
-    any axis on which it is worse than unpaid in some ranking scenario. Schemes that break
+    difference. `breaks` lists the guardrails a scheme crosses: the behaviour axes on which
+    it is worse than unpaid in some ranking scenario. Schemes that break
     nothing and are unbeaten form the shortlist. Because every design gives something up,
     `best_of_its_kind` also marks the unbeaten schemes among those with the same `breaks`:
     the best available for someone willing to accept that particular downside.
@@ -288,13 +270,13 @@ def judge(study, holdout, schemes, log=print):
             row[f"{axis.name}_diff"], row[f"{axis.name}_diff_ci"] = diff, half
             row[f"{axis.name}_verdict"] = axis.verdict(diff, half)
             row[f"{axis.name}_robust"] = worst[axis.name]  # worst verdict in any scenario
-        behaviour = [a.name for a in axes if a.name not in ("annual_cost_ada", "split_gain")]
+        behaviour = [a.name for a in axes if a.name not in EXACT]
         row.update(
             better_everywhere=sum(worst[a] == 1 for a in behaviour),
             worse_somewhere=sum(worst[a] == -1 for a in behaviour),
             pilot_testable=scheme.feasibility()["pilot_testable"],
         )
-        row["breaks"] = breaks(row["split_gain"], worst, axes, guard)
+        row["breaks"] = breaks(worst, axes, guard)
         row["acceptable"] = not row["breaks"]
         rows.append({**row, **{k: v for k, v in scheme.to_dict().items() if k != "name"}})
     table = pd.DataFrame(rows)
@@ -322,12 +304,6 @@ def judge(study, holdout, schemes, log=print):
         rng,
     )
     nothing = volume(cube, names, axes, [])
-    limit = guard["max_split_gain"]
-    safe = within_limit(cube, names, axes, limit, candidates)
-    safe_presets = [n for n in safe if n in presets]
-    guarded = volume(cube, names, axes, safe)
-    guarded_low, guarded_high = bootstrap(cube, names, lambda c, n: volume(c, n, axes, safe), rng)
-    named_guarded = volume(cube, names, axes, safe_presets)
     log(
         f"holdout: {len(front)} of {len(candidates)} finalists on the front, "
         f"{int(table.shortlist.sum())} shortlisted ({int(table.pilot_shortlist.sum())} pilot-testable)"
@@ -349,9 +325,6 @@ def judge(study, holdout, schemes, log=print):
         hypervolume_unpaid=nothing,
         search_gain=gain,
         search_gain_ci=[gain_low, gain_high],
-        hypervolume_guarded=guarded,
-        hypervolume_guarded_ci=[guarded_low, guarded_high],
-        hypervolume_named_guarded=named_guarded,
         holdout_seeds=int(cube.shape[1]),
     )
 
@@ -373,7 +346,6 @@ def try_candidates(study, rows, log=print, processes=None):
     axes = study.axes
     scenarios = study.ranking_scenarios
     allow = bool(study.config["search"].get("allow_hard_fork", False))
-    limit = study.config["guardrails"]["max_split_gain"]
     seeds = sorted(holdout.seed.unique())
     stored = proposals.submitted(out)
     taken = set(holdout.scheme.unique())
@@ -415,7 +387,6 @@ def try_candidates(study, rows, log=print, processes=None):
             accepted = bool(low > 0 and distinct)
             means = np.nanmean(cube, axis=1)
             change = means[names.index(scheme.name)] - means[names.index(BASELINE)]
-            split = float(runs.split_gain.iloc[0])
             entry.update(
                 accepted=accepted,
                 hypervolume_gain=float(value),
@@ -426,7 +397,6 @@ def try_candidates(study, rows, log=print, processes=None):
                 if low <= 0
                 else "matched or beaten by a design already on the front",
                 change_from_unpaid={a.name: float(c) for a, c in zip(axes, change)},
-                within_split_guardrail=bool(split <= limit),
                 pilot_testable=scheme.feasibility()["pilot_testable"],
             )
             if accepted:
@@ -448,8 +418,6 @@ def try_candidates(study, rows, log=print, processes=None):
                 "  change from unpaid: "
                 + ", ".join(f"{k} {v:+.4g}" for k, v in entry["change_from_unpaid"].items())
             )
-            if not entry["within_split_guardrail"]:
-                log(f"  outside the split-gain guardrail ({split:.2f} > {limit})")
     holdout.to_parquet(out / "search_holdout_runs.parquet")
     (out / "front.yaml").write_text(yaml.safe_dump(front, sort_keys=False))
     if widened:  # the site's coverage and front counts come from the judged finalists

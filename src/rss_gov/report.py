@@ -203,7 +203,7 @@ def figure_scorecard(summary, axes, scenarios, path, names):
     plt.close(fig)
 
 
-def figure_front(front, path, limit):
+def figure_front(front, path):
     """The trade-off no formula escapes: resisting splitting against spreading power."""
     fig, ax = plt.subplots(figsize=(9.6, 6.0))
     groups = (
@@ -220,18 +220,6 @@ def figure_front(front, path, limit):
     ax.axhline(0, color=MUTED, lw=1)
     top = max(front.tau67_diff.max() * 1.08, 1.0)
     ax.set_ylim(min(front.tau67_diff.min() - 1.2, -1.0), top)
-    ax.axvspan(
-        -3,
-        limit * 100,
-        ymin=(0 - ax.get_ylim()[0]) / (top - ax.get_ylim()[0]),
-        color=BLUE,
-        alpha=0.07,
-        lw=0,
-    )
-    ax.annotate(
-        "inside both guardrails", (limit * 50 - 1.5, top), xytext=(0, -6), textcoords="offset points",
-        ha="center", va="top", fontsize=8.5, color=MUTED, rotation=90,
-    )  # fmt: skip
     ax.set_xlim(-3, max(front.split_gain.max() * 100 + 12, 60))
     # One label per cluster of points that sit on top of each other.
     fig.canvas.draw()
@@ -377,7 +365,6 @@ def write(study):
     figures.mkdir(exist_ok=True)
     axes = study.axes
     ranking = study.ranking_scenarios
-    guard = study.config["guardrails"]
     calibration = json.loads((out / "calibration.json").read_text())
     validation = calibration["validation"]
     data = study.data
@@ -606,7 +593,6 @@ def write(study):
         search = json.loads((out / "search.json").read_text())
         low, high = search["hypervolume_ci"]
         gain_low, gain_high = search["search_gain_ci"]
-        limit = guard["max_split_gain"]
         text += [
             "## Search over the scheme family",
             "",
@@ -619,9 +605,9 @@ def write(study):
             "",
             f"- {len(search['front'])} of {len(front)} finalists are unbeaten: no other design is "
             f"at least as good on all {len(axes)} axes.",
-            f"- Guardrails: splitting an identity may gain at most {limit:.0%} of the budget, and "
-            "no axis other than cost may be worse than unpaid in any scenario. "
-            f"**{int(front.acceptable.sum())} of {len(front)} finalists stay inside both.**",
+            "- Guardrail: no axis other than cost and Sybil resistance may be worse than unpaid "
+            "in any scenario; those two are exact trade-offs, weighed on the front like the "
+            f"others. **{int(front.acceptable.sum())} of {len(front)} finalists stay inside it.**",
             f"- Hypervolume of the front (progress measure, in the units of `axes.scale`): "
             f"**{search['hypervolume']:.5f}** (95% {low:.5f}–{high:.5f}); unpaid alone "
             f"{search['hypervolume_unpaid']:.5f}. The search adds **{search['search_gain']:.5f}** "
@@ -672,7 +658,7 @@ def write(study):
             "`rss-gov report` regroups these tables without simulating anything.",
             "",
         ]
-        figure_front(front, figures / "front.png", limit)
+        figure_front(front, figures / "front.png")
         text += ["![front](figures/front.png)", ""]
 
     text += [

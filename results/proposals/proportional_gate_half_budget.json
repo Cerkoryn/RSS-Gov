@@ -17,10 +17,10 @@
  },
  "rule": "linear, gate 50%; 2.5M ADA",
  "accepted": false,
- "hypervolume_gain": 1.749028250418866e-05,
+ "hypervolume_gain": 3.964537650840219e-05,
  "hypervolume_gain_ci": [
-  1.5896167439864804e-05,
-  1.92476459746088e-05
+  3.640990990554441e-05,
+  4.3501019575485895e-05
  ],
  "reason": "matched or beaten by a design already on the front",
  "change_from_unpaid": {
@@ -30,10 +30,9 @@
   "annual_cost_ada": 5069577.817472224,
   "split_gain": 2.7755575615628914e-17
  },
- "within_split_guardrail": true,
  "pilot_testable": true,
  "hypothesis": "Half the budget buys most of the participation of the full one.",
  "author": "",
- "evaluated": "2026-11-11T17:06:52Z",
+ "evaluated": "2026-11-16T21:53:10Z",
  "calibration": "78b9eabc24094a75"
 }

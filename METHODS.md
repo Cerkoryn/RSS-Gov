@@ -105,8 +105,10 @@ Notes on the choices:
   proxy.
 - **Cost** is an axis because the budget is a design choice. Named schemes are compared
   at one budget; the search varies it, and a budget ladder shows what more money buys.
-- **Sybil resistance** is a measured quantity, not a pass/fail gate. Where to draw the
-  line is a separate, explicit guardrail (below).
+- **Sybil resistance** is a measured quantity, not a pass/fail gate. Like cost, it is an
+  exact property of a rule and is traded off against the other axes with no limit of its
+  own. Its `scale` in `config.yaml` sets how fast it counts against a design in the
+  hypervolume: a rule that lets splitting gain half the budget or more covers nothing on it.
 
 Each axis has a `meaningful` difference in `config.yaml`: the smallest change worth acting
 on. A change smaller than that counts as "same as unpaid" even if it is statistically
@@ -282,9 +284,10 @@ collusion, changes in vote *direction* or quality, and price effects.
    meaningful difference. Verdicts are computed per scenario; the report marks a verdict
    as solid only when it holds in `low`, `central` and `high`.
 5. **Measurements apart from judgement.** The axes are measured. Where to draw lines is in
-   `guardrails`: a design is *acceptable* when splitting gains at most 10% of the budget
-   and no axis other than cost is worse than unpaid in any scenario. Changing a guardrail
-   re-labels designs without re-running anything.
+   `guardrails`: a design is *acceptable* when no axis other than cost and Sybil
+   resistance is worse than unpaid in any scenario. Those two are exact trade-offs every
+   paid rule makes to some degree, so they are weighed on the front instead. Changing a
+   guardrail re-labels designs without re-running anything.
 6. **No single score.** A design is *shortlisted* when no other acceptable design is at
    least as good on every axis and meaningfully better on one. Designs outside a
    guardrail are not discarded: they are grouped by exactly which downside they accept,
@@ -313,11 +316,6 @@ in `config.yaml`, expressed as a difference from unpaid, and the volume is exact
 always a member, since doing nothing is always available. The 95% interval comes from
 resampling seeds. The report also gives what the search adds over the named schemes; if
 that interval includes zero, the search found nothing the named schemes did not offer.
-
-Coverage is also tracked using only designs within the Sybil guardrail, every round and on
-the holdout seeds, because the widest corners are often reached by designs that are easy
-to game. The finalists therefore include the largest contributors to both fronts: with and
-without the designs over the limit.
 
 Hypervolume depends on the chosen scales and rewards coverage of every corner, including
 corners nobody wants (a very cheap programme that does nothing much). It tracks search

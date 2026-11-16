@@ -101,16 +101,16 @@ axes:
     label: Share of the budget gained by splitting one identity
     better: lower
     meaningful: 0.02
-    scale: [1, 0]
+    scale: [0.5, 0]   # a rule that loses half its budget to splitting covers nothing here
 
 sybil:
   newcomer_capital_ada: 1000000   # own stake an outsider can split over fake DReps
 
 # A design is shortlisted only inside these limits. They are judgement calls, kept
 # separate from the measurements so they can be moved without re-running anything.
+# Cost and Sybil risk have no limit: like every axis, they are traded off on the front.
 guardrails:
-  max_split_gain: 0.10            # at most this share of the budget for splitting
-  no_axis_worse_than_unpaid: true # cost excepted: every paid scheme costs more
+  no_axis_worse_than_unpaid: true # cost and Sybil risk excepted: they are exact trade-offs
 
 experiment:
   seeds: 100

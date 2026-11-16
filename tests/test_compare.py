@@ -55,3 +55,14 @@ def test_front_keeps_trade_offs_and_drops_what_is_beaten_on_every_axis():
 def test_generated_names_are_told_apart_from_named_schemes():
     assert proposals.GENERATED.fullmatch("g3_17")
     assert not proposals.GENERATED.fullmatch("gated_sqrt")
+
+
+def test_cost_and_sybil_risk_are_traded_off_never_guardrails():
+    split = Axis("split_gain", "Sybil resistance", "gain", "lower", 0.02, (0.5, 0.0))
+    axes = [GAIN, COST, split]
+    guard = {"no_axis_worse_than_unpaid": True}
+    worst = {"participation": 0, "annual_cost_ada": -1, "split_gain": -1}
+    assert search.breaks(worst, axes, guard) == ""
+    assert search.breaks({**worst, "participation": -1}, axes, guard) == "participation"
+    # The hypervolume discounts splitting gradually and stops counting it at the scale's end.
+    assert split.score(0.0) == 1.0 and split.score(0.25) == 0.5 and split.score(0.8) == 0.0
