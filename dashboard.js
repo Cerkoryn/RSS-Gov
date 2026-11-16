@@ -4,13 +4,12 @@ const state = {
   scenario: "central",
   show: { named: true, ladder: false, search: false, proposed: hasKind("proposed") },
   pilot: false, view: "table", selected: null,
-  chart: { named: true, search: true, proposed: true, fork: false, sybil: false },
+  chart: { named: true, search: true, proposed: true, fork: false },
   x: "tau67", y: "participation", lead: D.search && D.search.hypervolume_unpaid ? "combined" : "pair", round: null, allParts: false,
   heat: "participation", focusRow: null,
   cmp: { sort: null, dir: 1, page: 0, per: 25, sig: "" },
   heatv: { sort: null, dir: 1, page: 0, per: 25, sig: "" }, tab: "assumptions",
 };
-const LIMIT = D.meta.split_limit;
 const YEAR = D.meta.epochs_per_year / D.meta.epochs; // programmes per year
 // Simulated runs behind a design's numbers: named designs come from the experiment, search
 // designs and proposals from the holdout seeds.
@@ -74,22 +73,18 @@ function setSort(key, dir) {
 }
 // How a design does on one axis: good, good-some, bad, bad-some or flat.
 function tone(s, axis) {
-  if (axis === "split_gain") return val(s, axis) > LIMIT + 1e-9 ? "bad" : "good";
   if (AX[axis].exact) return "flat";
   return { "▲": "good", "△": "good-some", "▼": "bad", "▽": "bad-some" }[s.marks[axis]] || "flat";
 }
 const SYM = { good: "▲", "good-some": "△", bad: "▼", "bad-some": "▽", flat: "●" };
 function symbol(s, axis, t = tone(s, axis)) {
-  if (axis === "split_gain") return t === "good" ? "✓" : "✕";
-  if (axis === "annual_cost_ada") return "";
-  return SYM[t];
+  return AX[axis].exact ? "" : SYM[t];
 }
 function givesUp(breaks) {
   if (breaks === null || breaks === undefined) return null;
   if (breaks === "") return "";
-  return breaks.split(", ").map((b) => (b === "sybil resistance" ? "over the Sybil limit" : "worse " + b)).join("; ");
+  return breaks.split(", ").map((b) => "worse " + b).join("; ");
 }
-const overLimit = (s) => val(s, "split_gain", "central") > LIMIT + 1e-9;
 
 // ---------- opening a design ----------
 let lastFocus = null;
@@ -101,7 +96,6 @@ function openDesign(name) {
   if (state.pilot && !s.pilot) state.pilot = false;
   state.chart[s.kind === "ladder" ? "named" : s.kind] = true;
   if (!s.pilot) state.chart.fork = true;
-  if (overLimit(s)) state.chart.sybil = true;
   state.focusRow = name;
   try { history.replaceState(null, "", "#design=" + encodeURIComponent(name)); } catch (e) { /* file: URLs */ }
   detail();
@@ -145,8 +139,8 @@ function measures() {
       ["Skin in the game: DReps who hold their own ADA bear the consequences of what they vote for.", "Own stake is estimated from accounts linked to each DRep on chain, such as the one that funded its registration.", sim(pct(b.backing, 2))]],
     annual_cost_ada: ["Mainnet today", "0 ADA", "paid in governance rewards",
       [m.treasury ? `The treasury holds ${ada(m.treasury)} ADA.` : "", `The named designs pay ${ada(m.budget)} ADA over six months: ${ada(m.budget * YEAR)} ADA a year${m.treasury ? `, ${pct((m.budget * YEAR) / m.treasury, 2)} of the treasury` : ""}.`].filter(Boolean)],
-    split_gain: ["Guardrail", `${pct(LIMIT)}`, "of the budget at most",
-      ["A Sybil attack is one person posing as many DReps to collect more rewards.", "For each design this is computed exactly on today's DReps: the share of the budget someone gains by splitting into several. Designs above the limit are flagged."]],
+    split_gain: ["Mainnet today", "0%", "of the budget to gain: nothing is paid yet",
+      ["A Sybil attack is one person posing as many DReps to collect more rewards.", "For each design this is computed exactly on today's DReps: the share of the budget someone gains by splitting into several.", `Like cost, it has no pass mark: it is traded off against the other measures. In the trade-off coverage a design's Sybil resistance shrinks as this share grows, and is gone at ${pct(AX.split_gain.scale[0])}.`]],
   };
   const host = $("#measures");
   for (const a of D.axes) {
@@ -320,7 +314,7 @@ function sentence(s, axis) {
     case "annual_cost_ada":
       return `${ada(v)} ADA a year from the treasury` + (D.meta.treasury ? `, ${pct(v / D.meta.treasury, 2)} of what it holds.` : ".");
     case "split_gain":
-      return `One actor posing as many DReps would gain ${pct(v)} of the budget, ${v > LIMIT + 1e-9 ? "over" : "within"} the ${pct(LIMIT)} limit.`;
+      return `One actor posing as many DReps would gain ${pct(v)} of the budget.` + (v >= AX.split_gain.scale[0] ? " Coverage counts that as no Sybil resistance at all." : "");
     default:
       return fmt(axis, v);
   }
@@ -465,7 +459,6 @@ function domainFor(axis, list) {
       for (const sc of D.meta.scenarios) { const q = res(s, sc, axis); if (q) vals.push(q[0]); }
     }
   }
-  if (axis === "split_gain") vals.push(LIMIT);
   const scaled = vals.map((v) => v * a.factor);
   let lo = Math.min(...scaled), hi = Math.max(...scaled);
   const pad = (hi - lo) * 0.04 || 1;
@@ -512,11 +505,6 @@ function scorecard() {
       text(g, x(t), height - 10, tickLabel(t, dom.t.step), { "text-anchor": "middle" });
     }
     el("line", { x1: x(0), x2: x(0), y1: top - 4, y2: top + rowH * list.length, class: "base", "stroke-width": 1.5 }, g);
-    if (axis === "split_gain") {
-      const lx = x(LIMIT * a.factor);
-      el("line", { x1: lx, x2: lx, y1: top - 6, y2: top + rowH * list.length, stroke: "var(--ink-2)", "stroke-width": 1, "stroke-dasharray": "3 3" }, g);
-      text(g, lx + 3, top - 8, "limit", { "font-size": 10.5 });
-    }
     list.forEach((s, r) => {
       const y = top + r * rowH + rowH / 2;
       if (showLabels) {
@@ -529,8 +517,7 @@ function scorecard() {
       if (!q) return;
       const v = q[0] * a.factor;
       if (a.exact) {
-        const over = axis === "split_gain" && q[0] > LIMIT + 1e-9;
-        el("path", { d: hbar(x(0), x(v), y, 10), fill: over ? "var(--bad)" : "var(--neutral)", opacity: over ? 0.75 : 1 }, g);
+        el("path", { d: hbar(x(0), x(v), y, 10), fill: "var(--neutral)" }, g);
       } else {
         const lo = res(s, "low", axis), hi = res(s, "high", axis);
         const mark = s.marks[axis];
@@ -559,7 +546,6 @@ function domains(list) {
   for (const a of D.axes) {
     const vals = [0];
     for (const s of list) for (const sc of D.meta.scenarios) { const q = res(s, sc, a.name); if (q) vals.push(q[0] * a.factor); }
-    if (a.name === "split_gain") vals.push(LIMIT * a.factor);
     let lo = Math.min(...vals), hi = Math.max(...vals);
     const pad = (hi - lo) * 0.08 || 1;
     lo -= pad; hi += pad;
@@ -608,7 +594,6 @@ function scatterControls() {
   toggle("named", "Named designs", KIND.named.color);
   if (hasKind("search")) toggle("search", "Found by search", KIND.search.color);
   if (hasKind("proposed")) toggle("proposed", "Community", KIND.proposed.color);
-  if (D.schemes.some(overLimit)) toggle("sybil", "Over the Sybil limit", "var(--bad)");
   if (D.schemes.some((s) => !s.pilot)) toggle("fork", "Needs a hard fork", "var(--ink-2)", true);
   const key = $("#pair-key");
   let span = h("span", {}, key);
@@ -622,7 +607,7 @@ function scatterControls() {
   span.appendChild(document.createTextNode("paying nothing"));
 }
 function chartVisible() {
-  return D.schemes.filter((s) => state.chart[s.kind === "ladder" ? "named" : s.kind] && (s.pilot || state.chart.fork) && (state.chart.sybil || !overLimit(s)));
+  return D.schemes.filter((s) => state.chart[s.kind === "ladder" ? "named" : s.kind] && (s.pilot || state.chart.fork));
 }
 // Designs no other shown design beats on both measures, ordered along the line.
 function frontier(pts, ax, ay) {
@@ -673,17 +658,6 @@ function scatter() {
   if (line) el("path", { d: line, fill: "none", stroke: "var(--ink)", "stroke-width": 2, "stroke-linejoin": "round" }, svg);
   text(svg, (m.l + W - m.r) / 2, H - 8, `${ax.short} (${ax.change})  ${right ? "→" : "←"} better`, { "text-anchor": "middle", class: "ink2" });
   text(svg, 0, 12, `${ay.short} (${ay.change})  ${upward ? "↑" : "↓"} better`, { class: "ink2" });
-  if (state.x === "split_gain" || state.y === "split_gain") {
-    const v = LIMIT * AX.split_gain.factor;
-    const attrs = { stroke: "var(--ink-2)", "stroke-width": 1, "stroke-dasharray": "4 3" };
-    if (state.x === "split_gain") {
-      el("line", { x1: x(v), x2: x(v), y1: m.t, y2: H - m.b, ...attrs }, svg);
-      text(svg, x(v) + 4, H - m.b - 6, `Sybil limit`, { "font-size": 10.5 });
-    } else {
-      el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), ...attrs }, svg);
-      text(svg, W - m.r - 2, y(v) - 4, `Sybil limit`, { "text-anchor": "end", "font-size": 10.5 });
-    }
-  }
   const cx = right ? W - m.r - 4 : m.l + 4, cy = upward ? m.t + 14 : H - m.b - 8;
   const better = text(svg, cx, cy, `better ${upward ? (right ? "↗" : "↖") : right ? "↘" : "↙"}`, { "text-anchor": right ? "end" : "start", class: "ink", "font-weight": 650, "font-size": 12.5 });
   better.setAttribute("paint-order", "stroke");
@@ -834,31 +808,24 @@ function coverage() {
   const s = D.search, side = $("#coverage"), host = $("#coverage-chart");
   side.textContent = ""; host.textContent = "";
   const base = s.hypervolume_unpaid;
-  const guarded = s.hypervolume_guarded ? s.hypervolume_guarded / base : null;
-  const all = s.hypervolume / base;
-  const lead = guarded ?? all; // the prominent line and number
-  const ci = (guarded ? s.hypervolume_guarded_ci : s.hypervolume_ci)?.map((v) => v / base);
-  const namedAlone = guarded
-    ? (s.hypervolume_named_guarded ? s.hypervolume_named_guarded / base : null)
-    : s.search_gain !== null && s.search_gain !== undefined ? (s.hypervolume - s.search_gain) / base : null;
-  const hist = (s.history || []).map((r, i) => ({
-    n: r.evaluated, round: r.generation ?? i,
-    v: (guarded && r.hypervolume_guarded ? r.hypervolume_guarded : r.hypervolume) / base, all: r.hypervolume / base,
-  }));
+  const lead = s.hypervolume / base; // the final set, re-checked on fresh runs
+  const ci = s.hypervolume_ci?.map((v) => v / base);
+  const namedAlone = s.search_gain !== null && s.search_gain !== undefined ? (s.hypervolume - s.search_gain) / base : null;
+  const hist = (s.history || []).map((r, i) => ({ n: r.evaluated, round: r.generation ?? i, v: r.hypervolume / base }));
   const shown = chartVisible().filter((q) => s.scores && s.scores[q.name]);
-  const SAFE = "var(--c2)", MUTED = "var(--muted)";
+  const LINE = "var(--c2)";
 
   const row = h("div", { className: "title-row" }, side);
   h("h3", {}, row, "Trade-off coverage");
   info(row, [
     "How much ground the best designs cover on all five measures at once. It is the five-measure version of the shaded area in the other charts; researchers call it the hypervolume.",
     "Paying nothing on its own counts as 1×. Higher means a wider choice of good trade-offs. It does not mean any single design got better.",
-    guarded ? `The solid line counts only designs within the Sybil limit (at most ${pct(LIMIT)} of the budget to gain by posing as several DReps). The dotted line also counts designs over it, which reach further but are easy to game.` : "",
+    `Sybil risk counts like the other measures: a design that lets someone gain ${pct(AX.split_gain.scale[0])} of the budget or more by posing as several DReps covers nothing on it.`,
     `The search scored designs on its own random runs, then re-checked the final set on ${num(s.holdout_seeds, 0)} fresh runs it never saw${ci ? ` (95% range ${num(ci[0], 1)}–${num(ci[1], 1)}×)` : ""}.`,
   ].filter(Boolean));
   const big = h("div", { className: "cov-big" }, side);
   h("span", { className: "v" }, big, num(lead, 1) + "×");
-  h("span", { className: "small" }, big, guarded ? "what paying nothing covers, within the Sybil limit" : "what paying nothing covers");
+  h("span", { className: "small" }, big, "what paying nothing covers");
   const keys = h("div", { className: "cov-keys" }, side);
   const key = (draw, label, value) => {
     const r = h("div", {}, keys);
@@ -869,8 +836,7 @@ function coverage() {
   };
   key((g) => el("line", { x1: 1, x2: 21, y1: 6, y2: 6, stroke: "var(--ink-2)", "stroke-width": 1.5, "stroke-dasharray": "4 3" }, g), "Paying nothing", "1×");
   if (namedAlone) key((g) => el("line", { x1: 1, x2: 21, y1: 6, y2: 6, stroke: "var(--c1)", "stroke-width": 2, "stroke-dasharray": "1 3", "stroke-linecap": "round" }, g), "Named designs alone", num(namedAlone, 1) + "×");
-  key((g) => { el("line", { x1: 1, x2: 21, y1: 6, y2: 6, stroke: SAFE, "stroke-width": 2 }, g); el("circle", { cx: 11, cy: 6, r: 3, fill: SAFE }, g); }, guarded ? "Within the Sybil limit" : "With the search's designs", num(lead, 1) + "×");
-  if (guarded) key((g) => { el("line", { x1: 1, x2: 21, y1: 6, y2: 6, stroke: MUTED, "stroke-width": 1.5, "stroke-dasharray": "2 3" }, g); el("circle", { cx: 11, cy: 6, r: 2.5, fill: "var(--surface)", stroke: MUTED, "stroke-width": 1.5 }, g); }, "Including designs over the limit", num(all, 1) + "×");
+  key((g) => { el("line", { x1: 1, x2: 21, y1: 6, y2: 6, stroke: LINE, "stroke-width": 2 }, g); el("circle", { cx: 11, cy: 6, r: 3, fill: LINE }, g); }, "With the search's designs", num(lead, 1) + "×");
   key((g) => el("path", { d: "M11,1 L16,6 L11,11 L6,6 Z", fill: "var(--surface)", stroke: "var(--ink)", "stroke-width": 1.5 }, g), `Re-checked on ${num(s.holdout_seeds, 0)} fresh runs`, "");
   h("p", { className: "small", style: "margin:12px 0 0" }, side, "Hover or click a round to see which designs it found.");
 
@@ -879,7 +845,7 @@ function coverage() {
   const W = host.clientWidth, H = Math.max(300, Math.min(440, W * 0.55));
   const m = { l: 46, r: 26, t: 30, b: 46 };
   const svg = el("svg", { width: W, height: H, role: "img", "aria-label": "Trade-off coverage as the search tried more designs" }, host);
-  const top = Math.max(lead, all, ci ? ci[1] : 0, ...hist.map((r) => Math.max(r.v, r.all))) * 1.1;
+  const top = Math.max(lead, ci ? ci[1] : 0, ...hist.map((r) => r.v)) * 1.1;
   const x = scale(hist[0].n, hist[hist.length - 1].n, m.l, W - m.r), y = scale(0, top, H - m.b, m.t);
   const xt = ticks(hist[0].n, hist[hist.length - 1].n, 5), yt = ticks(0, top, 5);
   for (const v of xt) if (v >= hist[0].n && v <= hist[hist.length - 1].n) {
@@ -898,20 +864,13 @@ function coverage() {
     halo(text(svg, W - m.r - 4, y(v) - 6, label, { "text-anchor": "end", "font-size": 11.5, class: "ink2" }));
   };
   ref(1, "paying nothing", { stroke: "var(--ink-2)", "stroke-width": 1.5, "stroke-dasharray": "4 3" });
-  if (namedAlone) ref(namedAlone, guarded && W > 520 ? "named designs alone, within the limit" : "named designs alone", { stroke: "var(--c1)", "stroke-width": 2, "stroke-dasharray": "1 4", "stroke-linecap": "round" });
-  const path = (key) => hist.map((r, i) => `${i ? "L" : "M"}${x(r.n)},${y(r[key])}`).join(" ");
+  if (namedAlone) ref(namedAlone, "named designs alone", { stroke: "var(--c1)", "stroke-width": 2, "stroke-dasharray": "1 4", "stroke-linecap": "round" });
   const fx = x(hist[hist.length - 1].n);
-  if (guarded) {
-    el("path", { d: path("all"), fill: "none", stroke: MUTED, "stroke-width": 1.5, "stroke-dasharray": "2 4", "stroke-linecap": "round" }, svg);
-    for (const r of hist) el("circle", { cx: x(r.n), cy: y(r.all), r: 2.5, fill: "var(--surface)", stroke: MUTED, "stroke-width": 1.5 }, svg);
-    el("circle", { cx: fx, cy: y(all), r: 4.5, fill: "var(--surface)", stroke: MUTED, "stroke-width": 1.5 }, svg);
-    halo(text(svg, fx - 10, y(all) - 9, `including designs over the Sybil limit: ${num(all, 1)}×`, { "text-anchor": "end", "font-size": 11.5, fill: MUTED }));
-  }
-  el("path", { d: path("v"), fill: "none", stroke: SAFE, "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
+  el("path", { d: hist.map((r, i) => `${i ? "L" : "M"}${x(r.n)},${y(r.v)}`).join(" "), fill: "none", stroke: LINE, "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
   for (const r of hist) {
     const found = shown.some((q) => fromRound(q, r.round));
     if (state.round === r.round) el("circle", { cx: x(r.n), cy: y(r.v), r: 10, fill: "none", stroke: "var(--ink)", "stroke-width": 1.5 }, svg);
-    el("circle", { cx: x(r.n), cy: y(r.v), r: found ? 5.5 : 3.5, fill: found ? SAFE : "var(--surface)", stroke: found ? "var(--surface)" : SAFE, "stroke-width": 2 }, svg);
+    el("circle", { cx: x(r.n), cy: y(r.v), r: found ? 5.5 : 3.5, fill: found ? LINE : "var(--surface)", stroke: found ? "var(--surface)" : LINE, "stroke-width": 2 }, svg);
   }
   // the final set, re-checked on fresh runs
   if (ci) {
@@ -926,7 +885,6 @@ function coverage() {
       { value: r.round ? `Round ${r.round}: ${num(r.v, 1)}×` : `Starting set: ${num(r.v, 1)}×` },
       { label: r.round ? `After ${num(r.n, 0)} designs tried` : `The first ${num(r.n, 0)} designs, named ones included` },
     ];
-    if (guarded) lines.push({ label: `${num(r.all, 1)}× including designs over the Sybil limit` });
     if (mine.length) {
       lines.push({ label: "In the final set from this round:" });
       for (const q of mine.slice(0, 4)) lines.push({ value: "· " + pretty(q.name) });
@@ -973,7 +931,7 @@ function contributions(shown) {
   info(row, [
     "The designs switched on above the chart, ranked by how much coverage each adds on top of the designs above it. The bars add up to the total.",
     "A design high on the list reaches a corner of the five measures that nothing above it reaches. A design near the bottom does something the others already do; it is not necessarily worse.",
-    "Switch groups on or off to re-rank: for example, switch on “Over the Sybil limit” to see what those designs add.",
+    "Switch groups on or off to re-rank: for example, switch on “Needs a hard fork” to see what those designs add.",
   ]);
   if (state.round !== null) {
     const chip = h("button", { className: "toggle", type: "button", title: "Show every design" }, head);
@@ -1000,7 +958,6 @@ function contributions(shown) {
     const dot = h("span", { className: "dot" }, nm);
     dot.style.background = KIND[s.kind].color;
     nm.appendChild(document.createTextNode(pretty(p.name)));
-    if (overLimit(s)) h("span", { className: "tag bad" }, nm, "Over the Sybil limit");
     if (!s.pilot) h("span", { className: "tag" }, nm, "Needs a hard fork");
     const bar = h("span", { className: "bar" }, b);
     h("span", { style: `width:${(p.adds / max) * 100}%` }, bar);
@@ -1253,7 +1210,7 @@ function glossary() {
   const terms = [
     ["Paying nothing", "Governance as it would run over the next six months with no rewards, simulated from chain history. Every number on this page is a change from it."],
     ["Reaction to rewards", "How strongly DReps and delegators change what they do when paid is not known yet. Every design is simulated with a weak, a medium and a strong reaction. A result that only shows up with a strong reaction is a hope, not a finding."],
-    ["Guardrails", `Limits a design should respect: no more than ${pct(LIMIT)} of the budget to gain by posing as several DReps, and never worse than paying nothing on participation, decentralisation or skin in the game.`],
+    ["Guardrail", "A design should never be worse than paying nothing on participation, decentralisation or skin in the game. Cost and Sybil risk have no limit: they are traded off against the rest."],
     ["Sybil attack", "One person posing as many independent DReps to collect more rewards. Rules that favour small DReps, or cap large ones, invite it."],
     ["Found by search", s ? `An automated search tried ${num(s.evaluated, 0)} variations of the rules and kept the best trade-offs, then re-checked them on ${num(s.holdout_seeds, 0)} fresh random runs it never saw.` : "Designs found by an automated search over the rules."],
     ["Community proposal", "Submitted by anyone on the Propose page and simulated in exactly the same way."],

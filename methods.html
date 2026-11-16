@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How RSS-Gov works</title>
 <meta name="description" content="How RSS-Gov compares reward schemes for Cardano governance: data, model, assumptions, validation and how to read the results.">
-<link rel="stylesheet" href="site.css?v=0d9404a0aa">
+<link rel="stylesheet" href="site.css?v=058ecc5cd5">
 </head>
 <body>
 <nav class="site" aria-label="Site">
@@ -192,8 +192,10 @@ history and reported as <code>supported_ratified</code> in the run tables.</p>
   proxy.</li>
 <li><strong>Cost</strong> is an axis because the budget is a design choice. Named schemes are compared
   at one budget; the search varies it, and a budget ladder shows what more money buys.</li>
-<li><strong>Sybil resistance</strong> is a measured quantity, not a pass/fail gate. Where to draw the
-  line is a separate, explicit guardrail (below).</li>
+<li><strong>Sybil resistance</strong> is a measured quantity, not a pass/fail gate. Like cost, it is an
+  exact property of a rule and is traded off against the other axes with no limit of its
+  own. Its <code>scale</code> in <code>config.yaml</code> sets how fast it counts against a design in the
+  hypervolume: a rule that lets splitting gain half the budget or more covers nothing on it.</li>
 </ul>
 <p>Each axis has a <code>meaningful</code> difference in <code>config.yaml</code>: the smallest change worth acting
 on. A change smaller than that counts as "same as unpaid" even if it is statistically
@@ -398,9 +400,10 @@ collusion, changes in vote <em>direction</em> or quality, and price effects.</p>
    meaningful difference. Verdicts are computed per scenario; the report marks a verdict
    as solid only when it holds in <code>low</code>, <code>central</code> and <code>high</code>.</li>
 <li><strong>Measurements apart from judgement.</strong> The axes are measured. Where to draw lines is in
-   <code>guardrails</code>: a design is <em>acceptable</em> when splitting gains at most 10% of the budget
-   and no axis other than cost is worse than unpaid in any scenario. Changing a guardrail
-   re-labels designs without re-running anything.</li>
+   <code>guardrails</code>: a design is <em>acceptable</em> when no axis other than cost and Sybil
+   resistance is worse than unpaid in any scenario. Those two are exact trade-offs every
+   paid rule makes to some degree, so they are weighed on the front instead. Changing a
+   guardrail re-labels designs without re-running anything.</li>
 <li><strong>No single score.</strong> A design is <em>shortlisted</em> when no other acceptable design is at
    least as good on every axis and meaningfully better on one. Designs outside a
    guardrail are not discarded: they are grouped by exactly which downside they accept,
@@ -424,10 +427,6 @@ in <code>config.yaml</code>, expressed as a difference from unpaid, and the volu
 always a member, since doing nothing is always available. The 95% interval comes from
 resampling seeds. The report also gives what the search adds over the named schemes; if
 that interval includes zero, the search found nothing the named schemes did not offer.</p>
-<p>Coverage is also tracked using only designs within the Sybil guardrail, every round and on
-the holdout seeds, because the widest corners are often reached by designs that are easy
-to game. The finalists therefore include the largest contributors to both fronts: with and
-without the designs over the limit.</p>
 <p>Hypervolume depends on the chosen scales and rewards coverage of every corner, including
 corners nobody wants (a very cheap programme that does nothing much). It tracks search
 progress. It does not rank designs: read the shortlist.</p>
@@ -508,7 +507,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=af4d26e742"></script>
+<script src="data.js?v=396134bef0"></script>
 <script src="common.js?v=6643c41d6d"></script>
 </body>
 </html>
