@@ -10,45 +10,88 @@ const Checks = (() => {
   // largest stake first; equal stakes keep their order, as numpy's stable argsort
   const byStake = (stake) => [...stake.keys()].sort((i, j) => stake[j] - stake[i] || i - j);
 
-  function weights(s, r) {
-    const n = r.stake.length;
-    const ok = new Array(n);
+  function eligible(s, r) {
+    const n = r.stake.length, ok = new Array(n);
+    const floor = s.min_share ? s.min_share * sum(r.stake) : 0;
     for (let i = 0; i < n; i++) {
       ok[i] = r.activity[i] > 0 && r.activity[i] >= s.activity_gate && r.stake[i] >= s.min_stake_ada && r.delegators[i] >= s.min_delegators;
+      if (s.min_share && !(r.stake[i] >= floor)) ok[i] = false;
     }
-    if (s.k_exclude || s.n_pay) {
-      const candidates = byStake(r.stake).slice(s.k_exclude).filter((i) => ok[i]);
-      const ranked = new Set(s.n_pay ? candidates.slice(0, s.n_pay) : candidates);
-      for (let i = 0; i < n; i++) ok[i] = ok[i] && ranked.has(i);
+    return ok;
+  }
+
+  // What a DRep's rank lets it keep: top_weight for the K largest, 1 for the next N; with
+  // roll-down, the share of a slot left after the DReps above are expected to vote.
+  function ranked(s, r, ok, expected) {
+    const keep = ok.map((v) => (v ? 1 : 0));
+    if (!(s.k_exclude || s.n_pay)) return keep;
+    const order = byStake(r.stake);
+    for (const i of order.slice(0, s.k_exclude)) keep[i] *= s.top_weight || 0;
+    const rest = order.slice(s.k_exclude).filter((i) => ok[i]);
+    if (s.roll_down) {
+      let above = 0;
+      for (const i of rest) { keep[i] = Math.min(Math.max(s.n_pay - above, 0), 1); above += expected[i]; }
+    } else if (s.n_pay) {
+      for (const i of rest.slice(s.n_pay)) keep[i] = 0;
     }
+    return keep;
+  }
+
+  // Reward weights as [fraction of the DReps' pot, weights]; zero means not paid.
+  function parts(s, r, expected) {
+    const n = r.stake.length, ok = eligible(s, r);
+    if (!expected) expected = r.activity.map((a, i) => (ok[i] ? a : 0));
+    const keep = ranked(s, r, ok, expected);
     const cap = s.cap_ada === null || s.cap_ada === undefined ? Infinity : s.cap_ada;
-    const w = new Float64Array(n);
+    const votes = new Float64Array(n), w = new Float64Array(n);
     for (let i = 0; i < n; i++) {
-      if (!ok[i]) continue;
-      let counted = Math.min(r.stake[i], cap);
-      if (s.pledge_leverage > 0) counted = Math.min(counted, s.pledge_leverage * r.pledge[i]);
-      const base = s.alpha === 0 ? 1 : Math.pow(counted, s.alpha);
-      w[i] = base * r.activity[i] * (1 + s.rationale_bonus * r.rationale[i]);
+      votes[i] = keep[i] * r.activity[i] * (1 + s.rationale_bonus * r.rationale[i]);
+      let size = r.delegators[i];
+      if (s.basis !== "delegators") {
+        size = Math.min(r.stake[i], cap);
+        if (s.pledge_leverage > 0) size = Math.min(size, s.pledge_leverage * r.pledge[i]);
+      }
+      w[i] = votes[i] * (s.alpha === 0 ? 1 : Math.pow(size, s.alpha));
     }
-    return w;
+    return s.equal_share ? [[s.equal_share, votes], [1 - s.equal_share, w]] : [[1, w]];
+  }
+
+  function weights(s, r) { const p = parts(s, r); return p[p.length - 1][1]; }
+
+  // Each part splits its fraction of `reps` by weight over its total (one per DRep, or one
+  // for all); pay per vote sets the rate unless the pot cannot cover it; caps are not passed on.
+  function awards(s, ps, totals, reps, actions) {
+    const n = ps[0][1].length, award = new Float64Array(n);
+    ps.forEach(([fraction, w], p) => {
+      for (let i = 0; i < n; i++) {
+        const total = typeof totals[p] === "number" ? totals[p] : totals[p][i];
+        let rate = total > 0 ? (fraction * reps) / total : 0;
+        if (s.per_vote_ada) rate = Math.min(rate, s.per_vote_ada * actions);
+        award[i] += w[i] * rate;
+      }
+    });
+    if (s.max_award_share) for (let i = 0; i < n; i++) award[i] = Math.min(award[i], s.max_award_share * reps);
+    return award;
   }
 
   // One round's pot: [DRep awards, delegator yield per ADA delegated].
   function allocate(s, r, pot) {
     const n = r.stake.length;
-    const award = new Float64Array(n), yields = new Float64Array(n);
-    if (pot <= 0) return [award, yields];
-    const w = weights(s, r), total = sum(w);
-    if (total <= 0) return [award, yields];
-    for (let i = 0; i < n; i++) award[i] = pot * (1 - s.delegator_share) * (w[i] / total);
+    const zero = [new Float64Array(n), new Float64Array(n)];
+    if (pot <= 0) return zero;
+    const ps = parts(s, r);
+    const award = awards(s, ps, ps.map(([, w]) => sum(w)), pot * (1 - s.delegator_share), r.actions ?? 1);
+    const total = sum(award);
+    if (total <= 0) return zero;
+    const yields = new Float64Array(n);
     const delegatorPot = pot * s.delegator_share;
     if (delegatorPot > 0) {
-      const paid = [...w.keys()].filter((i) => w[i] > 0 && r.stake[i] > 0);
+      const paid = [...award.keys()].filter((i) => award[i] > 0 && r.stake[i] > 0);
       if (s.delegator_mode === "flat") {
         const base = sum(paid.map((i) => r.stake[i] * r.activity[i]));
         if (base > 0) for (const i of paid) yields[i] = (delegatorPot * r.activity[i]) / base;
       } else {
-        for (const i of paid) yields[i] = (delegatorPot * (w[i] / total)) / r.stake[i];
+        for (const i of paid) yields[i] = (delegatorPot * award[i]) / total / r.stake[i];
       }
     }
     return [award, yields];
@@ -69,6 +112,7 @@ const Checks = (() => {
       for (let c = 0; c < copies; c++) kept.push(add[k]);
       out[k] = kept;
     }
+    out.actions = r.actions;
     return out;
   }
 
@@ -123,6 +167,7 @@ const Checks = (() => {
     if (!(s.budget_ada > 0)) return [];
     const out = [];
     if (s.rationale_bonus > 0) out.push("An anchor proves a rationale exists, not that it is good.");
+    if (s.basis === "delegators") out.push("Accounts are cheap to create: paying by their number invites fake ones.");
     if (s.delegator_share > 0) out.push("Many small delegator claims: needs a claim contract or minimum payout.");
     if (s.pledge_leverage > 0) out.push("Own stake is not a ledger concept: DReps must declare their accounts.");
     if (s.hard_cap) out.push("Capping voting power changes ratification rules: needs a hard fork.");

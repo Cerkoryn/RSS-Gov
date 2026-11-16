@@ -13,7 +13,7 @@ const ALPHA_WORDS = [[0, "everyone the same"], [0.5, "square root"], [1, "in pro
 function readout(field, v) {
   if (v === null || v === undefined || v === "") return field.optional ? "no cap" : "–";
   if (field.kind === "ada") return ada(v) + " ADA";
-  if (field.kind === "share") return pct(v);
+  if (field.kind === "share") return pct(v, field.step < 0.01 ? 1 : 0);
   if (field.name === "alpha") {
     const word = ALPHA_WORDS.find(([a]) => Math.abs(a - v) < 1e-9);
     return num(v, 2) + (word ? ` (${word[1]})` : v > 1 ? " (favours the largest)" : "");
@@ -117,6 +117,7 @@ function payload() {
     out[f.name] = v;
   }
   if (!out.pledge_leverage) out.hard_cap = false;
+  if (!out.n_pay) out.roll_down = false;
   return out;
 }
 function yaml(p, withIdea = true) {
@@ -132,6 +133,7 @@ function changed() {
   for (const { f, input, out } of Object.values(inputs)) {
     out.textContent = f.kind === "bool" || f.kind === "choice" ? "" : readout(f, values[f.name]);
     if (f.name === "hard_cap") input.disabled = !values.pledge_leverage;
+    if (f.name === "roll_down") input.disabled = !values.n_pay;
   }
   for (const [group, { note }] of Object.entries(groups)) {
     const changedHere = F.fields.filter((f) => f.group === group && !isDefault(f)).length;
@@ -153,6 +155,7 @@ function invalid(p) {
     if (typeof v !== "number" || !Number.isFinite(v) || v < f.min || v > f.max) return `${f.label}: between ${readout(f, f.min)} and ${readout(f, f.max)}.`;
     if (f.kind === "int" && v !== Math.round(v)) return `${f.label}: a whole number.`;
   }
+  if (p.per_vote_ada && (p.alpha !== 0 || p.delegator_share)) return "Fixed pay per vote is the same for every DRep: set how pay grows with voting power to 0 and pay nothing to delegators.";
   return null;
 }
 function sameAs(p) {
