@@ -104,7 +104,8 @@ Notes on the choices:
   another's shortfall. Today it is under 1%: see the data section for why that number is a
   proxy.
 - **Cost** is an axis because the budget is a design choice. Named schemes are compared
-  at one budget; the search varies it, and a budget ladder shows what more money buys.
+  at one budget; the search varies it, and variations of named designs at other budgets
+  show what more money buys.
 - **Sybil resistance** is a measured quantity, not a pass/fail gate. Like cost, it is an
   exact property of a rule and is traded off against the other axes with no limit of its
   own. Its `scale` in `config.yaml` sets how fast it counts against a design in the
@@ -334,7 +335,7 @@ already give DReps that vote more.
 
 1. **Same start.** Every scheme starts from the same chain snapshot.
 2. **Same money.** Named schemes get the same budget and programme length. Where budget
-   varies (the ladder, the search) cost is an axis, so a cheaper design is not penalised
+   varies (variations, the search) cost is an axis, so a cheaper design is not penalised
    for buying less.
 3. **Same luck.** All schemes share seeds, and every random draw about the outside world
    (which actions arrive, who would register, which accounts move) is common across
@@ -383,6 +384,12 @@ progress. It does not rank designs: read the shortlist.
 
 ## Proposed designs: community and agents
 
+Every design is a point in one family, so every setting of every design can be changed.
+The site lists the settings each design was simulated with, and gives a design that
+differs from a named one in one or two settings a short name of that kind ("Middle out ·
+skip 20"). Variations listed in `config.yaml` (a named design with some settings changed)
+are simulated like the named designs.
+
 Anyone can propose a design in the same family, through the "Propose a scheme" page or
 as a YAML file. A proposal gets the exact static checks at once (the page computes them in
 the browser with the same formulas, and a test keeps the two implementations equal) and is
@@ -391,15 +398,21 @@ comparable with the search finalists. Every proposal is kept in `results/proposa
 its text, its verdict and its runs, and shown on the results page whether or not it joins
 the front. Proposals simulated under an older calibration are marked as needing a rerun.
 
-The autoresearch loop (`program.md`) works the same way: an agent proposes designs in a
-YAML file and runs `rss-gov try`.
+An AI agent can propose designs the same way, following `program.md`. Only `rss-gov
+research --rounds N` starts it; nothing else does. Its designs are judged exactly like a
+proposal, and those accepted join the search's finalists and are shown as found by
+search. Its rejected attempts are kept only in the ledger.
 The evaluator is frozen. A proposal is accepted only if it differs from every design on
 the front by a meaningful amount without being beaten by one, and raises the holdout
 hypervolume by an amount whose 95% interval excludes zero. Every proposal is logged in
 `results/ledger.jsonl` with its change on each axis, accepted or not.
 
-Repeated proposals against the same holdout seeds will eventually fit them. After a few
-dozen proposals, change `HOLDOUT_OFFSET` and rerun the search.
+Repeated proposals against the same holdout seeds will eventually fit them. After
+`research.tries_per_holdout` simulated attempts by the agent, its seeds count as used:
+before its next round the search's finalists are re-run on a fresh set of holdout seeds
+and judged again, and every stored proposal is tried again against them (the agent's
+only if it was accepted). A design that was accepted on luck then drops out. Community
+proposals are fewer and do not use the seeds up.
 
 ## Tier C: measuring real reactions
 

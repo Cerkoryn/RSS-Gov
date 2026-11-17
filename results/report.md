@@ -192,16 +192,15 @@ Skin in the game: change in Voting power backed by the DRep's own stake (points)
 | delegators_first | -0.00 | -0.08 | -0.01 | +0.00 | -0.08 |
 | delegator_count_sqrt | +0.11 | +0.00 | -0.01 | +0.00 | +0.10 |
 
-### What more money buys
+### Variations of named designs
 
-The `capped` rule at four budgets, `central` scenario. The response to a reward is assumed to grow with its logarithm, so doubling the budget buys much less than double.
+Named designs with a setting changed, `central` scenario; compare each with its named design in the scorecard. The response to a reward is assumed to grow with its logarithm, so a bigger budget buys less than proportionally more.
 
-| scheme | cost a year | share of treasury | Participation | Decentralisation | ADA a year per point of participation |
-|---|---|---|---|---|---|
-| capped_1m | 2.0M | 0.15% | +3.1 ± 0.1 | -0.5 ± 0.1 | 644,966 |
-| capped_2m5 | 5.1M | 0.36% | +4.0 ± 0.1 | -0.5 ± 0.1 | 1,278,398 |
-| capped | 10.1M | 0.73% | +4.5 ± 0.1 | -0.5 ± 0.2 | 2,232,380 |
-| capped_10m | 20.3M | 1.45% | +5.0 ± 0.1 | -0.5 ± 0.2 | 4,047,118 |
+| scheme | varies | cost a year | share of treasury | Participation | Decentralisation | ADA a year per point of participation |
+|---|---|---|---|---|---|---|
+| capped_1m | `capped`: 1M ADA | 2.0M | 0.15% | +3.1 ± 0.1 | -0.5 ± 0.1 | 644,966 |
+| capped_2m5 | `capped`: 2.5M ADA | 5.1M | 0.36% | +4.0 ± 0.1 | -0.5 ± 0.1 | 1,278,398 |
+| capped_10m | `capped`: 10M ADA | 20.3M | 1.45% | +5.0 ± 0.1 | -0.5 ± 0.2 | 4,047,118 |
 
 ## Search over the scheme family
 

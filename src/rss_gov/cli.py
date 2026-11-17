@@ -1,8 +1,13 @@
-"""Command line: rss-gov data|calibrate|static|experiment|search|try|submit|report|site|all."""
+"""Command line: rss-gov data|calibrate|static|experiment|search|try|submit|report|site|all.
+
+`rss-gov research` runs the AI research agent. It is separate on purpose: nothing else
+starts it.
+"""
 
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 import time
@@ -147,8 +152,20 @@ def cmd_search(args):
 def cmd_try(args):
     from rss_gov import search
 
+    if bool(args.file) == args.stored:
+        sys.exit("give either a file or --stored")
     study = _study(args)
-    search.try_candidates(study, _scheme_rows(study, args.file), _say, args.processes)
+    rows = search.stored_rows(study.results) if args.stored else _scheme_rows(study, args.file)
+    search.try_candidates(study, rows, _say, args.processes, args.source)
+
+
+def cmd_research(args):
+    from rss_gov import research
+
+    study = _study(args)
+    if not study.validation_passed:
+        sys.exit("the model failed its validation: fix that before running the research agent")
+    research.run(study, args.rounds, _say, args.processes)
 
 
 def cmd_submit(args):
@@ -220,8 +237,22 @@ def main(argv=None):
     p.set_defaults(run=cmd_search)
 
     p = sub.add_parser("try", help="test proposed schemes against the current front")
-    p.add_argument("file", help="YAML list of schemes")
+    p.add_argument("file", nargs="?", help="YAML list of schemes")
+    p.add_argument(
+        "--stored", action="store_true", help="try every stored proposal again, e.g. after a search"
+    )
+    p.add_argument(
+        "--source",
+        default=os.environ.get("RSS_GOV_SOURCE", "cli"),
+        help="who proposed them; 'agent' for the research agent (shown with the search's designs)",
+    )
     p.set_defaults(run=cmd_try)
+
+    p = sub.add_parser(
+        "research", help="let an AI agent propose designs (program.md); never run by `all`"
+    )
+    p.add_argument("--rounds", type=int, required=True, help="how many rounds to run")
+    p.set_defaults(run=cmd_research)
 
     p = sub.add_parser("submit", help="check and store a proposal (YAML, or a GitHub issue body)")
     p.add_argument("file", help="the proposal, or a text file with a ```yaml block")

@@ -2,13 +2,14 @@
 
 import json
 from pathlib import Path
+import sys
 
 import pandas as pd
 import pytest
 import yaml
 
 from rss_gov import calibrate, dataset, experiment, model, proposals, report, search, static
-from rss_gov import website
+from rss_gov import research, website
 from tests.conftest import make_params
 
 CONFIG = Path(__file__).parents[1] / "config.yaml"
@@ -101,3 +102,73 @@ def test_a_stored_proposal_is_refreshed_in_place_after_the_family_grows(study):
     path.write_text(yaml.safe_dump([row], sort_keys=False))
     search.try_candidates(study, yaml.safe_load(path.read_text()), QUIET, processes=1)
     assert sorted(p.stem for p in path.parent.glob("*.yaml")) == [name]
+
+
+def _agent(study, monkeypatch, accept):
+    """One attempt by the research agent, accepted or not."""
+    if accept:
+        monkeypatch.setattr(search, "bootstrap", lambda *a: (1.0, 1.0))
+        monkeypatch.setattr(
+            search,
+            "front_of",
+            lambda points, names, axes, members=None: list(names if members is None else members),
+        )
+    else:
+        monkeypatch.setattr(search, "bootstrap", lambda *a: (-1.0, 1.0))
+    row = dict(PROPOSAL, name="agent_idea", hypothesis="because")
+    del row["author"]
+    search.try_candidates(study, [row], QUIET, processes=1, source=proposals.AGENT)
+    monkeypatch.undo()
+    return "agent_idea"
+
+
+def test_a_rejected_agent_attempt_is_only_in_the_ledger(study, monkeypatch):
+    name = _agent(study, monkeypatch, accept=False)
+    (entry,) = search.ledger(study.results)
+    assert entry["scheme"]["name"] == name and entry["source"] == proposals.AGENT
+    assert entry["holdout"] == search.HOLDOUT_OFFSET
+    assert not (study.results / "proposals" / f"{name}.yaml").exists()
+    assert name not in [d["name"] for d in website.build(study)["schemes"]]
+
+
+def test_an_accepted_agent_design_is_shown_with_the_search(study, monkeypatch):
+    name = _agent(study, monkeypatch, accept=True)
+    data = website.build(study)
+    (design,) = [d for d in data["schemes"] if d["name"] == name]
+    assert design["kind"] == "search" and design["proposal"]["hypothesis"] == "because"
+    assert data["proposals"] == []
+    assert [r["name"] for r in search.stored_rows(study.results)] == [name]
+
+
+def test_used_holdout_seeds_are_replaced_and_proposals_tried_again(study, monkeypatch):
+    community = _try(study, PROPOSAL)
+    _agent(study, monkeypatch, accept=False)
+    assert not search.rotate(study, QUIET, processes=1)  # one attempt does not use them up
+    study.config["research"]["tries_per_holdout"] = 1
+    fresh = search.holdout_seeds(study)
+    assert fresh[0] == search.HOLDOUT_OFFSET + 3
+    assert search.rotate(study, QUIET, processes=1)
+    holdout = pd.read_parquet(study.results / "search_holdout_runs.parquet")
+    assert set(holdout.seed) == set(fresh)
+    runs = pd.read_parquet(study.results / "proposals" / f"{community}.parquet")
+    assert set(runs.seed) == set(fresh)
+    assert community in [d["name"] for d in website.build(study)["schemes"]]
+
+
+def test_research_runs_the_agent_command_with_its_source(study, tmp_path):
+    marker = tmp_path / "source"
+    script = f"import os, pathlib; pathlib.Path({str(marker)!r}).write_text(os.environ['RSS_GOV_SOURCE'])"
+    study.config["research"] = dict(
+        program=str(CONFIG.with_name("program.md")),
+        agent=[sys.executable, "-c", script, "{prompt}"],
+        tries_per_holdout=30,
+    )
+    research.run(study, 1, QUIET, processes=1)
+    assert marker.read_text() == proposals.AGENT
+
+
+def test_a_named_variation_is_titled_and_listed_with_its_settings(study):
+    data = website.build(study)
+    (design,) = [d for d in data["schemes"] if d["name"] == "capped_1m"]
+    assert design["kind"] == "named" and design["parent"] == "capped"
+    assert design["changed"] == ["budget_ada"] and design["title"] == "Capped · 1M ADA"

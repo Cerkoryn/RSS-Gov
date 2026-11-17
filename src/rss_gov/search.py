@@ -11,6 +11,7 @@ on fresh seeds that the search never saw, and only those numbers are reported.
 
 from dataclasses import replace
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -183,8 +184,7 @@ def run(study, log=print, processes=None):
         if preset.name not in finalists:
             finalists.append(preset.name)
     schemes = [baseline] + [by_name[n] for n in finalists]
-    holdout_seeds = range(HOLDOUT_OFFSET, HOLDOUT_OFFSET + int(config["holdout_seeds"]))
-    holdout = experiment.evaluate(study, schemes, scenarios, holdout_seeds, processes)
+    holdout = experiment.evaluate(study, schemes, scenarios, holdout_seeds(study), processes)
     out = study.results
     pd.DataFrame(records).to_csv(out / "search_candidates.csv", index=False)
     holdout.to_parquet(out / "search_holdout_runs.parquet")
@@ -198,6 +198,73 @@ def run(study, log=print, processes=None):
     )
     log(f"wrote {out / 'search_front.csv'} and {out / 'front.yaml'}")
     return summary
+
+
+def ledger(results):
+    """Every `try` so far, oldest first."""
+    path = Path(results) / "ledger.jsonl"
+    if not path.exists():
+        return []
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
+def holdout_seeds(study):
+    """The holdout seeds: the first set the research agent has not used up.
+
+    Every `try` is judged on these seeds, so a long run of attempts would fill the front
+    with designs that were lucky on them. After `research.tries_per_holdout` simulated
+    attempts by the agent, a set counts as used and the next one takes its place. Without
+    the agent, it is always the first set.
+    """
+    n = int(study.config["search"]["holdout_seeds"])
+    limit = int((study.config.get("research") or {}).get("tries_per_holdout", 30))
+    used = {}
+    for entry in ledger(study.results):
+        if entry.get("source") == proposals.AGENT and "hypervolume_gain" in entry:
+            used[entry.get("holdout")] = used.get(entry.get("holdout"), 0) + 1
+    first = HOLDOUT_OFFSET
+    while used.get(first, 0) >= limit:
+        first += n
+    return range(first, first + n)
+
+
+def rotate(study, log=print, processes=None):
+    """Move to fresh holdout seeds once the current ones are used up; False if they are not.
+
+    The search's own finalists are re-run on the new seeds and judged again, then every
+    stored proposal is tried afresh against them, as after a new search.
+    """
+    out = study.results
+    seeds = holdout_seeds(study)
+    current = pd.read_parquet(out / "search_holdout_runs.parquet", columns=["seed"]).seed
+    if seeds[0] == current.min():
+        return False
+    log(f"the holdout seeds are used up: re-running the finalists on seeds {seeds[0]}..")
+    stored = proposals.submitted(out)
+    rows = yaml.safe_load((out / "search_finalists.yaml").read_text())
+    rows = [r for r in rows if r["name"] not in stored]  # proposals are tried again below
+    schemes = study.schemes([BASELINE]) + study.schemes(rows)
+    holdout = experiment.evaluate(study, schemes, study.ranking_scenarios, seeds, processes)
+    holdout.to_parquet(out / "search_holdout_runs.parquet")
+    (out / "search_finalists.yaml").write_text(yaml.safe_dump(rows, sort_keys=False))
+    summary = rejudge(study, log)
+    by_name = {s.name: s for s in schemes}
+    (out / "front.yaml").write_text(
+        yaml.safe_dump([by_name[n].to_dict() for n in summary["front"]], sort_keys=False)
+    )
+    try_candidates(study, stored_rows(out), log, processes)
+    return True
+
+
+def stored_rows(results):
+    """The stored proposals to try again: every community one, and the agent's accepted ones."""
+    rows = []
+    for name, row in proposals.submitted(results).items():
+        verdict = proposals.folder(results) / f"{name}.json"
+        accepted = verdict.exists() and json.loads(verdict.read_text()).get("accepted")
+        if row.get("source") != proposals.AGENT or accepted:
+            rows.append(row)
+    return rows
 
 
 def rejudge(study, log=print):
@@ -340,7 +407,7 @@ def judge(study, holdout, schemes, log=print):
     )
 
 
-def try_candidates(study, rows, log=print, processes=None):
+def try_candidates(study, rows, log=print, processes=None, source="cli"):
     """Test proposed schemes against the current front on the holdout seeds.
 
     A proposal is accepted when it is allowed by the hard-fork setting, differs from every
@@ -348,6 +415,8 @@ def try_candidates(study, rows, log=print, processes=None):
     and raises the front's hypervolume by an amount whose 95% interval excludes zero.
     Every proposal, accepted or not, is appended to results/ledger.jsonl with its change
     on each axis, and kept in results/proposals/ with its runs so the site can show it.
+    The research agent's attempts (`source` "agent") are kept there only when accepted.
+    A row's own `source`, as stored with a submission, takes precedence.
     """
     out = study.results
     if not (out / "search_holdout_runs.parquet").exists():
@@ -375,9 +444,16 @@ def try_candidates(study, rows, log=print, processes=None):
             meta = {**proposals.split(holder)[1], **meta}  # the same proposal: refresh its results
         elif scheme.name in taken or holder is not None:
             scheme = replace(scheme, name=proposals.unique(scheme.name, taken | set(stored)))
+            holder = None
         taken.add(scheme.name)
         stored[scheme.name] = scheme.to_dict()
-        entry = dict(scheme=scheme.to_dict(), rule=scheme.label())
+        meta.setdefault("source", source)
+        entry = dict(
+            scheme=scheme.to_dict(),
+            rule=scheme.label(),
+            source=meta["source"],
+            holdout=int(seeds[0]),
+        )
         runs = None
         if not scheme.paid:
             entry.update(accepted=False, reason="pays nothing")
@@ -419,9 +495,10 @@ def try_candidates(study, rows, log=print, processes=None):
                 (out / "search_finalists.yaml").write_text(
                     yaml.safe_dump(finalists + [scheme.to_dict()], sort_keys=False)
                 )
-        with (out / "ledger.jsonl").open("a") as ledger:
-            ledger.write(json.dumps(entry, default=float) + "\n")
-        proposals.record(out, scheme, entry, runs, meta)
+        with (out / "ledger.jsonl").open("a") as file:
+            file.write(json.dumps(entry, default=float) + "\n")
+        if meta["source"] != proposals.AGENT or entry["accepted"] or holder is not None:
+            proposals.record(out, scheme, entry, runs, meta)
         log(f"{scheme.name}: {'ACCEPTED' if entry['accepted'] else 'rejected'} - {entry['reason']}")
         if "hypervolume_gain" in entry:
             low, high = entry["hypervolume_gain_ci"]

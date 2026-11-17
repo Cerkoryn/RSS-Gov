@@ -121,3 +121,9 @@ def test_accept_refuses_a_rule_that_is_already_listed(tmp_path):
     proposals.submit(tmp_path, scheme, {}, "issue #1")
     with pytest.raises(ValueError, match="already listed as my_idea"):
         proposals.accept(config, {**VALID, "name": "again"})
+
+
+def test_the_research_agents_designs_are_not_listed_as_proposals(tmp_path):
+    scheme, meta = proposals.parse(VALID)
+    proposals.submit(tmp_path, scheme, meta, proposals.AGENT)
+    assert proposals.listing(tmp_path) == []

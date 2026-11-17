@@ -2,7 +2,7 @@
 const hasKind = (k) => D.schemes.some((s) => s.kind === k);
 const state = {
   scenario: "central",
-  show: { named: true, ladder: false, search: false, proposed: hasKind("proposed") },
+  show: { named: true, search: false, proposed: hasKind("proposed") },
   pilot: false, view: "table", selected: null,
   chart: { named: true, search: true, proposed: true, fork: false },
   x: "tau67", y: "participation", lead: D.search && D.search.hypervolume_unpaid ? "combined" : "pair", round: null, allParts: false,
@@ -94,7 +94,7 @@ function openDesign(name) {
   state.selected = name;
   if (!state.show[s.kind]) state.show[s.kind] = true;
   if (state.pilot && !s.pilot) state.pilot = false;
-  state.chart[s.kind === "ladder" ? "named" : s.kind] = true;
+  state.chart[s.kind] = true;
   if (!s.pilot) state.chart.fork = true;
   state.focusRow = name;
   try { history.replaceState(null, "", "#design=" + encodeURIComponent(name)); } catch (e) { /* file: URLs */ }
@@ -159,7 +159,7 @@ function measures() {
 // ---------- controls ----------
 function controls() {
   const kinds = $("#kinds");
-  for (const k of ["named", "ladder", "search", "proposed"]) {
+  for (const k of ["named", "search", "proposed"]) {
     const n = D.schemes.filter((s) => s.kind === k).length;
     if (!n) continue;
     const b = h("button", { className: "toggle", type: "button" }, kinds);
@@ -338,10 +338,13 @@ function detail() {
   if (s.proposal) {
     const p = s.proposal;
     const box = h("div", { style: "margin-top:16px" }, host);
-    h("div", { className: "small" }, box, (p.author ? `Proposed by ${p.author}` : "Proposed anonymously") + (p.evaluated ? `, simulated ${date(p.evaluated, false)}` : ""));
+    const by = p.source === "agent" ? "Proposed by the research agent" : p.author ? `Proposed by ${p.author}` : "Proposed anonymously";
+    const as = s.title ? ` as “${s.name}”` : "";
+    h("div", { className: "small" }, box, by + as + (p.evaluated ? `, simulated ${date(p.evaluated, false)}` : ""));
     if (p.hypothesis) h("div", { className: "quote" }, box, p.hypothesis);
     h("div", { className: "small" }, box, (p.accepted ? "Offers a trade-off no other design did. " : "Did not add a new trade-off: ") + (p.reason || ""));
   }
+  settings(s, host);
   h("h3", { style: "margin-top:22px" }, host, "What it changes");
   h("p", { className: "small", style: "margin:0" }, host, `Compared with paying nothing, ${SCEN[state.scenario].toLowerCase()}.`);
   const ul = h("ul", { className: "effects" }, host);
@@ -357,6 +360,7 @@ function detail() {
       h("div", { className: "range" }, box, r + (t.endsWith("some") ? " · depends on the reaction" : ""));
     }
   }
+  relatives(s, host);
 
   const more1 = h("details", { className: "more" }, host);
   h("summary", {}, more1, "Numbers for each reaction strength");
@@ -398,12 +402,55 @@ function detail() {
     ? "It works on today's Cardano: everything it reads is on chain."
     : "It changes how voting power counts, which needs a hard fork.");
   if (s.notes && s.notes.length) { const ul2 = h("ul", { className: "notes" }, more3); for (const n of s.notes) h("li", {}, ul2, n); }
-  h("p", { className: "rule" }, more3, "Rule in short: " + s.rule);
 
   const act = h("div", { className: "actions", style: "margin-top:20px" }, host);
   h("a", { className: "primary", href: "propose.html#from=" + encodeURIComponent(s.name) }, act, "Propose a variation");
   const see = h("button", { className: "ghost", type: "button" }, act, "Show on the chart");
   see.addEventListener("click", () => { closeDrawer(); if (state.lead !== "pair") { state.lead = "pair"; lead(); } $("#best").scrollIntoView({ behavior: "smooth" }); });
+}
+
+// Every setting the design was simulated with: the ones that are on, then the rest folded.
+// Next to a setting that differs from the named design it varies, that design's value.
+function settings(s, host) {
+  const F = D.form;
+  const parent = s.parent && D.schemes.find((q) => q.name === s.parent);
+  const on = (f) => f.name === "budget_ada" || s.scheme[f.name] !== F.defaults[f.name];
+  const list = (fields, box) => {
+    const dl = h("dl", { className: "facts" }, box);
+    for (const f of fields) {
+      h("dt", {}, dl, f.short);
+      const dd = h("dd", {}, dl, setting(f, s.scheme[f.name]));
+      if (parent && s.changed.includes(f.name)) h("span", { className: "was" }, dd, ` (${pretty(parent.name)}: ${setting(f, parent.scheme[f.name])})`);
+    }
+  };
+  h("h3", { style: "margin-top:22px" }, host, "Settings");
+  list(F.fields.filter(on), host);
+  const off = F.fields.filter((f) => !on(f));
+  if (!off.length) return;
+  const more = h("details", { className: "more" }, host);
+  h("summary", {}, more, `${off.length} more, all off`);
+  list(off, more);
+}
+
+// The other simulated designs in the same family: the named design and its close variants.
+function relatives(s, host) {
+  const root = s.parent || s.name;
+  const kin = D.schemes.filter((q) => q.name !== s.name && (q.name === root || q.parent === root));
+  if (!kin.length) return;
+  h("h3", { style: "margin-top:22px" }, host, "Other runs of this design");
+  h("p", { className: "small", style: "margin:0" }, host, `${pretty(root)} and every simulated design that changes one or two of its settings, ${SCEN[state.scenario].toLowerCase()}. Click one to open it.`);
+  const wrap = h("div", { className: "tablewrap" }, host);
+  const table = h("table", {}, wrap);
+  const head = h("tr", {}, h("thead", {}, table));
+  h("th", {}, head, "Design");
+  for (const a of D.axes) h("th", { className: "num" }, head, a.short);
+  const body = h("tbody", {}, table);
+  for (const q of kin) {
+    const tr = h("tr", { className: "pick" }, body);
+    tr.addEventListener("click", () => openDesign(q.name));
+    h("td", {}, tr, q.name === root ? pretty(q.name) : pretty(q.name).split(" · ").slice(1).join(" · "));
+    for (const a of D.axes) { const v = res(q, state.scenario, a.name); h("td", { className: "num" }, tr, v ? fmt(a.name, v[0]) : "–"); }
+  }
 }
 
 // ---------- scorecard (chart view) ----------
@@ -607,7 +654,7 @@ function scatterControls() {
   span.appendChild(document.createTextNode("paying nothing"));
 }
 function chartVisible() {
-  return D.schemes.filter((s) => state.chart[s.kind === "ladder" ? "named" : s.kind] && (s.pilot || state.chart.fork));
+  return D.schemes.filter((s) => state.chart[s.kind] && (s.pilot || state.chart.fork));
 }
 // Designs no other shown design beats on both measures, ordered along the line.
 function frontier(pts, ax, ay) {
@@ -984,7 +1031,7 @@ function setTab(tab) {
   renderTab();
 }
 function renderTab() {
-  ({ assumptions: heat, budget: ladder, model: validation, glossary: () => {} })[state.tab]();
+  ({ assumptions: heat, model: validation, glossary: () => {} })[state.tab]();
 }
 function tabs() {
   const list = $("#tabs");
@@ -997,10 +1044,6 @@ function tabs() {
     const j = e.key === "ArrowRight" ? (i + 1) % all.length : e.key === "ArrowLeft" ? (i - 1 + all.length) % all.length : -1;
     if (j >= 0) { setTab(all[j].dataset.tab); all[j].focus(); }
   });
-  wireInfo($("#ladder-info"), () => [
-    `Same rule, different budgets, ${SCEN[state.scenario].toLowerCase()}, with 95% intervals.`,
-    "The model assumes each extra ADA buys a little less than the one before, so doubling the budget does not double the effect.",
-  ]);
   wireInfo($("#valid-info"), () => validInfo);
   const heatAxis = $("#heat-axis");
   for (const a of D.axes.filter((q) => !q.exact)) {
@@ -1059,67 +1102,6 @@ function heat() {
       td.style.borderBottom = "2px solid var(--surface)";
       td.style.borderLeft = "2px solid var(--surface)";
     }
-  }
-}
-
-// ---------- what more money buys ----------
-function ladder() {
-  const host = $("#ladder");
-  host.textContent = "";
-  const parent = D.meta.ladder_parent;
-  const steps = D.schemes.filter((s) => s.kind === "ladder" || s.name === parent).sort((p, q) => p.budget - q.budget);
-  if (steps.length < 2) { $("#ladder-note").textContent = "No budget comparison in this run."; return; }
-  $("#ladder-note").textContent = `The ${pretty(parent).toLowerCase()} design at ${steps.length} budgets.`;
-  const shown = ["participation", "tau67", "backing"].filter((n) => AX[n]);
-  const boxes = shown.map(() => h("div", {}, host));
-  for (const [n, axis] of shown.entries()) {
-    const a = AX[axis];
-    const box = boxes[n];
-    const W = box.clientWidth || 320, H = 220, m = { l: 46, r: 14, t: 28, b: 40 };
-    const svg = el("svg", { width: W, height: H, role: "img", "aria-label": `${a.short} by budget` }, box);
-    const title = text(svg, 0, 13, a.short, { class: "ink", "font-weight": 650, "font-size": 13 });
-    text(svg, title.getComputedTextLength() + 6, 13, `(${a.change})`, { "font-size": 11 });
-    const pts = steps.map((s) => { const q = res(s, state.scenario, axis); return { s, b: s.budget / 1e6, v: q[0] * a.factor, ci: (q[1] || 0) * a.factor }; });
-    const lo = Math.min(0, ...pts.map((p) => p.v - p.ci)), hi = Math.max(0, ...pts.map((p) => p.v + p.ci));
-    const t = ticks(lo, hi + (hi - lo) * 0.1, 4);
-    const y = scale(Math.min(lo, t[0]), Math.max(hi, t[t.length - 1]), H - m.b, m.t);
-    const bx = pts.map((p) => p.b);
-    const x = (b) => scale(Math.log(Math.min(...bx)), Math.log(Math.max(...bx)), m.l + 10, W - m.r - 10)(Math.log(b));
-    for (const v of t) {
-      if (v < y.domain[0] || v > y.domain[1]) continue;
-      el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v === 0 ? "base" : "grid" }, svg);
-      text(svg, m.l - 6, y(v) + 4, tickLabel(v, t.step), { "text-anchor": "end" });
-    }
-    for (const p of pts) text(svg, x(p.b), H - m.b + 16, num(p.b, p.b % 1 ? 1 : 0) + "M", { "text-anchor": "middle" });
-    text(svg, (m.l + W - m.r) / 2, H - 6, "budget over the programme, ADA", { "text-anchor": "middle", class: "ink2" });
-    el("path", { d: pts.map((p, i) => `${i ? "L" : "M"}${x(p.b)},${y(p.v)}`).join(" "), fill: "none", stroke: "var(--c1)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
-    for (const p of pts) {
-      el("line", { x1: x(p.b), x2: x(p.b), y1: y(p.v - p.ci), y2: y(p.v + p.ci), stroke: "var(--ink-2)", "stroke-width": 1.25 }, svg);
-      el("circle", { cx: x(p.b), cy: y(p.v), r: 4.5, fill: "var(--c1)", stroke: "var(--surface)", "stroke-width": 2 }, svg);
-      const hit = el("circle", { cx: x(p.b), cy: y(p.v), r: 14, class: "hit" }, svg);
-      hit.addEventListener("pointermove", (e) => showTip(e, [{ value: fmt(axis, p.v / a.factor) + (p.ci ? ` ± ${num(p.ci, a.digits)}` : ""), label: a.short }, { label: `${pretty(p.s.name)}: ${ada(p.s.budget)} ADA` }]));
-      hit.addEventListener("pointerleave", hideTip);
-      hit.addEventListener("click", () => openDesign(p.s.name));
-    }
-    const last = pts[pts.length - 1];
-    text(svg, x(last.b) - 8, y(last.v) - 9, fmt(axis, last.v / a.factor), { "text-anchor": "end", class: "ink", "font-size": 11.5 });
-  }
-  const tbl = $("#ladder-table");
-  tbl.textContent = "";
-  const table = h("table", {}, tbl);
-  const head = h("tr", {}, h("thead", {}, table));
-  for (const c of ["Budget", "Cost a year", "Share of the treasury a year", "Participation", "ADA a year per point of participation"]) h("th", { className: c === "Budget" ? "" : "num" }, head, c);
-  const body = h("tbody", {}, table);
-  for (const s of steps) {
-    const tr = h("tr", { className: "pick" + (s.name === state.selected ? " sel" : "") }, body);
-    tr.addEventListener("click", () => openDesign(s.name));
-    const cost = val(s, "annual_cost_ada");
-    const part = val(s, "participation") * 100;
-    h("td", {}, tr, `${ada(s.budget)} ADA (${pretty(s.name)})`);
-    h("td", { className: "num" }, tr, ada(cost) + " ADA");
-    h("td", { className: "num" }, tr, D.meta.treasury ? pct(cost / D.meta.treasury, 2) : "–");
-    h("td", { className: "num" }, tr, fmt("participation", part / 100));
-    h("td", { className: "num" }, tr, part > 0 ? ada(cost / part) + " ADA" : "–");
   }
 }
 

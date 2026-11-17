@@ -157,3 +157,11 @@ search:
   holdout_seeds: 100
   budgets_ada: [1000000, 2500000, 5000000, 10000000]
   allow_hard_fork: true     # hard-fork-only designs are searched and flagged, never shortlisted
+
+# The AI research loop (`rss-gov research --rounds N`; program.md). Nothing else runs it.
+research:
+  program: program.md
+  # Run once per round; "{prompt}" becomes program.md plus the round number.
+  agent: [claude, -p, "{prompt}", --allowedTools,
+          "Read,Write,Edit,Bash(rss-gov static:*),Bash(rss-gov try:*)"]
+  tries_per_holdout: 30     # attempts judged on one set of holdout seeds before fresh ones

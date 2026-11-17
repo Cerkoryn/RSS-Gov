@@ -25,10 +25,16 @@ GENERATED = re.compile(r"g\d+_\d+")  # names the search gives its own designs
 META = {"hypothesis": 2000, "author": 80}  # free text a proposal may carry, with length limits
 EXTRA = {"submitted", "source"}  # bookkeeping kept with a submission
 RESERVED = set(mechanisms.PRESETS)
+AGENT = "agent"  # the source of designs from `rss-gov research`: shown with the search's
+
+# Each field: `label` and `help` for the form, `short` for the list of a design's settings,
+# `tag` for brief titles such as "Middle out · skip 20" ({} is the value).
 
 FIELDS = [
     dict(
         name="budget_ada",
+        short="Budget",
+        tag="{} ADA",
         group="Budget",
         kind="ada",
         min=100_000,
@@ -40,6 +46,8 @@ FIELDS = [
     ),
     dict(
         name="activity_gate",
+        short="Minimum vote rate",
+        tag="gate {}",
         group="Who qualifies",
         kind="share",
         min=0,
@@ -51,6 +59,8 @@ FIELDS = [
     ),
     dict(
         name="min_stake_ada",
+        short="Minimum voting power",
+        tag="≥{} ADA power",
         group="Who qualifies",
         kind="ada",
         min=0,
@@ -61,6 +71,8 @@ FIELDS = [
     ),
     dict(
         name="min_share",
+        short="Minimum share of power",
+        tag="≥{} of power",
         group="Who qualifies",
         kind="share",
         min=0,
@@ -73,6 +85,8 @@ FIELDS = [
     ),
     dict(
         name="min_delegators",
+        short="Minimum delegators",
+        tag="{}+ delegators",
         group="Who qualifies",
         kind="int",
         min=0,
@@ -84,6 +98,8 @@ FIELDS = [
     ),
     dict(
         name="k_exclude",
+        short="Skip the largest",
+        tag="skip {}",
         group="Who qualifies",
         kind="int",
         min=0,
@@ -94,17 +110,21 @@ FIELDS = [
     ),
     dict(
         name="n_pay",
+        short="Then pay at most",
+        tag="pay {}",
         group="Who qualifies",
         kind="int",
         min=0,
         max=5_000,
-        step=10,
+        step=1,
         label="Pay at most this many DReps (0: no limit)",
         help="After skipping the largest, only the next this-many qualifying DReps by voting "
         "power are paid.",
     ),
     dict(
         name="roll_down",
+        short="Pass places down",
+        tag="roll-down",
         group="Who qualifies",
         kind="bool",
         label="Pass a paid place down when a DRep above does not vote",
@@ -114,6 +134,8 @@ FIELDS = [
     ),
     dict(
         name="top_weight",
+        short="Pay to the skipped",
+        tag="top at {}",
         group="Who qualifies",
         kind="share",
         min=0,
@@ -125,6 +147,8 @@ FIELDS = [
     ),
     dict(
         name="alpha",
+        short="Pay grows with power",
+        tag="α {}",
         group="How the money is split",
         kind="number",
         min=0,
@@ -136,6 +160,8 @@ FIELDS = [
     ),
     dict(
         name="basis",
+        short="Size means",
+        tag="by {}",
         group="How the money is split",
         kind="choice",
         choices=[
@@ -148,6 +174,8 @@ FIELDS = [
     ),
     dict(
         name="equal_share",
+        short="Split equally",
+        tag="{} equal",
         group="How the money is split",
         kind="share",
         min=0,
@@ -159,6 +187,8 @@ FIELDS = [
     ),
     dict(
         name="per_vote_ada",
+        short="Pay per vote",
+        tag="{} ADA/vote",
         group="How the money is split",
         kind="ada",
         min=0,
@@ -172,6 +202,8 @@ FIELDS = [
     ),
     dict(
         name="max_award_share",
+        short="Most to one DRep",
+        tag="≤{} each",
         group="How the money is split",
         kind="share",
         min=0,
@@ -182,18 +214,22 @@ FIELDS = [
     ),
     dict(
         name="cap_ada",
+        short="Counted power cap",
+        tag="cap {}",
         group="How the money is split",
         kind="ada",
         optional=True,
         min=0,
         max=10_000_000_000,
-        step=1_000_000,
+        step=100_000,
         label="Count at most this much voting power (empty: no cap)",
         help="Voting power above this counts for nothing when the money is split. Voting power "
         "itself is not changed.",
     ),
     dict(
         name="rationale_bonus",
+        short="Rationale bonus",
+        tag="rationale +{}",
         group="How the money is split",
         kind="share",
         min=0,
@@ -205,6 +241,8 @@ FIELDS = [
     ),
     dict(
         name="pledge_leverage",
+        short="Own-stake limit",
+        tag="≤{}× own stake",
         group="Own stake",
         kind="number",
         min=0,
@@ -216,6 +254,8 @@ FIELDS = [
     ),
     dict(
         name="hard_cap",
+        short="Limit voting power itself",
+        tag="hard cap",
         group="Own stake",
         kind="bool",
         label="Also limit voting power itself (needs a hard fork)",
@@ -224,6 +264,8 @@ FIELDS = [
     ),
     dict(
         name="delegator_share",
+        short="To delegators",
+        tag="{} to delegators",
         group="Delegators",
         kind="share",
         min=0,
@@ -235,6 +277,8 @@ FIELDS = [
     ),
     dict(
         name="delegator_mode",
+        short="Delegators paid",
+        tag="{} delegators",
         group="Delegators",
         kind="choice",
         choices=[
@@ -247,6 +291,33 @@ FIELDS = [
     ),
 ]
 BY_NAME = {f["name"]: f for f in FIELDS}
+
+
+def amount(ada):
+    """ADA briefly: 2.5M, 100k, 10."""
+    ada = float(ada)
+    if ada >= 1e6:
+        return f"{ada / 1e6:g}M"
+    return f"{ada / 1e3:g}k" if ada >= 1e3 else f"{ada:g}"
+
+
+def tag(name, value):
+    """One setting, briefly, as in "Middle out · skip 20": "skip 20", "1M ADA", "no cap"."""
+    field = BY_NAME[name]
+    kind = field["kind"]
+    if value is None or (kind == "bool" and not value):
+        return "no " + field["tag"].replace("{}", "").strip()
+    if kind == "bool":
+        return field["tag"]
+    if kind == "ada":
+        value = amount(value)
+    elif kind == "share":
+        value = f"{round(float(value) * 100, 2):g}%"
+    elif kind == "int":
+        value = f"{int(value):,}"
+    elif kind == "number":
+        value = f"{float(value):g}"
+    return field["tag"].format(value)
 
 
 def _number(field, value):
@@ -443,7 +514,9 @@ def record(results, scheme, entry, runs, meta):
     if runs is not None:
         runs.to_parquet(path / f"{scheme.name}.parquet")
     entry = {**entry, **{k: meta[k] for k in META if k in meta}}
-    entry.update(evaluated=now(), calibration=fingerprint(results))
+    entry.update(
+        evaluated=now(), calibration=fingerprint(results), source=meta.get("source", "cli")
+    )
     (path / f"{scheme.name}.json").write_text(json.dumps(entry, indent=1, default=float))
 
 
@@ -453,6 +526,8 @@ def listing(results):
     current = fingerprint(results)
     rows = []
     for name, row in submitted(results).items():
+        if row.get("source") == AGENT:  # the research agent's designs are listed with the search's
+            continue
         item = dict(
             name=name,
             author=row.get("author", ""),

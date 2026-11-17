@@ -15,7 +15,8 @@ is to propose better designs and to explain why they should work.
 3. Write up to five designs in `candidates.yaml` (format below).
 4. Run `rss-gov static --schemes candidates.yaml`. It is instant and exact: look at
    `split_gain` and who gets paid before spending simulation time.
-5. Run `rss-gov try candidates.yaml`.
+5. Run `rss-gov try --source agent candidates.yaml`. Put each design's hypothesis in its
+   `hypothesis` field: it is shown with the design if it is accepted.
 6. Record the hypothesis and the outcome in `notes/` (one short file per round). A
    rejected proposal that kills a hypothesis is a useful result.
 
@@ -30,6 +31,7 @@ not a recommendation: the report's shortlist also applies the guardrails.
 
 ```yaml
 - name: capped_floor_25          # unique, descriptive
+  hypothesis: A floor of 25 delegators makes splitting costly without losing participation.
   alpha: 1.0                     # weight = counted stake ** alpha
   cap_ada: 10000000              # counted stake is at most this
   min_delegators: 25
@@ -70,5 +72,6 @@ Every scheme pays only for explicit votes; that is not a parameter.
   assumed"). A design that wins by exploiting a gap in the model is a bug report, not a
   result.
 - Say whether a design needs anything not on chain today.
-- The holdout seeds are reused by every `try`. After about thirty proposals, ask for the
-  holdout seeds to be changed and the search rerun.
+- The holdout seeds are reused by every `try`. `rss-gov research` replaces them after
+  `research.tries_per_holdout` attempts and tries the accepted designs again; a design
+  accepted on luck then drops out. Do not try to work around this.

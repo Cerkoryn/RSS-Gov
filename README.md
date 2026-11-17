@@ -38,6 +38,7 @@ on it. Every scheme pays only for explicit votes (Yes, No and Abstain count alik
 | Simulate each rule over many seeds and response scenarios | `rss-gov experiment` | chain data + assumed response |
 | Search the rule family; judge finalists on unseen seeds | `rss-gov search` | chain data + assumed response |
 | Test designs proposed by a person or an AI agent | `rss-gov try candidates.yaml` | same |
+| Let an AI agent propose and test designs (never run by `all`) | `rss-gov research --rounds N` | same |
 | Write `results/report.md` with figures, and the results site in `results/site/` | `rss-gov report` | |
 | Check and store a proposal (YAML or a GitHub issue) | `rss-gov submit` | |
 
@@ -65,8 +66,8 @@ validation tolerances.
 The results site in `results/site/` has three pages:
 
 - **Results**: a scorecard of every design on every axis, a trade-off chart for any two
-  axes, which assumption each result rests on, what more money buys, and the check
-  against history.
+  axes, which assumption each result rests on, and the check against history. Each
+  design lists the settings it was simulated with and the other runs of the same design.
 - **How it works**: `METHODS.md`, starting with a plain-language summary.
 - **Propose a scheme**: a form that builds a rule in the reward family, shows its exact
   checks at once (computed in the browser) and submits it for simulation. Every proposal
@@ -108,12 +109,15 @@ show. Things to keep in mind:
 
 ## Working with an AI agent
 
-`program.md` is the brief for an agent (Claude Code, Codex) that proposes designs. The
-agent edits `candidates.yaml` and runs `rss-gov try`; the evaluator is frozen, and a
+`program.md` is the brief for an agent (Claude Code, Codex) that proposes designs.
+`rss-gov research --rounds N` runs it (the command is `research.agent` in `config.yaml`);
+nothing else does. The agent edits `candidates.yaml` and runs `rss-gov try --source
+agent`; the evaluator is frozen, and a
 proposal is accepted only if it differs meaningfully from the designs already on the
 front and widens it on holdout seeds by more than noise. Each proposal is logged with its
-change on every axis. This uses a coding subscription a few times an hour, not once per
-simulation.
+change on every axis, and accepted designs are shown with the search's. The holdout seeds
+are replaced automatically once the agent has used them up. This uses a coding
+subscription a few times an hour, not once per simulation.
 
 `AGENTS.md` has the rules for changing the code.
 

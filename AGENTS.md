@@ -14,7 +14,8 @@ RSS-Gov evaluates treasury-funded reward schemes for Cardano governance. Read
       model.py             the simulation; no I/O
       calibrate.py         fit the unpaid model to history; validation gate
       experiment.py        axes, seeds, scenarios, paired comparisons
-      search.py            evolutionary search, holdout judging, `try`
+      search.py            evolutionary search, holdout judging, `try`, holdout rotation
+      research.py          `rss-gov research`: the AI agent loop (program.md); run only by hand
       metrics.py           concentration, Pareto fronts, hypervolume
       report.py            results/report.md and figures
       website.py           results/site/: the pages, data.js, METHODS.md rendered

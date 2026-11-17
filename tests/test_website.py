@@ -52,3 +52,23 @@ def test_generated_designs_get_short_distinct_names():
     assert names["g1_2"] == "Proportional, half to delegators, ≤100× own stake, 10M ADA"
     assert names["g1_3"] == "Equal, ranks 21–420, 1M ADA"
     assert len(set(names.values())) == len(names)
+
+
+def test_a_design_close_to_a_named_one_is_named_after_it():
+    from rss_gov import mechanisms, proposals
+
+    base = {
+        name: {**mechanisms.PRESETS[name], "budget_ada": 5e6} for name in ("middle_out", "capped")
+    }
+    schemes = {name: mechanisms.scheme(name=name, **rule) for name, rule in base.items()}
+    near = {**base["middle_out"], "k_exclude": 20, "budget_ada": 1e6}
+    far = {**near, "min_delegators": 50}
+    schemes["g1_1"] = mechanisms.scheme(name="g1_1", **near)
+    schemes["g1_2"] = mechanisms.scheme(name="g1_2", **far)
+    family = website.lineage(schemes, ["middle_out", "capped"])
+    assert family == {"g1_1": ("middle_out", ["budget_ada", "k_exclude"])}
+    assert [proposals.tag(f, near[f]) for f in family["g1_1"][1]] == ["1M ADA", "skip 20"]
+    assert proposals.tag("cap_ada", None) == "no cap"
+    assert proposals.tag("roll_down", False) == "no roll-down"
+    assert proposals.tag("min_share", 0.005) == "≥0.5% of power"
+    assert all(f["short"] and f["tag"] for f in proposals.FIELDS)

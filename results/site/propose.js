@@ -8,19 +8,6 @@ const YEAR = D.meta.epochs_per_year;
 const inputs = {};
 const groups = {};
 
-const ALPHA_WORDS = [[0, "everyone the same"], [0.5, "square root"], [1, "in proportion"]];
-
-function readout(field, v) {
-  if (v === null || v === undefined || v === "") return field.optional ? "no cap" : "–";
-  if (field.kind === "ada") return ada(v) + " ADA";
-  if (field.kind === "share") return pct(v, field.step < 0.01 ? 1 : 0);
-  if (field.name === "alpha") {
-    const word = ALPHA_WORDS.find(([a]) => Math.abs(a - v) < 1e-9);
-    return num(v, 2) + (word ? ` (${word[1]})` : v > 1 ? " (favours the largest)" : "");
-  }
-  if (field.name === "pledge_leverage") return v ? `${num(v, 0)}×` : "off";
-  return num(v, 0);
-}
 const isDefault = (f) => {
   const v = values[f.name], d = F.defaults[f.name];
   return v === d || ((v === null || v === "") && (d === null || d === undefined));
@@ -85,9 +72,9 @@ function presets() {
   const sel = $("#preset");
   const named = h("optgroup", { label: "Named schemes" }, sel);
   for (const name of Object.keys(F.presets)) h("option", { value: "preset:" + name }, named, pretty(name));
-  const others = D.schemes.filter((s) => s.kind === "search" || s.kind === "proposed");
+  const others = D.schemes.filter((s) => !F.presets[s.name]);
   if (others.length) {
-    const group = h("optgroup", { label: "Found by search, or proposed" }, sel);
+    const group = h("optgroup", { label: "Variations, found by search, or proposed" }, sel);
     for (const s of others) h("option", { value: "design:" + s.name }, group, pretty(s.name) + (s.breaks === "" ? " (inside every guardrail)" : ""));
   }
   sel.addEventListener("change", () => {
@@ -131,7 +118,7 @@ function yaml(p, withIdea = true) {
 
 function changed() {
   for (const { f, input, out } of Object.values(inputs)) {
-    out.textContent = f.kind === "bool" || f.kind === "choice" ? "" : readout(f, values[f.name]);
+    out.textContent = f.kind === "bool" || f.kind === "choice" ? "" : setting(f, values[f.name]);
     if (f.name === "hard_cap") input.disabled = !values.pledge_leverage;
     if (f.name === "roll_down") input.disabled = !values.n_pay;
   }
@@ -152,7 +139,7 @@ function invalid(p) {
   for (const f of F.fields) {
     const v = p[f.name];
     if (f.kind === "bool" || f.kind === "choice" || (f.optional && v === null)) continue;
-    if (typeof v !== "number" || !Number.isFinite(v) || v < f.min || v > f.max) return `${f.label}: between ${readout(f, f.min)} and ${readout(f, f.max)}.`;
+    if (typeof v !== "number" || !Number.isFinite(v) || v < f.min || v > f.max) return `${f.label}: between ${setting(f, f.min)} and ${setting(f, f.max)}.`;
     if (f.kind === "int" && v !== Math.round(v)) return `${f.label}: a whole number.`;
   }
   if (p.per_vote_ada && (p.alpha !== 0 || p.delegator_share)) return "Fixed pay per vote is the same for every DRep: set how pay grows with voting power to 0 and pay nothing to delegators.";

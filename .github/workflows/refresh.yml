@@ -90,14 +90,10 @@ jobs:
           uv run rss-gov experiment
           uv run rss-gov search | tee "$RUNNER_TEMP/search.log"
 
-      - name: Re-run the community proposals
+      - name: Re-run the stored proposals
         if: steps.tip.outputs.new == 'true'
         run: |
-          shopt -s nullglob
-          : > "$RUNNER_TEMP/proposals.log"
-          for file in results/proposals/*.yaml; do
-            uv run rss-gov try "$file" | tee -a "$RUNNER_TEMP/proposals.log"
-          done
+          uv run rss-gov try --stored | tee "$RUNNER_TEMP/proposals.log"
 
       - name: Write the report and the site
         if: steps.tip.outputs.new == 'true'

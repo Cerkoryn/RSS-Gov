@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
+from rss_gov import proposals  # noqa: E402
 from rss_gov.proposals import GENERATED  # noqa: E402
 
 
@@ -497,12 +498,12 @@ def write(study):
     if summary_path.exists():
         summary = pd.read_csv(summary_path)
         base = summary[(summary.scheme == "unpaid") & (summary.scenario == "central")].iloc[0]
-        ladder = [
-            row["name"]
+        variations = {  # config rows that start from a named design and change a setting
+            row["name"]: row
             for row in study.config["experiment"]["schemes"]
-            if isinstance(row, dict) and "budget_ada" in row
-        ]
-        names = [n for n in summary.scheme.unique() if n != "unpaid" and n not in ladder]
+            if isinstance(row, dict) and row.get("preset") and row["name"] != row["preset"]
+        }
+        names = [n for n in summary.scheme.unique() if n != "unpaid" and n not in variations]
         by_scenario = {s: summary[summary.scenario == s].set_index("scheme") for s in ranking}
         central = by_scenario["central"].loc[names].reset_index()
         text += [
@@ -556,14 +557,17 @@ def write(study):
                     "",
                 ]
 
-        if ladder:
-            parent = next(
-                row["preset"]
-                for row in study.config["experiment"]["schemes"]
-                if isinstance(row, dict) and row.get("name") == ladder[0]
-            )
-            steps = by_scenario["central"].loc[[*ladder, parent]].sort_values("annual_cost_ada")
+        if variations:
+            steps = by_scenario["central"].loc[list(variations)]
+            rules = {s.name: s.to_dict() for s in study.schemes(list(variations.values()))}
             table = pd.DataFrame({"scheme": steps.index})
+            table["varies"] = [
+                f"`{row['preset']}`: "
+                + ", ".join(
+                    proposals.tag(k, rules[n][k]) for k in row if k not in ("name", "preset")
+                )
+                for n, row in variations.items()
+            ]
             cost = steps.annual_cost_ada.values
             table["cost a year"] = [f"{c / 1e6:.1f}M" for c in cost]
             if data.treasury:
@@ -575,11 +579,11 @@ def write(study):
                 f"{c / g:,.0f}" if g > 0 else "" for c, g in zip(cost, gain)
             ]
             text += [
-                "### What more money buys",
+                "### Variations of named designs",
                 "",
-                f"The `{parent}` rule at four budgets, `central` scenario. The response to a "
-                "reward is assumed to grow with its logarithm, so doubling the budget buys much "
-                "less than double.",
+                "Named designs with a setting changed, `central` scenario; compare each with its "
+                "named design in the scorecard. The response to a reward is assumed to grow with "
+                "its logarithm, so a bigger budget buys less than proportionally more.",
                 "",
                 _table(table),
                 "",

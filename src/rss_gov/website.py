@@ -88,13 +88,6 @@ SHAPES = {
 }
 
 
-def _amount(ada):
-    ada = float(ada)
-    if ada >= 1e6:
-        return f"{ada / 1e6:g}M"
-    return f"{ada / 1e3:g}k" if ada >= 1e3 else f"{ada:g}"
-
-
 def _features(s):
     """What sets a rule apart, most telling first."""
     out = []
@@ -122,7 +115,7 @@ def _features(s):
     if s["max_award_share"]:
         out.append(f"≤{s['max_award_share']:.0%} each")
     if small_cap:
-        out.append(f"{_amount(cap)} cap")
+        out.append(f"{proposals.amount(cap)} cap")
     if s["rationale_bonus"] >= 1:
         out.append(f"rationales ×{1 + s['rationale_bonus']:g}")
     if s["pledge_leverage"]:
@@ -134,11 +127,11 @@ def _features(s):
     if s["activity_gate"]:
         out.append(f"{s['activity_gate']:.0%} turnout")
     if s["min_stake_ada"]:
-        out.append(f"min {_amount(s['min_stake_ada'])}")
+        out.append(f"min {proposals.amount(s['min_stake_ada'])}")
     if s["min_delegators"]:
         out.append(f"{int(s['min_delegators'])}+ delegators")
     if cap is not None and np.isfinite(cap) and not small_cap:
-        out.append(f"{_amount(cap)} cap")
+        out.append(f"{proposals.amount(cap)} cap")
     return out
 
 
@@ -152,7 +145,7 @@ def titles(schemes):
         s = scheme.to_dict()
         shape = SHAPES.get(float(s["alpha"]), f"Power {float(s['alpha']):g}")
         feats = _features(s)
-        parts[name] = (shape, feats, feats[:1], f"{_amount(s['budget_ada'])} ADA")
+        parts[name] = (shape, feats, feats[:1], f"{proposals.amount(s['budget_ada'])} ADA")
     name_of = {n: ", ".join([p[0], *p[2], p[3]]) for n, p in parts.items()}
     groups = {}
     for n, title in name_of.items():
@@ -169,6 +162,30 @@ def titles(schemes):
             if extra:
                 name_of[n] = ", ".join([shape, *chosen, extra, budget])
     return name_of
+
+
+def _pretty(name):
+    """A named design as people read it: "middle_out" becomes "Middle out" (common.js too)."""
+    text = name.replace("_", " ")
+    return text[:1].upper() + text[1:]
+
+
+def lineage(schemes, bases):
+    """Each design's nearest named design, if no more than two settings differ from it.
+
+    Returns {name: (parent, [the settings that differ])} for every design not in `bases`
+    that is that close to one of them. Ties go to the named design listed first.
+    """
+    rules = {n: s.to_dict() for n, s in schemes.items()}
+    out = {}
+    for name, rule in rules.items():
+        if name in bases:
+            continue
+        changes = {b: [f for f in proposals.BY_NAME if rule[f] != rules[b][f]] for b in bases}
+        parent = min(changes, key=lambda b: len(changes[b]), default=None)
+        if parent is not None and len(changes[parent]) <= 2:
+            out[name] = (parent, changes[parent])
+    return out
 
 
 def _plain(value):
@@ -231,6 +248,8 @@ def _proposals(study, holdout):
         runs = pd.read_parquet(runs_path)
         if set(runs.seed.unique()) != seeds:
             continue
+        if entry.get("source") == proposals.AGENT and not entry.get("accepted"):
+            continue  # the agent's rejected attempts stay in the ledger
         row, _ = proposals.split(entry["scheme"])
         found[path.stem] = (mechanisms.from_config(row, 0), entry, runs)
     return found
@@ -265,8 +284,6 @@ def build(study):
     rows = config["experiment"]["schemes"]
     schemes = {s.name: s for s in study.schemes(rows) if s.name != BASELINE}
     named = set(schemes)
-    ladder = [r["name"] for r in rows if isinstance(r, dict) and "budget_ada" in r]
-    parent = next((r["preset"] for r in rows if isinstance(r, dict) and r.get("preset")), None)
     summary = pd.read_csv(out / "experiment_summary.csv")
     base = summary[(summary.scheme == BASELINE) & (summary.scenario == ranking[0])].iloc[0]
 
@@ -288,6 +305,11 @@ def build(study):
     facts = static.analyse(study, list(schemes.values())).set_index("scheme")
 
     generated = titles({n: s for n, s in schemes.items() if proposals.GENERATED.fullmatch(n)})
+    family = lineage(schemes, [n for n in schemes if n in named and n in mechanisms.PRESETS])
+    for name, (parent, changed) in family.items():
+        generated[name] = f"{_pretty(parent)} · " + (
+            ", ".join(proposals.tag(f, schemes[name].to_dict()[f]) for f in changed) or "same rule"
+        )
     designs = []
     for name, scheme in schemes.items():
         results = {}
@@ -300,11 +322,9 @@ def build(study):
             for a in names
         }
         if name in community:
-            kind = "proposed"
+            kind = "search" if community[name][1].get("source") == proposals.AGENT else "proposed"
         elif proposals.GENERATED.fullmatch(name):
             kind = "search"
-        elif name in ladder:
-            kind = "ladder"
         elif name in named:
             kind = "named"
         else:
@@ -314,6 +334,8 @@ def build(study):
         design = dict(
             name=name,
             title=generated.get(name),
+            parent=family.get(name, (None, []))[0],
+            changed=family.get(name, (None, []))[1],
             rule=scheme.label(),
             kind=kind,
             budget=scheme.budget_ada,
@@ -330,7 +352,8 @@ def build(study):
             _, entry, _ = community[name]
             design["breaks"] = _judged(summary, name, axes, ranking, guard)
             design["proposal"] = {
-                k: entry.get(k) for k in ("hypothesis", "author", "accepted", "reason", "evaluated")
+                k: entry.get(k)
+                for k in ("hypothesis", "author", "accepted", "reason", "evaluated", "source")
             }
         designs.append(design)
 
@@ -397,7 +420,6 @@ def build(study):
                 validation=calibration,
                 capital=config["sybil"]["newcomer_capital_ada"],
                 min_payout=study.params.min_payout_ada,
-                ladder_parent=parent,
                 repository=site.get("repository"),
                 built=proposals.now(),
             ),
