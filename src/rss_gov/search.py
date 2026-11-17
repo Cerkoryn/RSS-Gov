@@ -209,18 +209,18 @@ def ledger(results):
 
 
 def holdout_seeds(study):
-    """The holdout seeds: the first set the research agent has not used up.
+    """The holdout seeds: the first set that has not been used up.
 
     Every `try` is judged on these seeds, so a long run of attempts would fill the front
-    with designs that were lucky on them. After `research.tries_per_holdout` simulated
-    attempts by the agent, a set counts as used and the next one takes its place. Without
-    the agent, it is always the first set.
+    with designs that were lucky on them. After `search.tries_per_holdout` new designs have
+    been simulated on a set (from anyone; re-running a stored proposal does not count), it
+    counts as used and the next one takes its place.
     """
     n = int(study.config["search"]["holdout_seeds"])
-    limit = int((study.config.get("research") or {}).get("tries_per_holdout", 30))
+    limit = int(study.config["search"].get("tries_per_holdout", 30))
     used = {}
     for entry in ledger(study.results):
-        if entry.get("source") == proposals.AGENT and "hypervolume_gain" in entry:
+        if "hypervolume_gain" in entry and not entry.get("rerun"):
             used[entry.get("holdout")] = used.get(entry.get("holdout"), 0) + 1
     first = HOLDOUT_OFFSET
     while used.get(first, 0) >= limit:
@@ -453,6 +453,8 @@ def try_candidates(study, rows, log=print, processes=None, source="cli"):
             rule=scheme.label(),
             source=meta["source"],
             holdout=int(seeds[0]),
+            # a stored proposal simulated before: it does not use up the holdout seeds
+            rerun=holder is not None and (proposals.folder(out) / f"{scheme.name}.json").exists(),
         )
         runs = None
         if not scheme.paid:

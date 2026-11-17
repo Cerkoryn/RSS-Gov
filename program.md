@@ -72,6 +72,6 @@ Every scheme pays only for explicit votes; that is not a parameter.
   assumed"). A design that wins by exploiting a gap in the model is a bug report, not a
   result.
 - Say whether a design needs anything not on chain today.
-- The holdout seeds are reused by every `try`. `rss-gov research` replaces them after
-  `research.tries_per_holdout` attempts and tries the accepted designs again; a design
+- The holdout seeds are reused by every `try`. `rss-gov try` replaces them after
+  `search.tries_per_holdout` new designs and tries the accepted ones again; a design
   accepted on luck then drops out. Do not try to work around this.

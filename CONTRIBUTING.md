@@ -13,10 +13,12 @@ DRep's own stake, and the budget. Every rule pays only for explicit votes.
 **On the site.** The [Propose a scheme](https://cerkoryn.github.io/RSS-Gov/propose.html)
 page builds the rule with a form and shows the exact checks at once (who would be paid,
 how much splitting gains). **Submit on GitHub** opens a filled-in issue; you need a GitHub
-account. A maintainer reads it and adds the `approved` label, which starts the simulation
-on GitHub's servers. The result is posted on the issue with a preview of the site, and
-appears on the results page once its pull request is merged, next to every other design,
-whether or not it beats them.
+account. Creating the issue starts the simulation on GitHub's servers. Within about ten
+minutes the result is on the results page, next to every other design, whether or not it
+beats them, and posted on the issue. The site shows the rule, its numbers and your GitHub
+name, and links to the issue for the idea behind it. Each person can submit three
+proposals a day, and the repository takes twenty; beyond that a proposal waits for a
+maintainer.
 
 **As a file.** Download the YAML from the form, or write it by hand:
 
@@ -92,10 +94,10 @@ Everything runs on GitHub, with no server of our own:
 
 | Workflow | When | What it does |
 |---|---|---|
-| `pages.yml` | `results/site/` changes on `main` | copies it to the `gh-pages` branch, which GitHub Pages serves |
-| `proposal.yml` | the `approved` label is added to a `proposal` issue | checks the rule, runs `rss-gov try` and `rss-gov site`, opens a pull request, publishes a preview under `pr-preview/pr-N/`, comments on the issue |
+| `pages.yml` | `results/site/` changes on `main`, or a proposal was published | copies it to the `gh-pages` branch, which GitHub Pages serves |
+| `proposal.yml` | a `proposal` issue is opened (or labelled `approved`) | checks the daily limits and the rule, runs `rss-gov try` and `rss-gov site`, commits the result to `main`, starts `pages.yml`, comments on and closes the issue |
 | `refresh.yml` | the 1st of each month, or by hand | pulls the latest mainnet data, refits and checks the model, re-runs the search and every proposal, publishes the data release and opens a pull request with a preview |
-| `preview-cleanup.yml` | a proposal or refresh pull request is merged or closed | removes its preview |
+| `preview-cleanup.yml` | a refresh pull request is merged or closed | removes its preview |
 | `tests.yml` | every push and pull request | tests and lint |
 
 **Data.** Runs use the mainnet data the calibration was fitted to, published as a release
@@ -104,8 +106,8 @@ named `data-epoch-<tip>` (`data.tar.gz`: `manifest.json`, `tip.json`, `tables/`)
 
 **Monthly refresh.** `refresh.yml` takes a few hours on GitHub's runners and does nothing
 when mainnet has not reached a new epoch. Its pull request says whether the model check
-passed; if it failed, read the validation table before merging. After merging, re-run any
-proposal pull requests that were opened before it. The Koios API key, if any, is the
+passed; if it failed, read the validation table before merging. Proposals published while
+it was open are not in it and make it conflict: close it and run the refresh again by hand. The Koios API key, if any, is the
 repository secret `KOIOS_API_KEY`. GitHub pauses scheduled workflows in a repository with
 no activity for 60 days; **Actions → Refresh the data → Enable workflow** resumes it.
 
@@ -118,12 +120,13 @@ tar -czf data.tar.gz -C data/pull manifest.json tip.json tables
 gh release create data-epoch-<tip> data.tar.gz --title "Mainnet data, epoch <tip>"
 ```
 
-**Reviewing a proposal.** Read the issue; add `approved` to simulate it (anything else:
-comment or close). Each proposal's pull request changes only its own files in
-`results/proposals/`, `results/ledger.jsonl` and `results/site/`. Two proposals simulated
-before either is merged conflict in those last two; merge one, then re-run the other with
-**Actions → Simulate a proposal → Run workflow** and its issue number. The same re-runs a
-proposal whose rule was edited in the issue.
+**Looking after proposals.** Nobody approves a proposal: it is published as it arrives,
+as one commit ("Simulate proposal issue_N (#N)") that changes only `results/`; the job
+refuses to push anything else. To take one down, revert its commit. A proposal over the
+daily limit waits with a comment; add the `approved` label to run it anyway. **Actions →
+Simulate a proposal → Run workflow** with the issue number runs one that failed for a
+reason outside it (an edited rule is a new proposal: open a new issue). A proposal is
+stored as `issue_N` under its author's GitHub name, whatever the YAML says.
 
 **Why the runs can be trusted.** Python and package versions come from `uv.lock`, the data
 is checked by hash, and every run is seeded, so a workflow run reproduces what

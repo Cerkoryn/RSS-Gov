@@ -128,7 +128,7 @@ jobs:
               echo "**Model check: FAILED.** The refitted model does not reproduce recent history within the tolerances in config.yaml. Read the validation table before merging."
             fi
             echo
-            echo "Merging publishes it. Proposal pull requests opened before this one should be re-run afterwards."
+            echo "Merging publishes it. Proposals simulated after this pull request was opened are not in it: if any were (it will then conflict), close it and run the refresh again by hand."
             echo
             echo "<details><summary>Model check</summary>"
             echo

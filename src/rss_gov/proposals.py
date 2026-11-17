@@ -520,6 +520,15 @@ def record(results, scheme, entry, runs, meta):
     (path / f"{scheme.name}.json").write_text(json.dumps(entry, indent=1, default=float))
 
 
+def issue(source):
+    """The GitHub issue a submission came from (its `source` is "issue #12"), or None.
+
+    The site shows no text of an issue's own: it links to the issue instead.
+    """
+    found = re.fullmatch(r"issue #(\d+)", str(source or ""))
+    return int(found.group(1)) if found else None
+
+
 def listing(results):
     """Every proposal with its state: queued (not simulated yet), done or stale."""
     path = folder(results)
@@ -528,10 +537,12 @@ def listing(results):
     for name, row in submitted(results).items():
         if row.get("source") == AGENT:  # the research agent's designs are listed with the search's
             continue
+        number = issue(row.get("source"))
         item = dict(
             name=name,
             author=row.get("author", ""),
-            hypothesis=row.get("hypothesis", ""),
+            hypothesis="" if number else row.get("hypothesis", ""),
+            issue=number,
             submitted=row.get("submitted"),
             source=row.get("source", ""),
         )

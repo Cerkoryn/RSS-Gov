@@ -228,7 +228,7 @@ function actions() {
       if (bad) { e.preventDefault(); say(bad, "err"); return; }
       const q = new URLSearchParams({ template: "proposal.yml", title: "Scheme proposal: " + p.name, hypothesis: p.hypothesis, rule: yaml(p, false) });
       b.href = `${REPO}/issues/new?${q}`;
-      say("Opened on GitHub: press “Create” there to send it. A maintainer then starts the simulation.", "ok");
+      say("Opened on GitHub: press “Create” there to send it. It is then simulated and added to this site, usually within ten minutes.", "ok");
     });
   }
   const dl = h("button", { className: "ghost", type: "button" }, host, "Download");
@@ -273,9 +273,14 @@ function renderList(rows) {
     const tr = h("tr", {}, body);
     const td = h("td", { style: "min-width:260px" }, tr);
     const title = h("div", { className: "dname" }, td);
-    if (p.state === "done") h("a", { href: "index.html#design=" + encodeURIComponent(p.name) }, title, pretty(p.name));
-    else title.textContent = pretty(p.name);
-    h("div", { className: "small" }, td, `${p.author || "Anonymous"} · ${date(p.submitted, false)}`);
+    const name = p.title || pretty(p.name);
+    if (p.state === "done") h("a", { href: "index.html#design=" + encodeURIComponent(p.name) }, title, name);
+    else title.textContent = name;
+    const by = h("div", { className: "small" }, td, `${p.author || "Anonymous"} · ${date(p.submitted, false)}`);
+    if (p.issue && REPO) {
+      by.appendChild(document.createTextNode(" · "));
+      h("a", { href: `${REPO}/issues/${p.issue}`, target: "_blank", rel: "noopener" }, by, `the idea behind it (#${p.issue})`);
+    }
     if (p.hypothesis) { const q = h("div", { className: "small", style: "max-width:460px; margin-top:4px; font-style:italic" }, td, "“" + (p.hypothesis.length > 220 ? p.hypothesis.slice(0, 219) + "…" : p.hypothesis) + "”"); q.title = p.hypothesis; }
     const [colour, label] = STATE[p.state] || ["var(--neutral)", p.state];
     const st = h("td", {}, tr);
@@ -293,7 +298,7 @@ function renderList(rows) {
 function showList() {
   renderList(D.proposals || []);
   if (REPO) {
-    const note = h("p", { className: "small", style: "margin:12px 0 0" }, $("#list"), "Proposals still waiting for review or simulation are ");
+    const note = h("p", { className: "small", style: "margin:12px 0 0" }, $("#list"), "Proposals still being simulated, or waiting because of the daily limit, are ");
     h("a", { href: `${REPO}/issues?q=${encodeURIComponent("is:issue is:open label:proposal")}`, target: "_blank", rel: "noopener" }, note, "open on GitHub");
     note.appendChild(document.createTextNode("."));
   }

@@ -8,7 +8,7 @@ body:
       value: |
         The easiest way to fill this in is the [Propose page](https://cerkoryn.github.io/RSS-Gov/propose.html): build the rule there, check it, and press **Submit on GitHub**.
 
-        A maintainer reads each proposal and starts the simulation. It runs on GitHub's servers, usually within a few minutes. The result is posted here as a comment, with a preview of the site including your design.
+        Your proposal is simulated on GitHub's servers as soon as you create this issue, and added to the site with its numbers, usually within ten minutes. The result is posted here as a comment. The site shows the rule, its numbers and your GitHub name, and links here for the idea behind it. Each person can submit three proposals a day; more wait for a maintainer.
   - type: textarea
     id: hypothesis
     attributes:

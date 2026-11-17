@@ -339,8 +339,12 @@ function detail() {
     const p = s.proposal;
     const box = h("div", { style: "margin-top:16px" }, host);
     const by = p.source === "agent" ? "Proposed by the research agent" : p.author ? `Proposed by ${p.author}` : "Proposed anonymously";
-    const as = s.title ? ` as “${s.name}”` : "";
-    h("div", { className: "small" }, box, by + as + (p.evaluated ? `, simulated ${date(p.evaluated, false)}` : ""));
+    const line = h("div", { className: "small" }, box, by + (p.evaluated ? `, simulated ${date(p.evaluated, false)}` : ""));
+    // An issue's own text stays on GitHub: the site links to it rather than repeating it.
+    if (p.issue && D.meta.repository) {
+      line.appendChild(document.createTextNode(". The idea behind it: "));
+      h("a", { href: `${D.meta.repository.replace(/\/$/, "")}/issues/${p.issue}`, target: "_blank", rel: "noopener" }, line, `issue #${p.issue}`);
+    }
     if (p.hypothesis) h("div", { className: "quote" }, box, p.hypothesis);
     h("div", { className: "small" }, box, (p.accepted ? "Offers a trade-off no other design did. " : "Did not add a new trade-off: ") + (p.reason || ""));
   }

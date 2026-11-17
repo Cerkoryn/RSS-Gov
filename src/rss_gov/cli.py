@@ -155,7 +155,11 @@ def cmd_try(args):
     if bool(args.file) == args.stored:
         sys.exit("give either a file or --stored")
     study = _study(args)
-    rows = search.stored_rows(study.results) if args.stored else _scheme_rows(study, args.file)
+    if args.stored:
+        rows = search.stored_rows(study.results)
+    else:
+        search.rotate(study, _say, args.processes)  # fresh holdout seeds once these are used up
+        rows = _scheme_rows(study, args.file)
     search.try_candidates(study, rows, _say, args.processes, args.source)
 
 
@@ -175,8 +179,7 @@ def cmd_submit(args):
     config = experiment.load_config(args.config)
     try:
         payload = proposals.from_text(Path(args.file).read_text())
-        if args.author and not payload.get("author"):
-            payload["author"] = args.author
+        payload.update({k: v for k, v in (("name", args.name), ("author", args.author)) if v})
         scheme, meta = proposals.accept(config, payload)
     except (ValueError, yaml.YAMLError) as error:
         sys.exit(f"refused: {error}")
@@ -256,7 +259,8 @@ def main(argv=None):
 
     p = sub.add_parser("submit", help="check and store a proposal (YAML, or a GitHub issue body)")
     p.add_argument("file", help="the proposal, or a text file with a ```yaml block")
-    p.add_argument("--author", help="who proposed it, when the proposal does not say")
+    p.add_argument("--name", help="the name to store it under, instead of the proposal's own")
+    p.add_argument("--author", help="who proposed it, instead of what the proposal says")
     p.add_argument("--source", default="cli", help="where it came from, e.g. 'issue #12'")
     p.set_defaults(run=cmd_submit)
 

@@ -144,7 +144,7 @@ def test_used_holdout_seeds_are_replaced_and_proposals_tried_again(study, monkey
     community = _try(study, PROPOSAL)
     _agent(study, monkeypatch, accept=False)
     assert not search.rotate(study, QUIET, processes=1)  # one attempt does not use them up
-    study.config["research"]["tries_per_holdout"] = 1
+    study.config["search"]["tries_per_holdout"] = 1
     fresh = search.holdout_seeds(study)
     assert fresh[0] == search.HOLDOUT_OFFSET + 3
     assert search.rotate(study, QUIET, processes=1)
@@ -161,7 +161,6 @@ def test_research_runs_the_agent_command_with_its_source(study, tmp_path):
     study.config["research"] = dict(
         program=str(CONFIG.with_name("program.md")),
         agent=[sys.executable, "-c", script, "{prompt}"],
-        tries_per_holdout=30,
     )
     research.run(study, 1, QUIET, processes=1)
     assert marker.read_text() == proposals.AGENT
@@ -172,3 +171,24 @@ def test_a_named_variation_is_titled_and_listed_with_its_settings(study):
     (design,) = [d for d in data["schemes"] if d["name"] == "capped_1m"]
     assert design["kind"] == "named" and design["parent"] == "capped"
     assert design["changed"] == ["budget_ada"] and design["title"] == "Capped · 1M ADA"
+
+
+def test_an_issue_proposal_shows_no_text_of_its_own(study):
+    """Published with nobody reviewing it: titled from its rule, the idea linked, not shown."""
+    name = _try(study, dict(PROPOSAL, hypothesis="anything at all"))
+    data = website.build(study)
+    (design,) = [d for d in data["schemes"] if d["name"] == name]
+    assert design["proposal"]["issue"] == 1 and design["proposal"]["hypothesis"] is None
+    assert design["title"] and "Flat test" not in design["title"]
+    (listed,) = data["proposals"]
+    assert (
+        listed["issue"] == 1 and listed["hypothesis"] == "" and listed["title"] == design["title"]
+    )
+
+
+def test_rerunning_a_stored_proposal_does_not_use_up_the_holdout_seeds(study):
+    _try(study, PROPOSAL)
+    search.try_candidates(study, search.stored_rows(study.results), QUIET, processes=1)
+    assert [e["rerun"] for e in search.ledger(study.results)] == [False, True]
+    study.config["search"]["tries_per_holdout"] = 2
+    assert search.holdout_seeds(study)[0] == search.HOLDOUT_OFFSET

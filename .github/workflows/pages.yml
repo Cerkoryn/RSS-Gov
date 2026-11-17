@@ -1,5 +1,5 @@
 # Publish results/site/ on GitHub Pages (served from the gh-pages branch) whenever main
-# changes it, for example when a proposal's pull request is merged.
+# changes it. The proposal workflow starts it by hand: its own pushes do not trigger it.
 name: Publish the site
 
 on:
@@ -14,10 +14,18 @@ on:
 permissions:
   contents: write
 
+# Runs wait for each other, and each publishes main as it is when it starts, so the last
+# one always leaves the latest site.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
       - name: Publish results/site to gh-pages
         run: scripts/publish-pages.sh results/site .

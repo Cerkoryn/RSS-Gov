@@ -1,8 +1,11 @@
+from pathlib import Path
+
 import pytest
 import yaml
 
 from rss_gov import proposals
 
+CONFIG = Path(__file__).parents[1] / "config.yaml"
 VALID = dict(
     name="My Idea!", budget_ada=2_500_000, alpha=0.5, cap_ada=None, hypothesis="why", author="me"
 )
@@ -127,3 +130,19 @@ def test_the_research_agents_designs_are_not_listed_as_proposals(tmp_path):
     scheme, meta = proposals.parse(VALID)
     proposals.submit(tmp_path, scheme, meta, proposals.AGENT)
     assert proposals.listing(tmp_path) == []
+
+
+def test_an_issue_is_stored_under_its_number_and_github_name(tmp_path):
+    from rss_gov import cli
+
+    config = yaml.safe_load(CONFIG.read_text())
+    config["results"] = str(tmp_path / "results")
+    (tmp_path / "config.yaml").write_text(yaml.safe_dump(config))
+    issue = tmp_path / "issue.md"
+    issue.write_text("```yaml\n" + yaml.safe_dump([dict(VALID, author="someone else")]) + "```\n")
+    cli.main(["--config", str(tmp_path / "config.yaml"), "submit", str(issue),
+              "--name", "issue_7", "--author", "login", "--source", "issue #7"])  # fmt: skip
+    (row,) = proposals.listing(tmp_path / "results")
+    assert row["name"] == "issue_7" and row["author"] == "login" and row["issue"] == 7
+    assert row["hypothesis"] == ""
+    assert proposals.issue("issue #12") == 12 and proposals.issue("web") is None

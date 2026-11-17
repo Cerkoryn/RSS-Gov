@@ -394,9 +394,12 @@ Anyone can propose a design in the same family, through the "Propose a scheme" p
 as a YAML file. A proposal gets the exact static checks at once (the page computes them in
 the browser with the same formulas, and a test keeps the two implementations equal) and is
 then simulated on the holdout seeds by `rss-gov try`, so its numbers are directly
-comparable with the search finalists. Every proposal is kept in `results/proposals/` with
-its text, its verdict and its runs, and shown on the results page whether or not it joins
-the front. Proposals simulated under an older calibration are marked as needing a rerun.
+comparable with the search finalists. A proposal submitted as a GitHub issue is simulated
+and published as soon as it arrives, with no human step, up to three a day per person.
+Every proposal is kept in `results/proposals/` with its verdict and its runs, and shown on
+the results page whether or not it joins the front. The site titles it from its rule and
+links to the issue for the idea behind it rather than repeating the issue's text.
+Proposals simulated under an older calibration are marked as needing a rerun.
 
 An AI agent can propose designs the same way, following `program.md`. Only `rss-gov
 research --rounds N` starts it; nothing else does. Its designs are judged exactly like a
@@ -407,12 +410,13 @@ the front by a meaningful amount without being beaten by one, and raises the hol
 hypervolume by an amount whose 95% interval excludes zero. Every proposal is logged in
 `results/ledger.jsonl` with its change on each axis, accepted or not.
 
-Repeated proposals against the same holdout seeds will eventually fit them. After
-`research.tries_per_holdout` simulated attempts by the agent, its seeds count as used:
-before its next round the search's finalists are re-run on a fresh set of holdout seeds
-and judged again, and every stored proposal is tried again against them (the agent's
-only if it was accepted). A design that was accepted on luck then drops out. Community
-proposals are fewer and do not use the seeds up.
+Repeated proposals against the same holdout seeds will eventually fit them, and nobody
+reviews a proposal before it can join the front. So after `search.tries_per_holdout` new
+designs have been simulated on a set of holdout seeds (community or agent; re-running a
+stored proposal does not count), the set counts as used. The next `rss-gov try` first
+re-runs the search's finalists on a fresh set and judges them again, then tries every
+stored proposal again against them (the agent's only if it was accepted). A design that
+was accepted on luck then drops out.
 
 ## Tier C: measuring real reactions
 

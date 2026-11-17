@@ -304,11 +304,17 @@ def build(study):
     summary = summary.set_index(["scheme", "scenario"])
     facts = static.analyse(study, list(schemes.values())).set_index("scheme")
 
-    generated = titles({n: s for n, s in schemes.items() if proposals.GENERATED.fullmatch(n)})
-    family = lineage(schemes, [n for n in schemes if n in named and n in mechanisms.PRESETS])
+    # Every design but a named one gets a title made from its rule, never from a name a
+    # visitor chose: the named design it varies plus what changed, or a search-style title.
+    rules = dict(schemes)
+    for name, row in proposals.submitted(out).items():
+        rules.setdefault(name, mechanisms.from_config(proposals.split(row)[0], 0))
+    bases = [n for n in schemes if n in named and n in mechanisms.PRESETS]
+    generated = titles({n: s for n, s in rules.items() if n not in named})
+    family = lineage(rules, bases)
     for name, (parent, changed) in family.items():
         generated[name] = f"{_pretty(parent)} · " + (
-            ", ".join(proposals.tag(f, schemes[name].to_dict()[f]) for f in changed) or "same rule"
+            ", ".join(proposals.tag(f, rules[name].to_dict()[f]) for f in changed) or "same rule"
         )
     designs = []
     for name, scheme in schemes.items():
@@ -351,10 +357,13 @@ def build(study):
         if name in community:
             _, entry, _ = community[name]
             design["breaks"] = _judged(summary, name, axes, ranking, guard)
+            number = proposals.issue(entry.get("source"))
             design["proposal"] = {
-                k: entry.get(k)
-                for k in ("hypothesis", "author", "accepted", "reason", "evaluated", "source")
+                k: entry.get(k) for k in ("author", "accepted", "reason", "evaluated", "source")
             }
+            design["proposal"].update(
+                issue=number, hypothesis=None if number else entry.get("hypothesis")
+            )
         designs.append(design)
 
     calibration = json.loads((out / "calibration.json").read_text())["validation"]
@@ -444,7 +453,9 @@ def build(study):
                     if name != BASELINE
                 },
             ),
-            proposals=proposals.listing(out),
+            proposals=[
+                {**item, "title": generated.get(item["name"])} for item in proposals.listing(out)
+            ],
         )
     )
 

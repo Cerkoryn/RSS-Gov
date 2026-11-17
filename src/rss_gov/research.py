@@ -3,10 +3,9 @@
 Nothing else starts it: not `rss-gov all`, not any workflow. Each round runs the agent
 command in `config.yaml` (`research.agent`) with `program.md` as its instructions. The
 agent proposes designs and tests them with `rss-gov try --source agent`, so they are
-judged exactly like the search's own designs, on the holdout seeds. Accepted designs join
-the search's finalists and are shown with them; every attempt is in results/ledger.jsonl.
-Before each round the holdout seeds are replaced if the agent has used them up
-(`search.holdout_seeds`).
+judged exactly like the search's own designs, on the holdout seeds (`rss-gov try`
+replaces them once they are used up). Accepted designs join the search's finalists and
+are shown with them; every attempt is in results/ledger.jsonl.
 """
 
 import os
@@ -23,7 +22,6 @@ def run(study, rounds, log=print, processes=None):
     program = Path(config.get("program", "program.md")).read_text()
     env = {**os.environ, "RSS_GOV_SOURCE": proposals.AGENT}
     for k in range(1, rounds + 1):
-        search.rotate(study, log, processes)
         prompt = (
             f"{program}\n\nThis is round {k} of {rounds}. Test your designs with "
             "`rss-gov try --source agent candidates.yaml`."
