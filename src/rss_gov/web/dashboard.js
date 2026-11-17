@@ -106,10 +106,16 @@ function openDesign(name) {
   $("#detail").scrollTop = 0;
   renderAll();
 }
-function closeDrawer() {
+function hideDrawer() {
   document.body.classList.remove("drawer-open");
   $("#drawer").setAttribute("aria-hidden", "true");
   try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* file: URLs */ }
+}
+// Closing the panel also ends the selection: every chart and table shows all designs alike.
+function closeDrawer() {
+  hideDrawer();
+  state.selected = null;
+  renderAll();
   if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
 }
 
@@ -410,7 +416,13 @@ function detail() {
   const act = h("div", { className: "actions", style: "margin-top:20px" }, host);
   h("a", { className: "primary", href: "propose.html#from=" + encodeURIComponent(s.name) }, act, "Propose a variation");
   const see = h("button", { className: "ghost", type: "button" }, act, "Show on the chart");
-  see.addEventListener("click", () => { closeDrawer(); if (state.lead !== "pair") { state.lead = "pair"; lead(); } $("#best").scrollIntoView({ behavior: "smooth" }); });
+  // The selection stays: the chart picks out this design and its relatives. Where the panel
+  // would cover the chart, it steps aside; the chip above the chart ends the selection.
+  see.addEventListener("click", () => {
+    if (!matchMedia("(min-width: 1100px)").matches) { hideDrawer(); renderAll(); }
+    if (state.lead !== "pair") { state.lead = "pair"; lead(); }
+    $("#best").scrollIntoView({ behavior: "smooth" });
+  });
 }
 
 // Every setting the design was simulated with: the ones that are on, then the rest folded.
@@ -711,7 +723,7 @@ function scatter() {
     chip.style.marginBottom = "8px";
     h("span", { className: "dot" }, chip);
     chip.appendChild(document.createTextNode(`${pretty(chosen.name)} and ${family.size} close relative${family.size === 1 ? "" : "s"}  ✕`));
-    chip.addEventListener("click", () => { state.selected = null; lead(); });
+    chip.addEventListener("click", closeDrawer);
     host.insertBefore(chip, svg);
   }
   const dom = domains([...chartVisible(), ...extra.map((p) => p.s)]);
@@ -1279,7 +1291,6 @@ setTab("assumptions");
 renderAll();
 fromHash();
 $("#drawer-close").addEventListener("click", closeDrawer);
-$("#backdrop").addEventListener("click", closeDrawer);
 addEventListener("keydown", (e) => { if (e.key === "Escape" && document.body.classList.contains("drawer-open")) closeDrawer(); });
 addEventListener("hashchange", fromHash);
 let pending = null, lastWidth = innerWidth;
