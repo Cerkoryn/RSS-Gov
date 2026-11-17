@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How RSS-Gov works</title>
 <meta name="description" content="How RSS-Gov compares reward schemes for Cardano governance: data, model, assumptions, validation and how to read the results.">
-<link rel="stylesheet" href="site.css?v=058ecc5cd5">
+<link rel="stylesheet" href="site.css?v=a7638fa55c">
 </head>
 <body>
 <nav class="site" aria-label="Site">
@@ -195,7 +195,8 @@ history and reported as <code>supported_ratified</code> in the run tables.</p>
   another's shortfall. Today it is under 1%: see the data section for why that number is a
   proxy.</li>
 <li><strong>Cost</strong> is an axis because the budget is a design choice. Named schemes are compared
-  at one budget; the search varies it, and a budget ladder shows what more money buys.</li>
+  at one budget; the search varies it, and variations of named designs at other budgets
+  show what more money buys.</li>
 <li><strong>Sybil resistance</strong> is a measured quantity, not a pass/fail gate. Like cost, it is an
   exact property of a rule and is traded off against the other axes with no limit of its
   own. Its <code>scale</code> in <code>config.yaml</code> sets how fast it counts against a design in the
@@ -499,7 +500,7 @@ already give DReps that vote more.</p>
 <ol>
 <li><strong>Same start.</strong> Every scheme starts from the same chain snapshot.</li>
 <li><strong>Same money.</strong> Named schemes get the same budget and programme length. Where budget
-   varies (the ladder, the search) cost is an axis, so a cheaper design is not penalised
+   varies (variations, the search) cost is an axis, so a cheaper design is not penalised
    for buying less.</li>
 <li><strong>Same luck.</strong> All schemes share seeds, and every random draw about the outside world
    (which actions arrive, who would register, which accounts move) is common across
@@ -540,6 +541,11 @@ that interval includes zero, the search found nothing the named schemes did not 
 corners nobody wants (a very cheap programme that does nothing much). It tracks search
 progress. It does not rank designs: read the shortlist.</p>
 <h2 id="proposed-designs-community-and-agents">Proposed designs: community and agents<a class="headerlink" href="#proposed-designs-community-and-agents" title="Permanent link">#</a></h2>
+<p>Every design is a point in one family, so every setting of every design can be changed.
+The site lists the settings each design was simulated with, and gives a design that
+differs from a named one in one or two settings a short name of that kind ("Middle out ·
+skip 20"). Variations listed in <code>config.yaml</code> (a named design with some settings changed)
+are simulated like the named designs.</p>
 <p>Anyone can propose a design in the same family, through the "Propose a scheme" page or
 as a YAML file. A proposal gets the exact static checks at once (the page computes them in
 the browser with the same formulas, and a test keeps the two implementations equal) and is
@@ -547,14 +553,20 @@ then simulated on the holdout seeds by <code>rss-gov try</code>, so its numbers 
 comparable with the search finalists. Every proposal is kept in <code>results/proposals/</code> with
 its text, its verdict and its runs, and shown on the results page whether or not it joins
 the front. Proposals simulated under an older calibration are marked as needing a rerun.</p>
-<p>The autoresearch loop (<code>program.md</code>) works the same way: an agent proposes designs in a
-YAML file and runs <code>rss-gov try</code>.
+<p>An AI agent can propose designs the same way, following <code>program.md</code>. Only <code>rss-gov
+research --rounds N</code> starts it; nothing else does. Its designs are judged exactly like a
+proposal, and those accepted join the search's finalists and are shown as found by
+search. Its rejected attempts are kept only in the ledger.
 The evaluator is frozen. A proposal is accepted only if it differs from every design on
 the front by a meaningful amount without being beaten by one, and raises the holdout
 hypervolume by an amount whose 95% interval excludes zero. Every proposal is logged in
 <code>results/ledger.jsonl</code> with its change on each axis, accepted or not.</p>
-<p>Repeated proposals against the same holdout seeds will eventually fit them. After a few
-dozen proposals, change <code>HOLDOUT_OFFSET</code> and rerun the search.</p>
+<p>Repeated proposals against the same holdout seeds will eventually fit them. After
+<code>research.tries_per_holdout</code> simulated attempts by the agent, its seeds count as used:
+before its next round the search's finalists are re-run on a fresh set of holdout seeds
+and judged again, and every stored proposal is tried again against them (the agent's
+only if it was accepted). A design that was accepted on luck then drops out. Community
+proposals are fewer and do not use the seeds up.</p>
 <h2 id="tier-c-measuring-real-reactions">Tier C: measuring real reactions<a class="headerlink" href="#tier-c-measuring-real-reactions" title="Permanent link">#</a></h2>
 <p>Only a real programme can measure the responses the model has to assume. Each axis has a
 different status there:</p>
@@ -616,7 +628,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=769d7da790"></script>
-<script src="common.js?v=ef5a8e4d11"></script>
+<script src="data.js?v=45004d94c2"></script>
+<script src="common.js?v=6262938a08"></script>
 </body>
 </html>

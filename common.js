@@ -8,7 +8,6 @@ const SCEN = { low: "Weak reaction", central: "Medium reaction", high: "Strong r
 const SCEN_SHORT = { low: "Weak", central: "Medium", high: "Strong" };
 const KIND = {
   named: { label: "Named scheme", plural: "Named designs", color: "var(--c1)" },
-  ladder: { label: "Named scheme at another budget", plural: "Other budgets", color: "var(--c1)" },
   search: { label: "Found by the search", plural: "Found by search", color: "var(--c2)" },
   proposed: { label: "Community proposal", plural: "Community", color: "var(--c3)" },
 };
@@ -93,6 +92,21 @@ function pretty(name) {
   if (GENERATED.test(name)) return "Search design " + name;
   const s = name.replace(/_/g, " ");
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+// One setting's value as people read it; `field` is from proposals.FIELDS.
+const ALPHA_WORDS = [[0, "everyone the same"], [0.5, "square root"], [1, "in proportion"]];
+function setting(field, v) {
+  if (v === null || v === undefined || v === "") return field.optional ? "no cap" : "–";
+  if (field.kind === "bool") return v ? "yes" : "no";
+  if (field.kind === "choice") { const c = field.choices.find(([k]) => k === v); return c ? c[1] : String(v); }
+  if (field.kind === "ada") return ada(v) + " ADA";
+  if (field.kind === "share") return pct(v, field.step < 0.01 ? 1 : 0);
+  if (field.name === "alpha") {
+    const word = ALPHA_WORDS.find(([a]) => Math.abs(a - v) < 1e-9);
+    return num(v, 2) + (word ? ` (${word[1]})` : v > 1 ? " (favours the largest)" : "");
+  }
+  if (field.name === "pledge_leverage") return v ? `${num(v, 0)}×` : "off";
+  return num(v, 0);
 }
 // The rule in plain words, from its parameters. Used for every design and for the proposal form.
 function describe(s, always = false) {
