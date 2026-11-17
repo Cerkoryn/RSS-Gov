@@ -1,7 +1,11 @@
+import json
 import math
 import re
+import shutil
+import subprocess
 
 import numpy as np
+import pytest
 
 from rss_gov import website
 
@@ -72,3 +76,28 @@ def test_a_design_close_to_a_named_one_is_named_after_it():
     assert proposals.tag("roll_down", False) == "no roll-down"
     assert proposals.tag("min_share", 0.005) == "≥0.5% of power"
     assert all(f["short"] and f["tag"] for f in proposals.FIELDS)
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node.js")
+def test_the_browser_tags_settings_like_python():
+    from rss_gov import proposals
+
+    source = (website.WEB / "common.js").read_text()
+    functions = re.search(r"^const minus = .*$", source, re.M).group(0) + "\n"
+    functions += "\n".join(
+        re.search(rf"^function {name}\(.*?^}}$", source, re.S | re.M).group(0)
+        for name in ("num", "tag")
+    )
+    cases = [
+        ("cap_ada", None), ("alpha", 0.0), ("alpha", 0.5), ("budget_ada", 1e6),
+        ("budget_ada", 2.5e6), ("min_share", 0.005), ("pledge_leverage", 10000.0),
+        ("roll_down", False), ("roll_down", True), ("min_delegators", 50), ("n_pay", 1200),
+        ("activity_gate", 0.7), ("basis", "delegators"), ("per_vote_ada", 10.0),
+        ("min_stake_ada", 10000.0), ("delegator_mode", "flat"), ("rationale_bonus", 1.0),
+    ]  # fmt: skip
+    script = (
+        f"{functions}\nconst F = {json.dumps(proposals.BY_NAME)};"
+        f"console.log(JSON.stringify({json.dumps(cases)}.map(([k, v]) => tag(F[k], v))));"
+    )
+    out = json.loads(subprocess.run(["node", "-e", script], capture_output=True, check=True).stdout)
+    assert out == [proposals.tag(k, v) for k, v in cases]

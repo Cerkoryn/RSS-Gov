@@ -108,6 +108,16 @@ function setting(field, v) {
   if (field.name === "pledge_leverage") return v ? `${num(v, 0)}×` : "off";
   return num(v, 0);
 }
+// One setting, briefly, as in titles ("skip 20", "1M ADA", "no cap"); proposals.tag in Python.
+function tag(field, v) {
+  if (v === null || v === undefined || (field.kind === "bool" && !v)) return "no " + field.tag.replace("{}", "").trim();
+  if (field.kind === "bool") return field.tag;
+  const g = (x) => String(+x.toPrecision(6));
+  const shown = field.kind === "ada" ? (v >= 1e6 ? g(v / 1e6) + "M" : v >= 1e3 ? g(v / 1e3) + "k" : g(v))
+    : field.kind === "share" ? g(Math.round(v * 10000) / 100) + "%"
+    : field.kind === "int" ? num(v, 0) : field.kind === "number" ? g(v) : v;
+  return field.tag.replace("{}", shown);
+}
 // The rule in plain words, from its parameters. Used for every design and for the proposal form.
 function describe(s, always = false) {
   if (!s || !s.budget_ada) return "Pays nothing. This is what every design is compared with.";

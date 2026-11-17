@@ -346,7 +346,7 @@ function detail() {
       h("a", { href: `${D.meta.repository.replace(/\/$/, "")}/issues/${p.issue}`, target: "_blank", rel: "noopener" }, line, `issue #${p.issue}`);
     }
     if (p.hypothesis) h("div", { className: "quote" }, box, p.hypothesis);
-    h("div", { className: "small" }, box, (p.accepted ? "Offers a trade-off no other design did. " : "Did not add a new trade-off: ") + (p.reason || ""));
+    h("div", { className: "small" }, box, p.accepted ? "Offers a trade-off no other design did." : "Did not add a new trade-off: " + (p.reason || ""));
   }
   settings(s, host);
   h("h3", { style: "margin-top:22px" }, host, "What it changes");
@@ -436,23 +436,40 @@ function settings(s, host) {
   list(off, more);
 }
 
-// The other simulated designs in the same family: the named design and its close variants.
-function relatives(s, host) {
+// The simulated designs closest to `s`, from any source, nearest first: every one that
+// differs in at most two settings, plus the named design it varies and that design's other
+// variations. Each comes with the settings that differ.
+const differ = (s, q) => D.form.fields.filter((f) => JSON.stringify(s.scheme[f.name] ?? null) !== JSON.stringify(q.scheme[f.name] ?? null));
+function kin(s, limit = 8) {
   const root = s.parent || s.name;
-  const kin = D.schemes.filter((q) => q.name !== s.name && (q.name === root || q.parent === root));
-  if (!kin.length) return;
+  return D.schemes.filter((q) => q.name !== s.name)
+    .map((q) => ({ q, diff: differ(s, q) }))
+    .filter(({ q, diff }) => diff.length <= 2 || q.name === root || q.parent === root)
+    .sort((a, b) => a.diff.length - b.diff.length)
+    .slice(0, limit);
+}
+// What sets a relative apart, in its own values: "≤10000× own stake".
+const diffText = (q, diff) => diff.length > 2 ? pretty(q.name) : diff.map((f) => tag(f, q.scheme[f.name])).join(", ");
+
+function relatives(s, host) {
+  const list = kin(s);
+  if (!list.length) return;
   h("h3", { style: "margin-top:22px" }, host, "Other runs of this design");
-  h("p", { className: "small", style: "margin:0" }, host, `${pretty(root)} and every simulated design that changes one or two of its settings, ${SCEN[state.scenario].toLowerCase()}. Click one to open it.`);
+  h("p", { className: "small", style: "margin:0" }, host, `The simulated designs closest to this one, whoever made them, with what each sets differently, ${SCEN[state.scenario].toLowerCase()}. Click one to open it. The trade-off chart shows them around this design.`);
   const wrap = h("div", { className: "tablewrap" }, host);
   const table = h("table", {}, wrap);
   const head = h("tr", {}, h("thead", {}, table));
   h("th", {}, head, "Design");
   for (const a of D.axes) h("th", { className: "num" }, head, a.short);
   const body = h("tbody", {}, table);
-  for (const q of kin) {
+  for (const { q, diff } of list) {
     const tr = h("tr", { className: "pick" }, body);
     tr.addEventListener("click", () => openDesign(q.name));
-    h("td", {}, tr, q.name === root ? pretty(q.name) : pretty(q.name).split(" · ").slice(1).join(" · "));
+    const td = h("td", { style: "min-width:210px" }, tr);
+    const nm = h("div", { style: "font-weight:560" }, td);
+    h("span", { className: "dot", style: `display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:${KIND[q.kind].color}` }, nm);
+    nm.appendChild(document.createTextNode(diffText(q, diff)));
+    if (diff.length <= 2) h("div", { className: "small" }, td, pretty(q.name));
     for (const a of D.axes) { const v = res(q, state.scenario, a.name); h("td", { className: "num" }, tr, v ? fmt(a.name, v[0]) : "–"); }
   }
 }
@@ -673,15 +690,34 @@ function scatter() {
   const W = host.clientWidth, H = Math.max(320, Math.min(500, W * 0.62));
   const m = { l: 46, r: 18, t: 30, b: 46 };
   const svg = el("svg", { width: W, height: H, role: "img", "aria-label": `${ax.short} against ${ay.short}, with the line of best trade-offs` }, host);
-  const pts = chartVisible().map((s) => {
+  const point = (s) => {
     const qx = res(s, state.scenario, state.x), qy = res(s, state.scenario, state.y);
     return qx && qy ? { s, vx: qx[0] * ax.factor, vy: qy[0] * ay.factor } : null;
-  }).filter(Boolean);
+  };
+  const pts = chartVisible().map(point).filter(Boolean);
   pts.unshift({ s: { name: "paying nothing", kind: "unpaid", pilot: true }, vx: 0, vy: 0 });
-  const dom = domains(chartVisible());
+  // With a design selected, it and its closest relatives stand out, joined by thin lines,
+  // even when their group is switched off; they do not change the line of best trade-offs.
+  const chosen = state.selected && D.schemes.find((q) => q.name === state.selected);
+  const family = new Map(chosen ? kin(chosen).map(({ q, diff }) => [q.name, diffText(q, diff)]) : []);
+  const inChart = new Set(pts.map((p) => p.s.name));
+  const extra = (chosen ? [chosen, ...kin(chosen).map((k) => k.q)] : []).filter((q) => !inChart.has(q.name)).map(point).filter(Boolean);
+  const all = [...pts, ...extra];
+  const focus = chosen && family.size > 0 && all.some((p) => p.s.name === chosen.name);
+  if (focus) {
+    const chip = h("button", { className: "toggle", type: "button", title: "Show every design alike" }, host);
+    chip.setAttribute("aria-pressed", "true");
+    chip.style.setProperty("--kind", KIND[chosen.kind].color);
+    chip.style.marginBottom = "8px";
+    h("span", { className: "dot" }, chip);
+    chip.appendChild(document.createTextNode(`${pretty(chosen.name)} and ${family.size} close relative${family.size === 1 ? "" : "s"}  ✕`));
+    chip.addEventListener("click", () => { state.selected = null; lead(); });
+    host.insertBefore(chip, svg);
+  }
+  const dom = domains([...chartVisible(), ...extra.map((p) => p.s)]);
   const dx = dom[state.x], dy = dom[state.y];
   const x = scale(dx.lo, dx.hi, m.l, W - m.r), y = scale(dy.lo, dy.hi, H - m.b, m.t);
-  for (const p of pts) { p.px = x(p.vx); p.py = y(p.vy); }
+  for (const p of all) { p.px = x(p.vx); p.py = y(p.vy); }
   const right = ax.better === "higher", upward = ay.better === "higher";
 
   // the area the best designs cover, and the line along its edge
@@ -716,27 +752,33 @@ function scatter() {
   better.setAttribute("stroke-width", 4);
 
   const onFront = new Set(front.map((p) => p.s.name));
-  const order = [...pts].sort((p, q) => (onFront.has(p.s.name) - onFront.has(q.s.name)) || ((p.s.name === state.selected) - (q.s.name === state.selected)));
+  const near = (p) => focus && family.has(p.s.name);
+  if (focus) {
+    const from = all.find((p) => p.s.name === chosen.name);
+    for (const p of all) if (near(p)) el("line", { x1: from.px, y1: from.py, x2: p.px, y2: p.py, stroke: "var(--ink-2)", "stroke-width": 1.25, "stroke-dasharray": "3 3" }, svg);
+  }
+  const order = [...all].sort((p, q) => (near(p) - near(q)) || (onFront.has(p.s.name) - onFront.has(q.s.name)) || ((p.s.name === state.selected) - (q.s.name === state.selected)));
   for (const p of order) {
     const sel = p.s.name === state.selected;
     if (p.s.kind === "unpaid") {
       el("circle", { cx: p.px, cy: p.py, r: 5.5, fill: "var(--surface)", stroke: "var(--ink)", "stroke-width": 2 }, svg);
       continue;
     }
-    const c = KIND[p.s.kind].color, r = sel ? 6.5 : onFront.has(p.s.name) ? 5.5 : 4.5;
-    const faded = !onFront.has(p.s.name) && !sel;
+    const c = KIND[p.s.kind].color, r = sel ? 6.5 : onFront.has(p.s.name) || near(p) ? 5.5 : 4.5;
+    const faded = focus ? !sel && !near(p) : !onFront.has(p.s.name) && !sel;
     if (sel) el("circle", { cx: p.px, cy: p.py, r: r + 5, fill: "none", stroke: "var(--ink)", "stroke-width": 1.5 }, svg);
     let mark;
     if (p.s.pilot) mark = el("circle", { cx: p.px, cy: p.py, r, fill: c, stroke: "var(--surface)", "stroke-width": 2 }, svg);
     else mark = el("path", { d: `M${p.px},${p.py - r - 1} L${p.px + r + 1},${p.py} L${p.px},${p.py + r + 1} L${p.px - r - 1},${p.py} Z`, fill: "var(--surface)", stroke: c, "stroke-width": 2 }, svg);
-    if (faded) mark.setAttribute("opacity", 0.55);
+    if (faded) mark.setAttribute("opacity", focus ? 0.2 : 0.55);
   }
-  // labels only for the designs on the line and the selection; skip any that collide
-  const boxes = pts.map((p) => ({ x0: p.px - 6, x1: p.px + 6, y0: p.py - 6, y1: p.py + 6 }));
-  const want = pts.filter((p) => p.s.name === state.selected || onFront.has(p.s.name))
+  // labels for the designs on the line and the selection, or the selection and its
+  // relatives (by what sets each apart); skip any that collide
+  const boxes = all.map((p) => ({ x0: p.px - 6, x1: p.px + 6, y0: p.py - 6, y1: p.py + 6 }));
+  const want = all.filter((p) => p.s.name === state.selected || (focus ? near(p) : onFront.has(p.s.name)))
     .sort((p, q) => (q.s.name === state.selected) - (p.s.name === state.selected));
   for (const p of want) {
-    const label = p.s.kind === "unpaid" ? "paying nothing" : pretty(p.s.name);
+    const label = p.s.kind === "unpaid" ? "paying nothing" : near(p) ? family.get(p.s.name) : pretty(p.s.name);
     const t = text(svg, 0, 0, label, { class: "ink", "font-size": 11.5, "font-weight": p.s.name === state.selected ? 700 : 560 });
     t.setAttribute("paint-order", "stroke");
     t.setAttribute("stroke", "var(--surface)");
@@ -749,7 +791,7 @@ function scatter() {
       const bx0 = anchor === "start" ? p.px + ox : anchor === "end" ? p.px + ox - w : p.px - w / 2;
       const box = { x0: bx0, x1: bx0 + w, y0: p.py + oy - 12, y1: p.py + oy + 2 };
       if (box.x0 < m.l || box.x1 > W - m.r || box.y0 < m.t - 4 || box.y1 > H - m.b) continue;
-      if (boxes.some((b, i) => pts[i] !== p && b.x0 < box.x1 && box.x0 < b.x1 && b.y0 < box.y1 && box.y0 < b.y1)) continue;
+      if (boxes.some((b, i) => all[i] !== p && b.x0 < box.x1 && box.x0 < b.x1 && b.y0 < box.y1 && box.y0 < b.y1)) continue;
       t.setAttribute("x", p.px + ox); t.setAttribute("y", p.py + oy); t.setAttribute("text-anchor", anchor);
       boxes.push(box); placed = true; break;
     }
@@ -760,7 +802,7 @@ function scatter() {
   const nearest = (e) => {
     const b = svg.getBoundingClientRect(), mx = e.clientX - b.left, my = e.clientY - b.top;
     let best = null, bd = 24 * 24;
-    for (const p of pts) { const d = (p.px - mx) ** 2 + (p.py - my) ** 2; if (d < bd) { bd = d; best = p; } }
+    for (const p of all) { const d = (p.px - mx) ** 2 + (p.py - my) ** 2; if (d < bd) { bd = d; best = p; } }
     return best;
   };
   layer.addEventListener("pointermove", (e) => {
@@ -770,6 +812,7 @@ function scatter() {
     ring.setAttribute("cx", p.px); ring.setAttribute("cy", p.py); ring.setAttribute("visibility", "visible");
     if (p.s.kind === "unpaid") { showTip(e, [{ value: "Paying nothing" }, { label: "Every other point is a change from here." }]); return; }
     const lines = [{ value: pretty(p.s.name) }, { label: KIND[p.s.kind].label + (p.s.pilot ? "" : "; needs a hard fork") + (onFront.has(p.s.name) ? "; on the line" : "") }];
+    if (near(p)) lines.push({ label: `Differs from ${pretty(chosen.name)}: ${family.get(p.s.name)}` });
     for (const axis of [state.x, state.y]) lines.push({ value: AX[axis].short + ":", label: sentence(p.s, axis) });
     lines.push({ label: "Click for details" });
     showTip(e, lines);
