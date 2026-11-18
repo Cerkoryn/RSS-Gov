@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from rss_gov import proposals  # noqa: E402
+from rss_gov import mechanisms, proposals  # noqa: E402
 from rss_gov.proposals import GENERATED  # noqa: E402
 
 
@@ -259,6 +259,38 @@ def figure_front(front, path):
     plt.close(fig)
 
 
+def _fee_tables(central, fees, axes, budget):
+    """Each named design paid from the budget beside the same rule paid by each fee."""
+    levels = sorted({row["fee_ada"] for row in fees.values()}, reverse=True)
+    designs = list(dict.fromkeys(row["preset"] for row in fees.values()))
+    by_fee = {(row["preset"], row["fee_ada"]): n for n, row in fees.items()}
+    columns = {f"{mechanisms._ada(budget)} budget": designs}
+    columns |= {f"{mechanisms._ada(fee)} fee": [by_fee[d, fee] for d in designs] for fee in levels}
+    cost = {
+        c: f"{np.median(central.loc[names, 'annual_cost_ada']) / 1e6:.1f}M"
+        for c, names in columns.items()
+    }
+    text = [
+        "### Paid from a budget or by a fee per governance action",
+        "",
+        "Each named design with its budget, and the same rule with no budget, paid instead by "
+        "a fee kept from every governance action that closes; `central` scenario, change "
+        "against unpaid. Simulated DReps react to the fee's average flow, so a fee differs "
+        "from a budget by how much money it brings, how its cost varies with the number of "
+        "actions, and the hard fork it needs. Median cost a year: "
+        + ", ".join(f"{c} {v}" for c, v in cost.items())
+        + ".",
+        "",
+    ]
+    for axis in [a for a in axes if a.name in ("participation", "tau67", "backing")]:
+        table = pd.DataFrame({"scheme": designs})
+        for column, names in columns.items():
+            table[column] = [_value(axis, central.loc[n, f"{axis.name}_diff"]) for n in names]
+        unit = _scale(axis)[1] or "DReps"
+        text += [f"{axis.family}: change in {axis.label} ({unit})", "", _table(table), ""]
+    return text
+
+
 def _table(frame, formats=None):
     """A GitHub-flavoured markdown table."""
     formats = formats or {}
@@ -506,7 +538,17 @@ def write(study):
             for row in study.config["experiment"]["schemes"]
             if isinstance(row, dict) and row.get("preset") and row["name"] != row["preset"]
         }
-        names = [n for n in summary.scheme.unique() if n != "unpaid" and n not in variations]
+        fees = {  # the named designs paid by a fee instead (`experiment.fees_ada`)
+            row["name"]: row
+            for row in mechanisms.experiment_rows(study.config)[
+                len(study.config["experiment"]["schemes"]) :
+            ]
+        }
+        names = [
+            n
+            for n in summary.scheme.unique()
+            if n != "unpaid" and n not in variations and n not in fees
+        ]
         by_scenario = {s: summary[summary.scenario == s].set_index("scheme") for s in ranking}
         central = by_scenario["central"].loc[names].reset_index()
         text += [
@@ -591,6 +633,9 @@ def write(study):
                 _table(table),
                 "",
             ]
+
+        if fees:
+            text += _fee_tables(by_scenario["central"], fees, axes, study.budget)
 
     if (out / "search_holdout_runs.parquet").exists():
         from rss_gov import search as search_module

@@ -106,8 +106,9 @@ Notes on the choices:
   proxy.
 - **Cost** is an axis because the budget is a design choice. Named schemes are compared
   at one budget; the search varies it, and variations of named designs at other budgets
-  show what more money buys. It counts every ADA paid out, whether it comes from a budget
-  or from a fee per action, and does not say who bears it in the end.
+  show what more money buys; each named design is also run paid by fees alone. It counts
+  every ADA paid out, whether it comes from a budget or from a fee per action, and does
+  not say who bears it in the end.
 - **Sybil resistance** is a measured quantity, not a pass/fail gate. Like cost, it is an
   exact property of a rule and is traded off against the other axes with no limit of its
   own. Its `scale` in `config.yaml` sets how fast it counts against a design in the
@@ -205,6 +206,11 @@ not changed since governance began, so there is no data on how they would react)
 added to treasury requests, and fewer actions easing the load on DReps (a DRep's chance
 of voting does not depend on how many actions are open). The number of actions in a run
 is drawn from history whatever the fee.
+
+To compare the two sources, every named design is also simulated with no budget, paid by
+each fee in `experiment.fees_ada` in `config.yaml` (named like `capped_fee_50k`). The
+report sets each beside its budget version. The search varies budgets, not fees, and does
+not start from these.
 
 ### Named designs
 

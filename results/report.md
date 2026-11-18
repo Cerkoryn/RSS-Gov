@@ -76,7 +76,72 @@ Exact arithmetic on the current snapshot. `outsider's take` is the share of the 
 | capped_2m5 | linear, cap 20M; 2.5M ADA | 193 | 1,591 | 16% | 0% | 0% | 30% | 100% |  |
 | capped_10m | linear, cap 20M; 10M ADA | 193 | 6,362 | 16% | 0% | 0% | 30% | 100% |  |
 | equal_plus_stake_fee_25k | linear, 50% equal; 25k ADA per action | 193 | 2,082 | 30% | 44% | 44% | 6% | 100% |  |
+| proportional_fee_100k | linear; 100k ADA per action | 193 | 15,798 | 55% | 0% | 0% | 0% | 100% |  |
+| proportional_fee_50k | linear; 50k ADA per action | 193 | 7,899 | 55% | 0% | 0% | 0% | 100% |  |
+| proportional_fee_10k | linear; 10k ADA per action | 193 | 1,580 | 55% | 0% | 0% | 0% | 100% |  |
+| equal_fee_100k | equal; 100k ADA per action | 193 | 861 | 5% | 88% | 87% | 12% | 100% |  |
+| equal_fee_50k | equal; 50k ADA per action | 193 | 430 | 5% | 88% | 87% | 12% | 100% |  |
+| equal_fee_10k | equal; 10k ADA per action | 193 | 86 | 5% | 88% | 87% | 12% | 100% |  |
+| sqrt_fee_100k | stake^0.5; 100k ADA per action | 193 | 6,221 | 28% | 5% | 5% | 15% | 100% |  |
+| sqrt_fee_50k | stake^0.5; 50k ADA per action | 193 | 3,110 | 28% | 5% | 5% | 15% | 100% |  |
+| sqrt_fee_10k | stake^0.5; 10k ADA per action | 193 | 622 | 28% | 5% | 5% | 15% | 100% |  |
+| capped_fee_100k | linear, cap 20M; 100k ADA per action | 193 | 2,658 | 16% | 0% | 0% | 30% | 100% |  |
+| capped_fee_50k | linear, cap 20M; 50k ADA per action | 193 | 1,329 | 16% | 0% | 0% | 30% | 100% |  |
+| capped_fee_10k | linear, cap 20M; 10k ADA per action | 193 | 266 | 16% | 0% | 0% | 30% | 100% |  |
+| middle_out_fee_100k | equal, skip top 10, pay 100; 100k ADA per action | 100 | 1,556 | 0% | 1% | 0% | 24% | 100% |  |
+| middle_out_fee_50k | equal, skip top 10, pay 100; 50k ADA per action | 100 | 778 | 0% | 1% | 0% | 24% | 100% |  |
+| middle_out_fee_10k | equal, skip top 10, pay 100; 10k ADA per action | 100 | 156 | 0% | 1% | 0% | 24% | 100% |  |
+| activity_gate_fee_100k | linear, gate 70%; 100k ADA per action | 102 | 17,469 | 54% | 0% | 0% | 0% | 100% |  |
+| activity_gate_fee_50k | linear, gate 70%; 50k ADA per action | 102 | 8,735 | 54% | 0% | 0% | 0% | 100% |  |
+| activity_gate_fee_10k | linear, gate 70%; 10k ADA per action | 102 | 1,747 | 54% | 0% | 0% | 0% | 100% |  |
+| rationale_bonus_fee_100k | stake^0.5, rationale +100%; 100k ADA per action | 193 | 7,793 | 29% | 6% | 6% | 18% | 100% |  |
+| rationale_bonus_fee_50k | stake^0.5, rationale +100%; 50k ADA per action | 193 | 3,897 | 29% | 6% | 6% | 18% | 100% |  |
+| rationale_bonus_fee_10k | stake^0.5, rationale +100%; 10k ADA per action | 193 | 779 | 29% | 6% | 6% | 18% | 100% |  |
+| small_drep_floor_fee_100k | stake^0.5, min 100k, min 10 delegators; 100k ADA per action | 126 | 6,510 | 29% | 1% | 0% | 15% | 100% |  |
+| small_drep_floor_fee_50k | stake^0.5, min 100k, min 10 delegators; 50k ADA per action | 126 | 3,255 | 29% | 1% | 0% | 15% | 100% |  |
+| small_drep_floor_fee_10k | stake^0.5, min 100k, min 10 delegators; 10k ADA per action | 126 | 651 | 29% | 1% | 0% | 15% | 100% |  |
+| delegator_flat_fee_100k | linear, 80% to delegators (flat); 100k ADA per action | 193 | 3,160 | 55% | 0% | 0% | 0% | 100% | 69% |
+| delegator_flat_fee_50k | linear, 80% to delegators (flat); 50k ADA per action | 193 | 1,580 | 55% | 0% | 0% | 0% | 100% | 76% |
+| delegator_flat_fee_10k | linear, 80% to delegators (flat); 10k ADA per action | 193 | 316 | 55% | 0% | 0% | 0% | 100% | 90% |
+| delegator_passthrough_sqrt_fee_100k | stake^0.5, 80% to delegators (passthrough); 100k ADA per action | 193 | 1,244 | 28% | 5% | 5% | 15% | 100% | 72% |
+| delegator_passthrough_sqrt_fee_50k | stake^0.5, 80% to delegators (passthrough); 50k ADA per action | 193 | 622 | 28% | 5% | 5% | 15% | 100% | 78% |
+| delegator_passthrough_sqrt_fee_10k | stake^0.5, 80% to delegators (passthrough); 10k ADA per action | 193 | 124 | 28% | 5% | 5% | 15% | 100% | 90% |
+| pledge_soft_fee_100k | linear, reward cap 1000x own stake; 100k ADA per action | 186 | 28,250 | 48% | 0% | 0% | 0% | 100% |  |
+| pledge_soft_fee_50k | linear, reward cap 1000x own stake; 50k ADA per action | 186 | 14,125 | 48% | 0% | 0% | 0% | 100% |  |
+| pledge_soft_fee_10k | linear, reward cap 1000x own stake; 10k ADA per action | 186 | 2,825 | 48% | 0% | 0% | 0% | 100% |  |
+| pledge_hard_cap_fee_100k | linear, power cap 1000x own stake; 100k ADA per action | 186 | 28,250 | 48% | 0% | 0% | 0% | 18% |  |
+| pledge_hard_cap_fee_50k | linear, power cap 1000x own stake; 50k ADA per action | 186 | 14,125 | 48% | 0% | 0% | 0% | 18% |  |
+| pledge_hard_cap_fee_10k | linear, power cap 1000x own stake; 10k ADA per action | 186 | 2,825 | 48% | 0% | 0% | 0% | 18% |  |
+| top_m_equal_fee_100k | equal, pay 100; 100k ADA per action | 100 | 1,507 | 9% | 0% | 0% | 23% | 100% |  |
+| top_m_equal_fee_50k | equal, pay 100; 50k ADA per action | 100 | 754 | 9% | 0% | 0% | 23% | 100% |  |
+| top_m_equal_fee_10k | equal, pay 100; 10k ADA per action | 100 | 151 | 9% | 0% | 0% | 23% | 100% |  |
+| top_m_proportional_fee_100k | linear, pay 100; 100k ADA per action | 100 | 15,881 | 55% | 0% | 0% | 0% | 100% |  |
+| top_m_proportional_fee_50k | linear, pay 100; 50k ADA per action | 100 | 7,940 | 55% | 0% | 0% | 0% | 100% |  |
+| top_m_proportional_fee_10k | linear, pay 100; 10k ADA per action | 100 | 1,588 | 55% | 0% | 0% | 0% | 100% |  |
+| threshold_k_fee_100k | equal, award cap 1%, min 1.00% of power; 100k ADA per action | 21 | 1,160 | 43% | 0% | 0% | 4% | 100% |  |
+| threshold_k_fee_50k | equal, award cap 1%, min 1.00% of power; 50k ADA per action | 21 | 580 | 43% | 0% | 0% | 4% | 100% |  |
+| threshold_k_fee_10k | equal, award cap 1%, min 1.00% of power; 10k ADA per action | 21 | 116 | 43% | 0% | 0% | 4% | 100% |  |
+| threshold_k_proportional_fee_100k | linear, min 1.00% of power; 100k ADA per action | 21 | 19,519 | 68% | 0% | 0% | 0% | 100% |  |
+| threshold_k_proportional_fee_50k | linear, min 1.00% of power; 50k ADA per action | 21 | 9,760 | 68% | 0% | 0% | 0% | 100% |  |
+| threshold_k_proportional_fee_10k | linear, min 1.00% of power; 10k ADA per action | 21 | 1,952 | 68% | 0% | 0% | 0% | 100% |  |
 | equal_plus_stake_fee_100k | linear, 50% equal; 100k ADA per action | 193 | 8,329 | 30% | 44% | 44% | 6% | 100% |  |
+| equal_plus_stake_fee_50k | linear, 50% equal; 50k ADA per action | 193 | 4,165 | 30% | 44% | 44% | 6% | 100% |  |
+| equal_plus_stake_fee_10k | linear, 50% equal; 10k ADA per action | 193 | 833 | 30% | 44% | 44% | 6% | 100% |  |
+| exclude_k_pay_n_fee_100k | equal, 10 ADA per vote, skip top 10, pay 200 (roll-down); 100k ADA per action | 184 | 12 | 0% | 1% | 1% | 0% | 100% |  |
+| exclude_k_pay_n_fee_50k | equal, 10 ADA per vote, skip top 10, pay 200 (roll-down); 50k ADA per action | 184 | 12 | 0% | 2% | 2% | 0% | 100% |  |
+| exclude_k_pay_n_fee_10k | equal, 10 ADA per vote, skip top 10, pay 200 (roll-down); 10k ADA per action | 184 | 12 | 0% | 8% | 8% | 2% | 100% |  |
+| top_haircut_fee_100k | linear, top 20 at 25%, min 10 delegators, gate 70%; 100k ADA per action | 80 | 10,544 | 33% | 0% | 0% | 19% | 100% |  |
+| top_haircut_fee_50k | linear, top 20 at 25%, min 10 delegators, gate 70%; 50k ADA per action | 80 | 5,272 | 33% | 0% | 0% | 19% | 100% |  |
+| top_haircut_fee_10k | linear, top 20 at 25%, min 10 delegators, gate 70%; 10k ADA per action | 80 | 1,054 | 33% | 0% | 0% | 19% | 100% |  |
+| top_100_gated_fee_100k | equal, pay 100, gate 70%; 100k ADA per action | 100 | 1,199 | 6% | 8% | 7% | 19% | 100% |  |
+| top_100_gated_fee_50k | equal, pay 100, gate 70%; 50k ADA per action | 100 | 599 | 6% | 8% | 7% | 19% | 100% |  |
+| top_100_gated_fee_10k | equal, pay 100, gate 70%; 10k ADA per action | 100 | 120 | 6% | 8% | 7% | 19% | 100% |  |
+| delegators_first_fee_100k | linear, award cap 10%, gate 70%, 90% to delegators (flat); 100k ADA per action | 102 | 1,160 | 50% | 0% | 0% | 1% | 100% | 64% |
+| delegators_first_fee_50k | linear, award cap 10%, gate 70%, 90% to delegators (flat); 50k ADA per action | 102 | 580 | 50% | 0% | 0% | 1% | 100% | 71% |
+| delegators_first_fee_10k | linear, award cap 10%, gate 70%, 90% to delegators (flat); 10k ADA per action | 102 | 116 | 50% | 0% | 0% | 1% | 100% | 86% |
+| delegator_count_sqrt_fee_100k | delegators^0.5, award cap 5%; 100k ADA per action | 190 | 5,802 | 27% | 64% | 59% | 22% | 100% |  |
+| delegator_count_sqrt_fee_50k | delegators^0.5, award cap 5%; 50k ADA per action | 190 | 2,901 | 27% | 64% | 59% | 22% | 100% |  |
+| delegator_count_sqrt_fee_10k | delegators^0.5, award cap 5%; 10k ADA per action | 190 | 580 | 27% | 64% | 59% | 22% | 100% |  |
 
 ## Scorecard: named schemes at the same budget
 
@@ -204,7 +269,91 @@ Named designs with a setting changed, `central` scenario; compare each with its 
 | capped_2m5 | `capped`: 2.5M ADA | 5.1M | 0.36% | +4.0 ± 0.1 | -0.5 ± 0.1 | 1,278,398 |
 | capped_10m | `capped`: 10M ADA | 20.3M | 1.45% | +5.0 ± 0.1 | -0.5 ± 0.2 | 4,047,118 |
 | equal_plus_stake_fee_25k | `equal_plus_stake`: no budget, 25k ADA per action | 2.2M | 0.16% | +3.1 ± 0.1 | -1.3 ± 0.2 | 704,400 |
-| equal_plus_stake_fee_100k | `equal_plus_stake`: no budget, 100k ADA per action | 8.7M | 0.62% | +4.2 ± 0.1 | -1.4 ± 0.2 | 2,058,865 |
+
+### Paid from a budget or by a fee per governance action
+
+Each named design with its budget, and the same rule with no budget, paid instead by a fee kept from every governance action that closes; `central` scenario, change against unpaid. Simulated DReps react to the fee's average flow, so a fee differs from a budget by how much money it brings, how its cost varies with the number of actions, and the hard fork it needs. Median cost a year: 5M budget 10.1M, 100k fee 8.7M, 50k fee 4.3M, 10k fee 0.9M.
+
+Participation: change in Delegated stake casting an explicit vote (points)
+
+| scheme | 5M budget | 100k fee | 50k fee | 10k fee |
+|---|---|---|---|---|
+| proportional | +4.4 | +4.3 | +3.9 | +2.6 |
+| equal | +3.5 | +3.3 | +2.7 | +1.3 |
+| sqrt | +4.6 | +4.4 | +3.9 | +2.4 |
+| capped | +4.5 | +4.4 | +3.8 | +2.3 |
+| middle_out | +2.6 | +2.5 | +2.1 | +1.2 |
+| activity_gate | +4.5 | +4.4 | +3.9 | +2.7 |
+| rationale_bonus | +4.5 | +4.4 | +3.8 | +2.4 |
+| small_drep_floor | +4.5 | +4.4 | +3.9 | +2.5 |
+| delegator_flat | +4.4 | +4.0 | +3.0 | +1.4 |
+| delegator_passthrough_sqrt | +4.1 | +3.8 | +2.8 | +1.1 |
+| pledge_soft | +3.8 | +3.7 | +3.3 | +2.1 |
+| pledge_hard_cap | -17.0 | -17.0 | -17.2 | -17.6 |
+| top_m_equal | +4.3 | +4.2 | +3.6 | +2.1 |
+| top_m_proportional | +4.4 | +4.3 | +3.8 | +2.6 |
+| threshold_k | +3.5 | +3.4 | +3.1 | +2.1 |
+| threshold_k_proportional | +3.5 | +3.5 | +3.2 | +2.4 |
+| equal_plus_stake | +4.3 | +4.2 | +3.7 | +2.2 |
+| exclude_k_pay_n | +0.2 | +0.2 | +0.2 | +0.2 |
+| top_haircut | +4.6 | +4.5 | +4.0 | +2.7 |
+| top_100_gated | +4.3 | +4.1 | +3.5 | +1.9 |
+| delegators_first | +4.2 | +3.8 | +2.7 | +1.1 |
+| delegator_count_sqrt | +4.2 | +4.1 | +3.5 | +2.1 |
+
+Decentralisation: change in DReps needed for 2/3 of voting power (DReps)
+
+| scheme | 5M budget | 100k fee | 50k fee | 10k fee |
+|---|---|---|---|---|
+| proportional | -2.1 | -2.1 | -2.1 | -1.7 |
+| equal | +0.2 | +0.0 | -0.0 | -0.0 |
+| sqrt | -1.2 | -1.2 | -1.2 | -0.9 |
+| capped | -0.5 | -0.4 | -0.5 | -0.4 |
+| middle_out | +1.8 | +1.7 | +1.4 | +0.6 |
+| activity_gate | -2.2 | -2.2 | -2.1 | -1.8 |
+| rationale_bonus | -1.3 | -1.3 | -1.2 | -1.1 |
+| small_drep_floor | -1.3 | -1.2 | -1.2 | -0.9 |
+| delegator_flat | -2.5 | -2.3 | -1.8 | -0.9 |
+| delegator_passthrough_sqrt | -0.9 | -1.0 | -0.8 | -0.5 |
+| pledge_soft | -1.8 | -1.8 | -1.8 | -1.5 |
+| pledge_hard_cap | -1.3 | -1.3 | -1.2 | -0.9 |
+| top_m_equal | -0.3 | -0.3 | -0.4 | -0.3 |
+| top_m_proportional | -2.1 | -2.1 | -2.2 | -1.7 |
+| threshold_k | -2.8 | -2.6 | -2.5 | -1.6 |
+| threshold_k_proportional | -3.3 | -3.3 | -3.0 | -2.2 |
+| equal_plus_stake | -1.5 | -1.4 | -1.5 | -1.1 |
+| exclude_k_pay_n | +0.2 | +0.2 | +0.2 | +0.2 |
+| top_haircut | -1.3 | -1.3 | -1.2 | -0.9 |
+| top_100_gated | -0.4 | -0.4 | -0.4 | -0.3 |
+| delegators_first | -2.4 | -2.4 | -1.8 | -0.6 |
+| delegator_count_sqrt | -1.1 | -1.1 | -1.1 | -0.8 |
+
+Skin in the game: change in Voting power backed by the DRep's own stake (points)
+
+| scheme | 5M budget | 100k fee | 50k fee | 10k fee |
+|---|---|---|---|---|
+| proportional | -0.01 | -0.00 | -0.01 | -0.00 |
+| equal | +0.30 | +0.28 | +0.22 | +0.10 |
+| sqrt | +0.03 | +0.02 | +0.02 | +0.00 |
+| capped | +0.00 | +0.00 | -0.00 | -0.00 |
+| middle_out | -0.00 | -0.00 | -0.00 | +0.00 |
+| activity_gate | -0.00 | -0.00 | -0.01 | -0.01 |
+| rationale_bonus | +0.02 | +0.02 | +0.01 | +0.00 |
+| small_drep_floor | -0.01 | -0.01 | -0.01 | -0.01 |
+| delegator_flat | -0.06 | -0.06 | -0.03 | -0.01 |
+| delegator_passthrough_sqrt | -0.01 | -0.02 | -0.01 | +0.00 |
+| pledge_soft | +0.02 | +0.02 | +0.01 | +0.01 |
+| pledge_hard_cap | +1.97 | +1.97 | +1.98 | +1.99 |
+| top_m_equal | -0.01 | -0.00 | -0.01 | -0.00 |
+| top_m_proportional | -0.01 | -0.01 | -0.01 | -0.01 |
+| threshold_k | -0.01 | -0.01 | -0.01 | -0.01 |
+| threshold_k_proportional | -0.01 | -0.01 | -0.01 | -0.01 |
+| equal_plus_stake | +0.22 | +0.20 | +0.15 | +0.05 |
+| exclude_k_pay_n | +0.02 | +0.02 | +0.02 | +0.02 |
+| top_haircut | -0.01 | -0.01 | -0.01 | -0.01 |
+| top_100_gated | +0.03 | +0.02 | +0.02 | +0.02 |
+| delegators_first | -0.08 | -0.06 | -0.03 | -0.01 |
+| delegator_count_sqrt | +0.10 | +0.09 | +0.05 | +0.01 |
 
 ## Search over the scheme family
 

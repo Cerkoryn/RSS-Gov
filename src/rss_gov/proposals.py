@@ -418,7 +418,7 @@ def known(config):
     """Every design in use: the config's schemes, the search finalists and stored proposals."""
     results = Path(config["results"])
     out = {}
-    for row in config["experiment"]["schemes"]:
+    for row in mechanisms.experiment_rows(config):
         scheme = mechanisms.from_config(row, float(config["programme"]["budget_ada"]))
         out[scheme.name] = scheme
     finalists = results / "search_finalists.yaml"

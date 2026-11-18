@@ -284,7 +284,7 @@ def build(study):
     ranking = study.ranking_scenarios
     config = study.config
     guard = config["guardrails"]
-    rows = config["experiment"]["schemes"]
+    rows = mechanisms.experiment_rows(config)
     schemes = {s.name: s for s in study.schemes(rows) if s.name != BASELINE}
     named = set(schemes)
     summary = pd.read_csv(out / "experiment_summary.csv")

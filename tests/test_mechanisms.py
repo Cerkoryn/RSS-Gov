@@ -123,6 +123,17 @@ def test_a_fee_per_action_funds_the_pot_and_needs_a_hard_fork():
         m.Scheme(fee_ada=-1)
 
 
+def test_every_named_design_is_also_paid_by_each_fee():
+    variation = {"name": "capped_1m", "preset": "capped", "budget_ada": 1e6}
+    config = dict(experiment=dict(schemes=["unpaid", "capped", variation], fees_ada=[50_000]))
+    rows = m.experiment_rows(config)
+    assert rows[:3] == config["experiment"]["schemes"]
+    (fee,) = (m.from_config(row, 5e6) for row in rows[3:])
+    assert fee.name == "capped_fee_50k" and fee.budget_ada == 0 and fee.fee_ada == 50_000
+    assert fee.cap_ada == m.preset("capped", 5e6).cap_ada
+    assert m.experiment_rows(dict(experiment=dict(schemes=["capped"]))) == ["capped"]
+
+
 def test_labels_describe_the_rule():
     assert m.preset("unpaid", 1).label() == "unpaid"
     assert m.preset("capped", 5e6).label() == "linear, cap 20M; 5M ADA"

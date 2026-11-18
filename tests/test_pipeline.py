@@ -8,7 +8,8 @@ import pandas as pd
 import pytest
 import yaml
 
-from rss_gov import calibrate, dataset, experiment, model, proposals, report, search, static
+from rss_gov import calibrate, dataset, experiment, mechanisms, model, proposals, report, search
+from rss_gov import static
 from rss_gov import research, website
 from tests.conftest import make_params
 
@@ -27,7 +28,7 @@ def study(pull, monkeypatch):
     config = experiment.load_config(CONFIG)
     config.update(results=str(pull / "results"), data=str(pull))
     config["programme"]["epochs"] = 6
-    config["experiment"]["seeds"] = 3
+    config["experiment"].update(seeds=3, fees_ada=[50_000])
     config["search"].update(seeds=2, generations=1, population=4, holdout_seeds=3)
     data = dataset.load(pull)
     params = make_params()
@@ -43,7 +44,7 @@ def study(pull, monkeypatch):
         json.dumps(dict(tip_epoch=data.tip_epoch, validation=validation))
     )
     # `rss-gov static` and `rss-gov experiment`
-    schemes = study.schemes(config["experiment"]["schemes"])
+    schemes = study.schemes(mechanisms.experiment_rows(config))
     static.analyse(study, schemes).to_csv(study.results / "static.csv", index=False)
     runs = experiment.evaluate(study, schemes, list(scenarios), range(3), processes=1)
     experiment.summarise(runs, study.axes).to_csv(

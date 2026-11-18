@@ -138,7 +138,9 @@ def run(study, log=print, processes=None):
     seeds = range(int(config["seeds"]))
     baseline = study.schemes([BASELINE])[0]
 
-    presets = [s for s in study.schemes(study.config["experiment"]["schemes"]) if s.paid]
+    # The search varies budgets, not fees: designs paid by a fee are left out of its start.
+    presets = study.schemes(study.config["experiment"]["schemes"])
+    presets = [s for s in presets if s.paid and not s.fee_ada]
     presets = [s for s in presets if "hard_cap" in options or not s.hard_cap]
     population = presets + [
         random_scheme(rng, f"g0_{i}", options) for i in range(int(config["population"]))

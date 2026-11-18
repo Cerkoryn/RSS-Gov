@@ -359,6 +359,19 @@ def preset(name, budget_ada):
     return Scheme(name=name, budget_ada=0.0 if name == "unpaid" else budget_ada, **PRESETS[name])
 
 
+def experiment_rows(config):
+    """The config's schemes, plus every named design in it paid instead by each fee per
+    governance action in `experiment.fees_ada`, with no budget."""
+    rows = list(config["experiment"]["schemes"])
+    named = [r for r in rows if isinstance(r, str) and r != "unpaid"]
+    fees = config["experiment"].get("fees_ada") or []
+    return rows + [
+        dict(name=f"{n}_fee_{_ada(fee).lower()}", preset=n, budget_ada=0, fee_ada=fee)
+        for n in named
+        for fee in fees
+    ]
+
+
 def from_config(row, default_budget):
     """A config entry is a preset name, or a mapping with optional `preset` and overrides."""
     if isinstance(row, str):

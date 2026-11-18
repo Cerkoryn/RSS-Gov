@@ -113,8 +113,10 @@ def cmd_static(args):
 
 
 def _scheme_rows(study, path):
+    from rss_gov import mechanisms
+
     if not path:
-        return study.config["experiment"]["schemes"]
+        return mechanisms.experiment_rows(study.config)
     rows = yaml.safe_load(Path(path).read_text())
     return rows["schemes"] if isinstance(rows, dict) else rows
 
