@@ -112,6 +112,7 @@ function setting(field, v) {
 function tag(field, v) {
   if (v === null || v === undefined || (field.kind === "bool" && !v)) return "no " + field.tag.replace("{}", "").trim();
   if (field.kind === "bool") return field.tag;
+  if (field.kind === "ada" && !v) return "no " + field.short.toLowerCase();
   const g = (x) => String(+x.toPrecision(6));
   const shown = field.kind === "ada" ? (v >= 1e6 ? g(v / 1e6) + "M" : v >= 1e3 ? g(v / 1e3) + "k" : g(v))
     : field.kind === "share" ? g(Math.round(v * 10000) / 100) + "%"
@@ -120,7 +121,7 @@ function tag(field, v) {
 }
 // The rule in plain words, from its parameters. Used for every design and for the proposal form.
 function describe(s, always = false) {
-  if (!s || !s.budget_ada) return "Pays nothing. This is what every design is compared with.";
+  if (!s || !(s.budget_ada || s.fee_ada)) return "Pays nothing. This is what every design is compared with.";
   const who = [];
   if (s.activity_gate) who.push(`voted on at least ${pct(s.activity_gate)} of recent actions`);
   if (s.min_delegators) who.push(`have at least ${num(s.min_delegators, 0)} delegators`);
@@ -156,7 +157,8 @@ function describe(s, always = false) {
       ? `${pct(s.delegator_share)} of the budget goes to delegators of DReps that vote, at the same rate per ADA whichever DRep they chose.`
       : `${pct(s.delegator_share)} of the budget goes to delegators, each sharing in their DRep's award.`);
   }
-  if (always || !D.meta || s.budget_ada !== D.meta.budget) out.push(`Budget: ${ada(s.budget_ada)} ADA over the programme.`);
+  if (s.budget_ada && (always || s.fee_ada || !D.meta || s.budget_ada !== D.meta.budget)) out.push(`Budget: ${ada(s.budget_ada)} ADA over the programme.`);
+  if (s.fee_ada) out.push(`${s.budget_ada ? "On top of that, each" : "Paid by fees alone: each"} governance action that closes adds ${ada(s.fee_ada)} ADA, part of its proposer's deposit kept as a fee.`);
   return out.join(" ");
 }
 

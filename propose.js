@@ -142,6 +142,7 @@ function invalid(p) {
     if (typeof v !== "number" || !Number.isFinite(v) || v < f.min || v > f.max) return `${f.label}: between ${setting(f, f.min)} and ${setting(f, f.max)}.`;
     if (f.kind === "int" && v !== Math.round(v)) return `${f.label}: a whole number.`;
   }
+  if (!(p.budget_ada > 0 || p.fee_ada > 0)) return "Give the design a budget, a fee per action, or both.";
   if (p.per_vote_ada && (p.alpha !== 0 || p.delegator_share)) return "Fixed pay per vote is the same for every DRep: set how pay grows with voting power to 0 and pay nothing to delegators.";
   return null;
 }
@@ -166,10 +167,10 @@ function check(p) {
     return { loading: true };
   }
   return {
-    pilot_testable: !p.hard_cap,
+    pilot_testable: !(p.hard_cap || p.fee_ada > 0), // Scheme.feasibility
     notes: Checks.notes(p),
     checks: Checks.analyse(p, today, window.RSS_ACCOUNTS),
-    annual_cost: (p.budget_ada * YEAR) / today.epochs,
+    annual_cost: (p.budget_ada / today.epochs + (p.fee_ada || 0) * today.actions) * YEAR,
     same_as: sameAs(p),
   };
 }
@@ -207,6 +208,7 @@ function renderChecks(r) {
   row("…of which from splitting", pct(c.newcomer_extra));
   row("Most an existing DRep gains by splitting", pct(c.incumbent_extra));
   row("Voting power kept", pct(c.power_kept));
+  if (c.fee_share) row("Paid by fees, at the past pace of actions", pct(c.fee_share));
   if (c.delegator_dust_share !== null) row(`Delegator payments under ${D.meta.min_payout} ADA`, pct(c.delegator_dust_share));
   if (r.notes && r.notes.length) {
     const ul = h("ul", { className: "notes" }, more);

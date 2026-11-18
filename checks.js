@@ -162,15 +162,18 @@ const Checks = (() => {
     return [claimants, claimants ? dust / claimants : null];
   }
 
+  const isPaid = (s) => s.budget_ada > 0 || s.fee_ada > 0; // Scheme.paid
+
   // What it would take to run the rule on Cardano: Scheme.feasibility() in mechanisms.py.
   function notes(s) {
-    if (!(s.budget_ada > 0)) return [];
+    if (!isPaid(s)) return [];
     const out = [];
     if (s.rationale_bonus > 0) out.push("An anchor proves a rationale exists, not that it is good.");
     if (s.basis === "delegators") out.push("Accounts are cheap to create: paying by their number invites fake ones.");
     if (s.delegator_share > 0) out.push("Many small delegator claims: needs a claim contract or minimum payout.");
     if (s.pledge_leverage > 0) out.push("Own stake is not a ledger concept: DReps must declare their accounts.");
     if (s.hard_cap) out.push("Capping voting power changes ratification rules: needs a hard fork.");
+    if (s.fee_ada > 0) out.push("Today every governance action deposit is returned: keeping part of it as a fee changes the ledger's rules and needs a hard fork.");
     return out;
   }
 
@@ -182,10 +185,11 @@ const Checks = (() => {
     const row = {
       paid_dreps: 0, max_award: null, top10_award_share: null, power_kept: sum(power) / sum(r.stake),
       newcomer_capture: 0, newcomer_extra: 0, newcomer_identities: null, incumbent_extra: 0, incumbent_rank: null,
-      incumbent_parts: null, split_gain: 0, delegator_claimants: null, delegator_dust_share: null,
+      incumbent_parts: null, split_gain: 0, delegator_claimants: null, delegator_dust_share: null, fee_share: 0,
     };
-    if (!(s.budget_ada > 0)) return row;
-    const pot = s.budget_ada / t.epochs;
+    if (!isPaid(s)) return row;
+    // Scheme.income: a fee per action is counted at the average pace of closing actions.
+    const pot = s.budget_ada / t.epochs + (s.fee_ada || 0) * r.actions;
     const [award, yields] = allocate(s, r, pot);
     const paid = [...award].filter((v) => v > 0);
     const [best, identities, single] = newcomerSplit(s, r, pot, t);
@@ -197,6 +201,7 @@ const Checks = (() => {
       newcomer_capture: best, newcomer_identities: identities, newcomer_extra: best - single,
       incumbent_extra: extra, incumbent_rank: rank, incumbent_parts: parts,
       split_gain: Math.max(best - single, extra),
+      fee_share: (s.fee_ada || 0) * r.actions / pot,
     });
     if (s.delegator_share > 0 && accounts) [row.delegator_claimants, row.delegator_dust_share] = claims(yields, t, accounts);
     else if (!(s.delegator_share > 0)) row.delegator_claimants = 0;
