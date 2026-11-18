@@ -198,8 +198,9 @@ history and reported as <code>supported_ratified</code> in the run tables.</p>
   proxy.</li>
 <li><strong>Cost</strong> is an axis because the budget is a design choice. Named schemes are compared
   at one budget; the search varies it, and variations of named designs at other budgets
-  show what more money buys. It counts every ADA paid out, whether it comes from a budget
-  or from a fee per action, and does not say who bears it in the end.</li>
+  show what more money buys; each named design is also run paid by fees alone. It counts
+  every ADA paid out, whether it comes from a budget or from a fee per action, and does
+  not say who bears it in the end.</li>
 <li><strong>Sybil resistance</strong> is a measured quantity, not a pass/fail gate. Like cost, it is an
   exact property of a rule and is traded off against the other axes with no limit of its
   own. Its <code>scale</code> in <code>config.yaml</code> sets how fast it counts against a design in the
@@ -284,6 +285,10 @@ not changed since governance began, so there is no data on how they would react)
 added to treasury requests, and fewer actions easing the load on DReps (a DRep's chance
 of voting does not depend on how many actions are open). The number of actions in a run
 is drawn from history whatever the fee.</p>
+<p>To compare the two sources, every named design is also simulated with no budget, paid by
+each fee in <code>experiment.fees_ada</code> in <code>config.yaml</code> (named like <code>capped_fee_50k</code>). The
+report sets each beside its budget version. The search varies budgets, not fees, and does
+not start from these.</p>
 <h3 id="named-designs">Named designs<a class="headerlink" href="#named-designs" title="Permanent link">#</a></h3>
 <p>Besides the generic shapes (<code>proportional</code>, <code>equal</code>, <code>sqrt</code>, <code>capped</code>, gates, floors,
 rationale bonus, delegator and own-stake designs), the named designs come from published
@@ -656,7 +661,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=bc22c3eb4d"></script>
+<script src="data.js?v=385103b2b4"></script>
 <script src="common.js?v=bfa8e9517a"></script>
 </body>
 </html>
