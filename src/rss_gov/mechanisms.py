@@ -30,6 +30,7 @@ class Round:
 class Scheme:
     name: str = "unpaid"
     budget_ada: float = 0.0  # whole programme, spread evenly over its epochs
+    fee_ada: float = 0.0  # added to the pot by each governance action that closes
     alpha: float = 1.0  # weight grows as counted_stake ** alpha (0 = equal, 1 = proportional)
     cap_ada: float = math.inf  # stake counted for rewards is at most this
     k_exclude: int = 0  # the K largest DReps are weighted by top_weight (0: paid nothing)
@@ -68,13 +69,23 @@ class Scheme:
         shares = (self.min_share, self.top_weight, self.equal_share, self.max_award_share)
         if not all(0 <= x <= 1 for x in shares):
             raise ValueError("min_share, top_weight, equal_share and max_award_share are in [0, 1]")
-        amounts = (self.budget_ada, self.cap_ada, self.min_stake_ada, self.pledge_leverage)
+        amounts = (
+            self.budget_ada,
+            self.fee_ada,
+            self.cap_ada,
+            self.min_stake_ada,
+            self.pledge_leverage,
+        )
         if min(*amounts, self.per_vote_ada) < 0:
             raise ValueError("amounts must be non-negative")
 
     @property
     def paid(self):
-        return self.budget_ada > 0
+        return self.budget_ada > 0 or self.fee_ada > 0
+
+    def income(self, epochs, actions):
+        """ADA added to the pot in an epoch in which `actions` governance actions close."""
+        return self.budget_ada / epochs + self.fee_ada * actions
 
     def feasibility(self):
         """What it would take to run this on Cardano, independent of any simulation."""
@@ -94,11 +105,17 @@ class Scheme:
             notes.append("Own stake is not a ledger concept: DReps must declare their accounts.")
         if self.hard_cap:
             notes.append("Capping voting power changes ratification rules: needs a hard fork.")
+        if self.fee_ada > 0:
+            notes.append(
+                "Today every governance action deposit is returned: keeping part of it as a fee "
+                "changes the ledger's rules and needs a hard fork."
+            )
         if not self.paid:
             inputs, notes = [], []
+        fork = self.hard_cap or self.fee_ada > 0
         return dict(
-            requires_hard_fork=self.hard_cap,
-            pilot_testable=not self.hard_cap,
+            requires_hard_fork=fork,
+            pilot_testable=not fork,
             inputs=inputs,
             notes=notes,
         )
@@ -139,7 +156,10 @@ class Scheme:
         if self.pledge_leverage:
             kind = "power cap" if self.hard_cap else "reward cap"
             parts.append(f"{kind} {self.pledge_leverage:g}x own stake")
-        return ", ".join(parts) + f"; {_ada(self.budget_ada)} ADA"
+        money = [f"{_ada(self.budget_ada)} ADA"] if self.budget_ada else []
+        if self.fee_ada:
+            money.append(f"{_ada(self.fee_ada)} ADA per action")
+        return ", ".join(parts) + "; " + " + ".join(money)
 
     def to_dict(self):
         d = asdict(self)

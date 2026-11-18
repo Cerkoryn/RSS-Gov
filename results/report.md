@@ -18,7 +18,7 @@ Every scheme starts from the same chain snapshot, runs on the same random seeds,
 | Participation | Delegated stake casting an explicit vote | higher | 1 points | simulated; rests on the voting and yield responses | on chain: votes and delegation each epoch |
 | Decentralisation | DReps needed for 2/3 of voting power | higher | 1 | simulated; rests on the yield and reinvestment responses | on chain: DRep voting power each epoch |
 | Skin in the game | Voting power backed by the DRep's own stake | higher | 0.2 points | starts from accounts linked on chain; changes rest on the own-stake response | needs DReps to declare their accounts and sign for them |
-| Reward sustainability | Treasury cost per year (ADA) | lower | 0.5 M ADA a year | accounting; exact for a given budget | the programme's own books |
+| Reward sustainability | Cost per year (ADA), from a budget or from fees | lower | 0.5 M ADA a year | accounting; exact for a budget, follows the number of actions for a fee | the programme's own books |
 | Sybil resistance | Share of the budget gained by splitting one identity | lower | 2 % of budget | exact property of the formula on today's DReps | indirectly: new look-alike DReps and delegation splits |
 
 A change smaller than `meaningful change` counts as no difference even when it is statistically clear. Marks in the tables: ▲ better than unpaid in every response scenario, ▼ worse in every one, △ / ▽ better / worse in some. No mark: no meaningful difference.
@@ -75,6 +75,8 @@ Exact arithmetic on the current snapshot. `outsider's take` is the share of the 
 | capped_1m | linear, cap 20M; 1M ADA | 193 | 636 | 16% | 0% | 0% | 30% | 100% |  |
 | capped_2m5 | linear, cap 20M; 2.5M ADA | 193 | 1,591 | 16% | 0% | 0% | 30% | 100% |  |
 | capped_10m | linear, cap 20M; 10M ADA | 193 | 6,362 | 16% | 0% | 0% | 30% | 100% |  |
+| equal_plus_stake_fee_25k | linear, 50% equal; 25k ADA per action | 193 | 2,082 | 30% | 44% | 44% | 6% | 100% |  |
+| equal_plus_stake_fee_100k | linear, 50% equal; 100k ADA per action | 193 | 8,329 | 30% | 44% | 44% | 6% | 100% |  |
 
 ## Scorecard: named schemes at the same budget
 
@@ -196,19 +198,21 @@ Skin in the game: change in Voting power backed by the DRep's own stake (points)
 
 Named designs with a setting changed, `central` scenario; compare each with its named design in the scorecard. The response to a reward is assumed to grow with its logarithm, so a bigger budget buys less than proportionally more.
 
-| scheme | varies | cost a year | share of treasury | Participation | Decentralisation | ADA a year per point of participation |
+| scheme | varies | cost a year | cost ÷ treasury | Participation | Decentralisation | ADA a year per point of participation |
 |---|---|---|---|---|---|---|
 | capped_1m | `capped`: 1M ADA | 2.0M | 0.15% | +3.1 ± 0.1 | -0.5 ± 0.1 | 644,966 |
 | capped_2m5 | `capped`: 2.5M ADA | 5.1M | 0.36% | +4.0 ± 0.1 | -0.5 ± 0.1 | 1,278,398 |
 | capped_10m | `capped`: 10M ADA | 20.3M | 1.45% | +5.0 ± 0.1 | -0.5 ± 0.2 | 4,047,118 |
+| equal_plus_stake_fee_25k | `equal_plus_stake`: no budget, 25k ADA per action | 2.2M | 0.16% | +3.1 ± 0.1 | -1.3 ± 0.2 | 704,400 |
+| equal_plus_stake_fee_100k | `equal_plus_stake`: no budget, 100k ADA per action | 8.7M | 0.62% | +4.2 ± 0.1 | -1.4 ± 0.2 | 2,058,865 |
 
 ## Search over the scheme family
 
 223 designs simulated over 10 generations, with the budget as one of the searched parameters. The finalists were re-run on 100 seeds the search never saw; all numbers here are from those seeds, averaged over `low`, `central`, `high`. Marks: ▲ better than unpaid in every scenario, ▼ worse in at least one.
 
-- 24 of 45 finalists are unbeaten: no other design is at least as good on all 5 axes.
-- Guardrail: no axis other than cost and Sybil resistance may be worse than unpaid in any scenario; those two are exact trade-offs, weighed on the front like the others. **23 of 45 finalists stay inside it.**
-- Hypervolume of the front (progress measure, in the units of `axes.scale`): **0.01514** (95% 0.01461–0.01570); unpaid alone 0.00455. The search adds **0.00624** over the named schemes (95% 0.00599–0.00665).
+- 24 of 46 finalists are unbeaten: no other design is at least as good on all 5 axes.
+- Guardrail: no axis other than cost and Sybil resistance may be worse than unpaid in any scenario; those two are exact trade-offs, weighed on the front like the others. **24 of 46 finalists stay inside it.**
+- Hypervolume of the front (progress measure, in the units of `axes.scale`): **0.01530** (95% 0.01473–0.01588); unpaid alone 0.00455. The search adds **0.00450** over the named schemes (95% 0.00440–0.00469).
 
 ### Shortlist: inside every guardrail and unbeaten
 
@@ -228,8 +232,8 @@ Named designs with a setting changed, `central` scenario; compare each with its 
 | g6_12 | linear, 50% equal, award cap 1%, skip top 10, reward cap 100x own stake; 5M ADA | +2.6 ± 0.1 ▲ | +1.7 ± 0.2 | +0.42 ± 0.06 | 10.1M | 44% |
 | g7_14 | stake^0.5, 50% equal, cap 50M, skip top 20, min 1M; 1M ADA | +1.4 ± 0.0 | +2.0 ± 0.2 ▲ | -0.00 ± 0.00 | 2.0M | 30% |
 | g7_22 | stake^0.25, cap 50M, top 20 at 25%, pay 400 (roll-down), min 10k, gate 50%, rationale +100%, 25% to delegators (passthrough); 10M ADA | +4.8 ± 0.1 ▲ | +3.3 ± 0.2 | +0.19 ± 0.05 | 20.3M | 29% |
-| g8_18 | linear, 25% equal, skip top 10, pay 400 (roll-down), min 10k, gate 75%, 25% to delegators (flat), reward cap 10000x own stake; 5M ADA | +3.3 ± 0.1 ▲ | +1.7 ± 0.2 | +0.20 ± 0.05 | 10.1M | 15% |
 | g9_10 | stake^0.5, 50% equal, cap 10M, award cap 1%, pay 100 (roll-down), min 10k, rationale +100%, 25% to delegators (passthrough); 2.5M ADA | +3.6 ± 0.1 ▲ | +0.0 ± 0.2 | -0.01 ± 0.00 | 5.1M | 20% |
+| issue_3 | linear, 25% equal, skip top 10, pay 400 (roll-down), min 10k, gate 75%, 25% to delegators (flat), reward cap 1000x own stake; 5M ADA | +3.2 ± 0.1 ▲ | +1.5 ± 0.2 | +0.21 ± 0.05 | 10.1M | 11% |
 | g8_1 | stake^0.75, 50% equal, cap 50M, min 1M, rationale +100%, 80% to delegators (flat); 1M ADA | +1.9 ± 0.1 | -0.5 ± 0.2 | -0.02 ± 0.00 | 2.0M | 5% |
 | top_100_gated | equal, pay 100, gate 70%; 5M ADA | +4.2 ± 0.1 ▲ | -0.3 ± 0.2 | +0.05 ± 0.02 | 10.1M | 19% |
 
@@ -251,8 +255,8 @@ By response scenario:
 | g6_12 | +1.3 | +2.5 | +3.9 | +1.0 | +1.4 | +2.6 |
 | g7_14 | +0.7 | +1.3 | +2.2 | +1.0 | +1.8 | +3.3 |
 | g7_22 | +2.7 | +4.6 | +7.1 | +0.9 | +2.8 | +6.2 |
-| g8_18 | +1.7 | +3.1 | +5.1 | +0.9 | +1.7 | +2.5 |
 | g9_10 | +1.9 | +3.5 | +5.5 | -0.1 | -0.0 | +0.2 |
+| issue_3 | +1.6 | +3.0 | +4.9 | +0.8 | +1.7 | +2.2 |
 | g8_1 | +0.9 | +1.7 | +3.0 | -0.2 | -0.4 | -0.8 |
 | top_100_gated | +2.5 | +4.2 | +6.0 | -0.2 | -0.4 | -0.2 |
 
@@ -301,6 +305,7 @@ By response scenario:
 | capped_1m | nothing | yes |
 | capped_2m5 | nothing | yes |
 | equal | nothing | yes |
+| issue_3 | nothing | yes |
 | top_100_gated | nothing | yes |
 | pledge_hard_cap | participation, decentralisation | yes |
 | activity_gate | decentralisation | no |

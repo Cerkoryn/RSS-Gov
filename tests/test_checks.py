@@ -20,6 +20,7 @@ RULES = [
     dict(alpha=0.0, k_exclude=2, top_weight=0.5, n_pay=15, roll_down=True, per_vote_ada=3.0),
     dict(alpha=0.5, equal_share=0.3, min_share=0.002, max_award_share=0.05),
     dict(alpha=0.75, basis="delegators", delegator_share=0.4, rationale_bonus=1.0),
+    dict(alpha=0.5, fee_ada=20_000.0, max_award_share=0.05),
 ]
 
 

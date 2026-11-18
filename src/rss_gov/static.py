@@ -161,15 +161,18 @@ def analyse(study, schemes):
             scheme=scheme.name,
             rule=scheme.label(),
             budget_ada=scheme.budget_ada,
+            fee_ada=scheme.fee_ada,
             pilot_testable=feasibility["pilot_testable"],
             power_kept=float(power.sum() / rnd.stake.sum()),
             paid_dreps=0,
             split_gain=0.0,
             newcomer_extra=0.0,
             incumbent_extra=0.0,
+            fee_share=0.0,
         )
         if scheme.paid:
-            pot = scheme.budget_ada / epochs
+            # A fee per action is counted at the average pace of closing actions in history.
+            pot = scheme.income(epochs, rnd.actions)
             award, yields = mechanisms.allocate(scheme, rnd, pot)
             paid = award[award > 0]
             best, identities, single = newcomer_split(
@@ -192,6 +195,7 @@ def analyse(study, schemes):
                 incumbent_rank=rank,
                 incumbent_parts=parts,
                 split_gain=max(best - single, extra),
+                fee_share=float(scheme.fee_ada * rnd.actions / pot),
                 delegator_claimants=float(claimants),
                 delegator_dust_share=float(
                     holders[(claims > 0) & (claims < min_payout)].sum() / claimants

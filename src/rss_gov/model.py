@@ -147,7 +147,6 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
     )
     activity, rationale_share = _activity(window, np.zeros(D), np.zeros(D))
 
-    budget_per_epoch = scheme.budget_ada / epochs if scheme.paid else 0.0
     carry, entry_multiplier = 0.0, 1.0
     series, actions = [], []
     spent = paid = top10 = rounds = entrants = 0.0
@@ -189,7 +188,10 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
         live = np.flatnonzero(registered)
 
         # 3. The reward round, computed from what the chain shows at the start of the epoch.
-        pot = budget_per_epoch + carry
+        # A fee per action arrives with the actions that close, in lumps; behaviour (step 4)
+        # follows the steady flow a DRep can count on: the fee times the average closings.
+        pot = scheme.income(epochs, n_closing[t]) + carry
+        seen = scheme.income(epochs, world.action_rate) + carry if scheme.fee_ada else pot
         delegators = np.zeros(len(live))  # read only through min_delegators or basis
         if scheme.min_delegators > 0 or scheme.basis == "delegators":
             counted = acct_count * (acct_stake >= params.delegator_min_ada * acct_count)
@@ -216,28 +218,30 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
             paid += (received > 0).sum()
             top10 += np.sort(received)[-10:].sum() / received.sum()
             rounds += 1
+        if seen != pot:
+            award, yields = mechanisms.allocate(scheme, rnd, seen)
 
         # 4. DReps respond to what one more vote is worth to them.
         shift, shift_rationale = np.zeros(D), np.zeros(D)
         entry_multiplier = 1.0
         reach = np.ones(D)
         upkeep = params.vote_cost_ada * world.action_rate  # voting on everything, per epoch
-        if pot > 0 and scenario.reinvest_response > 0:
+        if seen > 0 and scenario.reinvest_response > 0:
             reach[live] = np.power(1 + award / upkeep, scenario.reinvest_response)
-        if pot > 0 and scheme.pledge_leverage > 0 and top_up > 0:
+        if seen > 0 and scheme.pledge_leverage > 0 and top_up > 0:
             # DReps whose counted stake is limited by their own stake add some: paid DReps
             # under a reward cap, every DRep when voting power itself is capped.
             missing = np.maximum(stake[live] / scheme.pledge_leverage - pledge[live], 0)
             pledge[live] += top_up * missing * ((award > 0) | scheme.hard_cap)
-        if pot > 0 and scenario.drep_response > 0:
-            value = mechanisms.vote_value(scheme, rnd, pot)
+        if seen > 0 and scenario.drep_response > 0:
+            value = mechanisms.vote_value(scheme, rnd, seen)
             shift[live] = scenario.drep_response * np.log1p(value / params.vote_cost_ada)
             if scheme.rationale_bonus > 0:
                 extra = value * scheme.rationale_bonus / (1 + scheme.rationale_bonus)
                 shift_rationale[live] = scenario.drep_response * np.log1p(
                     extra / params.rationale_cost_ada
                 )
-            newcomer = _newcomer_award(scheme, rnd, pot, float(np.median(world.entrant_stake)))
+            newcomer = _newcomer_award(scheme, rnd, seen, float(np.median(world.entrant_stake)))
             entry_multiplier = min(
                 ENTRY_CAP, 1 + scenario.drep_response * np.log1p(newcomer / upkeep)
             )

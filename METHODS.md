@@ -5,8 +5,9 @@ is a plain-language summary; the rest is the detail behind it.
 
 ## In short
 
-**The question.** Cardano's treasury could pay DReps, and the people who delegate to them,
-for taking part in governance. There are many ways to do that, and each one buys something
+**The question.** DReps, and the people who delegate to them, could be paid for taking
+part in governance: from Cardano's treasury, or by a fee on each governance action. There
+are many ways to do that, and each one buys something
 and risks something. RSS-Gov does not pick a winner. It measures what each way of paying
 does, on five things that matter, so that the choice between them can be made in the open.
 
@@ -17,7 +18,7 @@ does, on five things that matter, so that the choice between them can be made in
    is better: power is spread wider.
 3. *Skin in the game*: how much of the voting power is backed by the DRep's own ADA, so
    that those who decide also bear the consequences.
-4. *Cost*: how much ADA a year leaves the treasury.
+4. *Cost*: how much ADA a year the rewards cost, whoever pays it.
 5. *Sybil risk*: how much of the budget someone gains by pretending to be several DReps
    (a Sybil attack). Lower is better.
 
@@ -91,7 +92,7 @@ history and reported as `supported_ratified` in the run tables.
 | Participation | Share of all delegated stake, including always-abstain and no-confidence, that casts an explicit vote on an action (`participation`) | higher | B |
 | Decentralisation | DReps needed to exceed two thirds of DRep voting power (`tau67`) | higher | B |
 | Skin in the game | Share of DRep voting power backed by the DRep's own stake: Σ min(power, own stake) / Σ power (`backing`) | higher | B, from an on-chain start |
-| Reward sustainability | Treasury cost a year: what is paid out plus one transaction fee per payment (`annual_cost_ada`) | lower | A |
+| Reward sustainability | Cost a year: what is paid out, from a budget or from fees, plus one transaction fee per payment (`annual_cost_ada`) | lower | A |
 | Sybil resistance | Largest share of the budget gained by splitting one identity into several (`split_gain`) | lower | A |
 
 Notes on the choices:
@@ -105,7 +106,8 @@ Notes on the choices:
   proxy.
 - **Cost** is an axis because the budget is a design choice. Named schemes are compared
   at one budget; the search varies it, and variations of named designs at other budgets
-  show what more money buys.
+  show what more money buys. It counts every ADA paid out, whether it comes from a budget
+  or from a fee per action, and does not say who bears it in the end.
 - **Sybil resistance** is a measured quantity, not a pass/fail gate. Like cost, it is an
   exact property of a rule and is traded off against the other axes with no limit of its
   own. Its `scale` in `config.yaml` sets how fast it counts against a design in the
@@ -181,6 +183,29 @@ earns nothing.
 requirement). With `hard_cap` it limits *voting power* itself. That changes ratification
 and needs a hard fork; such schemes are simulated and flagged `pilot_testable: false`.
 
+### Paying from a fee per action
+
+`fee_ada` funds the pot from governance actions instead of, or as well as, a budget: each
+action that closes adds that much, as if that part of its proposer's deposit were kept as
+a fee rather than returned ([CIP PR #1117](https://github.com/cardano-foundation/CIPs/pull/1117)
+proposes this). Today every deposit is returned, so a fee needs a ledger change and such
+designs are flagged `pilot_testable: false`. With `budget_ada: 0` a design is paid by fees
+alone.
+
+The money arrives in lumps: many epochs close no action, and a busy one closes many at once.
+Payments follow the lumps, so the cost follows the number of actions in each run.
+Behaviour follows the steady flow, the fee times the average number of actions closing
+per epoch, because that is what a DRep or delegator can count on; reacting to each lump
+would make a fee look worse only because the model's actors look one epoch ahead. At the
+same expected money a fee therefore buys the same reactions as a budget, at a cost that
+moves with the number of actions.
+
+Not modelled: proposers proposing less when part of the deposit is kept (the deposit has
+not changed since governance began, so there is no data on how they would react), fees
+added to treasury requests, and fewer actions easing the load on DReps (a DRep's chance
+of voting does not depend on how many actions are open). The number of actions in a run
+is drawn from history whatever the fee.
+
 ### Named designs
 
 Besides the generic shapes (`proportional`, `equal`, `sqrt`, `capped`, gates, floors,
@@ -223,7 +248,8 @@ Pay per action is approximated per epoch: `roll_down` uses expected votes, and
 The rule is applied to today's real DReps with no behaviour change. Reported: how many
 are paid, the size of awards, the share going to the ten largest DReps, the share of
 delegator claims too small to be worth a transaction, the voting power a hard cap would
-leave, and two splitting measures.
+leave, and two splitting measures. A fee per action is counted at the average pace of
+closing actions in history; `fee_share` is the share of the money it brings in.
 
 **An outsider splitting.** Someone brings a fixed amount of own stake (default 1M ADA) and
 spreads it over m fake DReps, each paying its deposit, voting on everything, attaching a
@@ -250,7 +276,8 @@ accounts. Each epoch:
 
 1. Account balances drift and fluctuate.
 2. DReps register and retire at historical rates, with historical sizes.
-3. The reward round is computed from what the chain shows.
+3. The reward round is computed from what the chain shows. A fee per action adds to the
+   pot as actions close.
 4. Accounts re-delegate with a small probability. A mover picks always-abstain,
    no-confidence, or a DRep with weight `(stake + floor)^theta × exp(beta × vote rate)`.
 5. Governance actions closing this epoch are voted on. Each action is a whole historical

@@ -36,7 +36,10 @@ EVIDENCE = dict(
         "starts from accounts linked on chain; changes rest on the own-stake response",
         "needs DReps to declare their accounts and sign for them",
     ),
-    annual_cost_ada=("accounting; exact for a given budget", "the programme's own books"),
+    annual_cost_ada=(
+        "accounting; exact for a budget, follows the number of actions for a fee",
+        "the programme's own books",
+    ),
     split_gain=(
         "exact property of the formula on today's DReps",
         "indirectly: new look-alike DReps and delegation splits",
@@ -571,7 +574,7 @@ def write(study):
             cost = steps.annual_cost_ada.values
             table["cost a year"] = [f"{c / 1e6:.1f}M" for c in cost]
             if data.treasury:
-                table["share of treasury"] = [f"{c / data.treasury:.2%}" for c in cost]
+                table["cost ÷ treasury"] = [f"{c / data.treasury:.2%}" for c in cost]
             for axis in [a for a in axes if a.name in ("participation", "tau67")]:
                 table[axis.family] = _cells(steps.reset_index(), axis)
             gain = steps.participation_diff.values * 100

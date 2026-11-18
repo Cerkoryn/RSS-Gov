@@ -29,6 +29,7 @@
 <li><a href="#the-axes">The axes</a></li>
 <li><a href="#data">Data</a></li>
 <li><a href="#the-reward-family-mechanismspy">The reward family (mechanisms.py)</a><ul>
+<li><a href="#paying-from-a-fee-per-action">Paying from a fee per action</a></li>
 <li><a href="#named-designs">Named designs</a></li>
 <li><a href="#what-the-family-cannot-express">What the family cannot express</a></li>
 </ul>
@@ -53,8 +54,9 @@
 <p>What RSS-Gov claims, what it does not, and how each number is produced. The first section
 is a plain-language summary; the rest is the detail behind it.</p>
 <h2 id="in-short">In short<a class="headerlink" href="#in-short" title="Permanent link">#</a></h2>
-<p><strong>The question.</strong> Cardano's treasury could pay DReps, and the people who delegate to them,
-for taking part in governance. There are many ways to do that, and each one buys something
+<p><strong>The question.</strong> DReps, and the people who delegate to them, could be paid for taking
+part in governance: from Cardano's treasury, or by a fee on each governance action. There
+are many ways to do that, and each one buys something
 and risks something. RSS-Gov does not pick a winner. It measures what each way of paying
 does, on five things that matter, so that the choice between them can be made in the open.</p>
 <p><strong>The five things measured.</strong> For every reward rule:</p>
@@ -64,7 +66,7 @@ does, on five things that matter, so that the choice between them can be made in
    is better: power is spread wider.</li>
 <li><em>Skin in the game</em>: how much of the voting power is backed by the DRep's own ADA, so
    that those who decide also bear the consequences.</li>
-<li><em>Cost</em>: how much ADA a year leaves the treasury.</li>
+<li><em>Cost</em>: how much ADA a year the rewards cost, whoever pays it.</li>
 <li><em>Sybil risk</em>: how much of the budget someone gains by pretending to be several DReps
    (a Sybil attack). Lower is better.</li>
 </ol>
@@ -173,7 +175,7 @@ history and reported as <code>supported_ratified</code> in the run tables.</p>
 </tr>
 <tr>
 <td>Reward sustainability</td>
-<td>Treasury cost a year: what is paid out plus one transaction fee per payment (<code>annual_cost_ada</code>)</td>
+<td>Cost a year: what is paid out, from a budget or from fees, plus one transaction fee per payment (<code>annual_cost_ada</code>)</td>
 <td>lower</td>
 <td>A</td>
 </tr>
@@ -196,7 +198,8 @@ history and reported as <code>supported_ratified</code> in the run tables.</p>
   proxy.</li>
 <li><strong>Cost</strong> is an axis because the budget is a design choice. Named schemes are compared
   at one budget; the search varies it, and variations of named designs at other budgets
-  show what more money buys.</li>
+  show what more money buys. It counts every ADA paid out, whether it comes from a budget
+  or from a fee per action, and does not say who bears it in the end.</li>
 <li><strong>Sybil resistance</strong> is a measured quantity, not a pass/fail gate. Like cost, it is an
   exact property of a rule and is traded off against the other axes with no limit of its
   own. Its <code>scale</code> in <code>config.yaml</code> sets how fast it counts against a design in the
@@ -262,6 +265,25 @@ earns nothing.</p>
 <p><code>leverage</code> ties the stake that counts for rewards to the DRep's own stake (a soft
 requirement). With <code>hard_cap</code> it limits <em>voting power</em> itself. That changes ratification
 and needs a hard fork; such schemes are simulated and flagged <code>pilot_testable: false</code>.</p>
+<h3 id="paying-from-a-fee-per-action">Paying from a fee per action<a class="headerlink" href="#paying-from-a-fee-per-action" title="Permanent link">#</a></h3>
+<p><code>fee_ada</code> funds the pot from governance actions instead of, or as well as, a budget: each
+action that closes adds that much, as if that part of its proposer's deposit were kept as
+a fee rather than returned (<a href="https://github.com/cardano-foundation/CIPs/pull/1117">CIP PR #1117</a>
+proposes this). Today every deposit is returned, so a fee needs a ledger change and such
+designs are flagged <code>pilot_testable: false</code>. With <code>budget_ada: 0</code> a design is paid by fees
+alone.</p>
+<p>The money arrives in lumps: many epochs close no action, and a busy one closes many at once.
+Payments follow the lumps, so the cost follows the number of actions in each run.
+Behaviour follows the steady flow, the fee times the average number of actions closing
+per epoch, because that is what a DRep or delegator can count on; reacting to each lump
+would make a fee look worse only because the model's actors look one epoch ahead. At the
+same expected money a fee therefore buys the same reactions as a budget, at a cost that
+moves with the number of actions.</p>
+<p>Not modelled: proposers proposing less when part of the deposit is kept (the deposit has
+not changed since governance began, so there is no data on how they would react), fees
+added to treasury requests, and fewer actions easing the load on DReps (a DRep's chance
+of voting does not depend on how many actions are open). The number of actions in a run
+is drawn from history whatever the fee.</p>
 <h3 id="named-designs">Named designs<a class="headerlink" href="#named-designs" title="Permanent link">#</a></h3>
 <p>Besides the generic shapes (<code>proportional</code>, <code>equal</code>, <code>sqrt</code>, <code>capped</code>, gates, floors,
 rationale bonus, delegator and own-stake designs), the named designs come from published
@@ -348,7 +370,8 @@ proposals. Each is the closest point in the family, not an exact copy.</p>
 <p>The rule is applied to today's real DReps with no behaviour change. Reported: how many
 are paid, the size of awards, the share going to the ten largest DReps, the share of
 delegator claims too small to be worth a transaction, the voting power a hard cap would
-leave, and two splitting measures.</p>
+leave, and two splitting measures. A fee per action is counted at the average pace of
+closing actions in history; <code>fee_share</code> is the share of the money it brings in.</p>
 <p><strong>An outsider splitting.</strong> Someone brings a fixed amount of own stake (default 1M ADA) and
 spreads it over m fake DReps, each paying its deposit, voting on everything, attaching a
 rationale to every vote, holding its stake in as many minimum-size accounts as the rule
@@ -370,7 +393,8 @@ accounts. Each epoch:</p>
 <ol>
 <li>Account balances drift and fluctuate.</li>
 <li>DReps register and retire at historical rates, with historical sizes.</li>
-<li>The reward round is computed from what the chain shows.</li>
+<li>The reward round is computed from what the chain shows. A fee per action adds to the
+   pot as actions close.</li>
 <li>Accounts re-delegate with a small probability. A mover picks always-abstain,
    no-confidence, or a DRep with weight <code>(stake + floor)^theta × exp(beta × vote rate)</code>.</li>
 <li>Governance actions closing this epoch are voted on. Each action is a whole historical
@@ -632,7 +656,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=20e1d71ee4"></script>
-<script src="common.js?v=2c484c3923"></script>
+<script src="data.js?v=bc22c3eb4d"></script>
+<script src="common.js?v=bfa8e9517a"></script>
 </body>
 </html>

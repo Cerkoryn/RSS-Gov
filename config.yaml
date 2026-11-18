@@ -92,7 +92,7 @@ axes:
     scale: [-0.005, 0.05]
   annual_cost_ada:
     family: Reward sustainability
-    label: Treasury cost per year (ADA)
+    label: Cost per year (ADA), from a budget or from fees
     better: lower
     meaningful: 500000
     scale: [25000000, 0]
@@ -143,6 +143,10 @@ experiment:
     - {name: capped_1m, preset: capped, budget_ada: 1000000}
     - {name: capped_2m5, preset: capped, budget_ada: 2500000}
     - {name: capped_10m, preset: capped, budget_ada: 10000000}
+    # Paid by a fee per governance action instead of a budget (CIP PR #1117): a quarter of
+    # today's 100,000 ADA deposit, and all of it.
+    - {name: equal_plus_stake_fee_25k, preset: equal_plus_stake, budget_ada: 0, fee_ada: 25000}
+    - {name: equal_plus_stake_fee_100k, preset: equal_plus_stake, budget_ada: 0, fee_ada: 100000}
 
 # The results site (`rss-gov site`), published on GitHub Pages.
 site:

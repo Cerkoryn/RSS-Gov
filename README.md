@@ -21,7 +21,7 @@ reward rule there; it is simulated on GitHub's servers and listed with its resul
 | Participation | Share of all delegated stake that casts an explicit vote | higher |
 | Decentralisation | DReps needed for two thirds of DRep voting power | higher |
 | Skin in the game | Share of voting power backed by the DRep's own stake | higher |
-| Reward sustainability | Treasury cost a year | lower |
+| Reward sustainability | Cost a year, from a budget or from fees | lower |
 | Sybil resistance | Share of the budget gained by splitting one identity | lower |
 
 Decision quality is deliberately left out: it cannot be observed on chain. Proposal

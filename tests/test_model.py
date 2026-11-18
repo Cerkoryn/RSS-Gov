@@ -59,6 +59,28 @@ def test_reinvested_awards_concentrate_power_under_a_proportional_rule(world, pa
     assert tau_gap("proportional") < tau_gap("equal")
 
 
+def test_a_fee_per_action_pays_what_the_closing_actions_bring(world, params):
+    fee = mechanisms.Scheme(name="fee", alpha=0.0, fee_ada=1_000.0)
+    draw = np.random.default_rng(np.random.SeedSequence(3).spawn(5)[0])
+    closing = draw.choice(world.closes, 12).sum()  # the run's own draw of closing actions
+    out = model.run(world, params, fee, model.Scenario("s"), epochs=12, seed=3)
+    assert closing > 0 and np.isclose(out["spent_ada"], 1_000.0 * closing)
+    assert out["participation"] == run(world, params)["participation"]  # no response: no change
+
+
+def test_a_fee_buys_the_reactions_of_a_budget_of_the_same_expected_size(world, params):
+    """Behaviour follows the fee's average flow; only the money paid follows the lumps."""
+    fee = mechanisms.Scheme(name="fee", alpha=0.0, fee_ada=1_000.0)
+    budget = mechanisms.Scheme(
+        name="budget", alpha=0.0, budget_ada=1_000.0 * world.action_rate * 12
+    )
+    scenario = model.Scenario("s", 1.0, 2.0, 0.5, 0.5)
+    a, b = (model.run(world, params, s, scenario, epochs=12, seed=3) for s in (fee, budget))
+    for key in ("participation", "tau67", "ballots", "drep_power"):
+        assert np.isclose(a[key], b[key]), key
+    assert not np.isclose(a["spent_ada"], b["spent_ada"])
+
+
 def test_cost_counts_what_was_paid_plus_delivery(world, params):
     out = run(world, params, "delegator_flat", budget=200_000.0)
     paid = out["spent_ada"] + out["payments"] * params.payout_fee_ada

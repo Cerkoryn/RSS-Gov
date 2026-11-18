@@ -112,6 +112,17 @@ def test_one_more_vote_is_worth_something_to_a_drep_that_has_not_voted():
     assert value[0] > value[2]
 
 
+def test_a_fee_per_action_funds_the_pot_and_needs_a_hard_fork():
+    fee = m.Scheme(name="fee", alpha=0.0, fee_ada=25_000)
+    assert fee.paid and fee.income(36, 2) == 50_000 and fee.income(36, 0) == 0
+    assert m.Scheme(name="mix", budget_ada=3.6e6, fee_ada=1e3).income(36, 1.5) == 101_500
+    assert fee.label() == "equal; 25k ADA per action"
+    flags = fee.feasibility()
+    assert flags["requires_hard_fork"] and not flags["pilot_testable"]
+    with pytest.raises(ValueError):
+        m.Scheme(fee_ada=-1)
+
+
 def test_labels_describe_the_rule():
     assert m.preset("unpaid", 1).label() == "unpaid"
     assert m.preset("capped", 5e6).label() == "linear, cap 20M; 5M ADA"

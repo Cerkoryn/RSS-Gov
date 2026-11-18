@@ -50,7 +50,7 @@ DISPLAY = dict(
         "Skin in the game", "How much voting power is backed by DReps' own ADA",
         "change in points", " pts", 2,
     ),
-    annual_cost_ada=("Cost", "ADA paid from the treasury each year", "M ADA a year", "M", 1),
+    annual_cost_ada=("Cost", "ADA paid out each year, from a budget or from fees", "M ADA a year", "M", 1),
     split_gain=(
         "Sybil risk", "How much of the budget one actor gains by posing as many DReps",
         "% of budget", "%", 0,
@@ -65,7 +65,7 @@ CHANNELS = dict(
 FACTS = [
     "paid_dreps", "max_award", "top10_award_share", "newcomer_capture", "newcomer_extra",
     "newcomer_identities", "incumbent_extra", "incumbent_rank", "incumbent_parts", "power_kept",
-    "delegator_claimants", "delegator_dust_share",
+    "delegator_claimants", "delegator_dust_share", "fee_share",
 ]  # fmt: skip
 EXACT = ("annual_cost_ada", "split_gain")
 CHECKS = dict(
@@ -145,7 +145,10 @@ def titles(schemes):
         s = scheme.to_dict()
         shape = SHAPES.get(float(s["alpha"]), f"Power {float(s['alpha']):g}")
         feats = _features(s)
-        parts[name] = (shape, feats, feats[:1], f"{proposals.amount(s['budget_ada'])} ADA")
+        money = [f"{proposals.amount(s['budget_ada'])} ADA"] if s["budget_ada"] else []
+        if s.get("fee_ada"):
+            money.append(f"{proposals.amount(s['fee_ada'])} ADA per action")
+        parts[name] = (shape, feats, feats[:1], " + ".join(money))
     name_of = {n: ", ".join([p[0], *p[2], p[3]]) for n, p in parts.items()}
     groups = {}
     for n, title in name_of.items():

@@ -75,6 +75,8 @@ def test_a_design_close_to_a_named_one_is_named_after_it():
     assert proposals.tag("cap_ada", None) == "no cap"
     assert proposals.tag("roll_down", False) == "no roll-down"
     assert proposals.tag("min_share", 0.005) == "≥0.5% of power"
+    assert proposals.tag("budget_ada", 0) == "no budget"
+    assert proposals.tag("fee_ada", 25_000) == "25k ADA per action"
     assert all(f["short"] and f["tag"] for f in proposals.FIELDS)
 
 
@@ -94,6 +96,7 @@ def test_the_browser_tags_settings_like_python():
         ("roll_down", False), ("roll_down", True), ("min_delegators", 50), ("n_pay", 1200),
         ("activity_gate", 0.7), ("basis", "delegators"), ("per_vote_ada", 10.0),
         ("min_stake_ada", 10000.0), ("delegator_mode", "flat"), ("rationale_bonus", 1.0),
+        ("fee_ada", 25000.0), ("fee_ada", 0.0), ("budget_ada", 0.0),
     ]  # fmt: skip
     script = (
         f"{functions}\nconst F = {json.dumps(proposals.BY_NAME)};"

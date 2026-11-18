@@ -37,12 +37,28 @@ FIELDS = [
         tag="{} ADA",
         group="Budget",
         kind="ada",
-        min=100_000,
+        min=0,
         max=100_000_000,
         step=100_000,
         label="Budget over the whole programme",
         help="Total ADA paid over the programme (36 epochs, about six months). The cost a "
-        "year is about twice this, plus a small fee per payment.",
+        "year is about twice this, plus a small fee per payment. 0 for a design paid only by "
+        "the fee per action below.",
+    ),
+    dict(
+        name="fee_ada",
+        short="Fee per action",
+        tag="{} ADA per action",
+        group="Budget",
+        kind="ada",
+        min=0,
+        max=1_000_000,
+        step=1_000,
+        label="Fee per governance action",
+        help="Each governance action that closes adds this much to the pot, on top of the "
+        "budget: part of its proposer's deposit kept as a fee instead of returned. Today every "
+        "deposit is returned, so this needs a hard fork. The simulation does not change how "
+        "many actions are proposed.",
     ),
     dict(
         name="activity_gate",
@@ -310,6 +326,8 @@ def tag(name, value):
     if kind == "bool":
         return field["tag"]
     if kind == "ada":
+        if not value:
+            return "no " + field["short"].lower()
         value = amount(value)
     elif kind == "share":
         value = f"{round(float(value) * 100, 2):g}%"
@@ -417,8 +435,9 @@ def accept(config, payload):
     designs = known(config)
     scheme, meta = parse(payload, set(designs) | taken(config["results"]))
     if not scheme.paid:
-        raise ValueError("a proposal must have a budget")
-    if scheme.hard_cap and not config["search"].get("allow_hard_fork", False):
+        raise ValueError("a proposal must have a budget or a fee per action")
+    fork = scheme.feasibility()["requires_hard_fork"]
+    if fork and not config["search"].get("allow_hard_fork", False):
         raise ValueError("hard-fork designs are switched off in config.yaml")
     mine = {k: v for k, v in scheme.to_dict().items() if k != "name"}
     for name, other in designs.items():

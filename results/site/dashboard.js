@@ -318,7 +318,7 @@ function sentence(s, axis) {
     case "backing":
       return small ? `No clear change: ${pct(base, 2)} of voting power is the DReps' own ADA.` : `${pct(base, 2)} → ${pct(base + v, 2)} of voting power is the DReps' own ADA.`;
     case "annual_cost_ada":
-      return `${ada(v)} ADA a year from the treasury` + (D.meta.treasury ? `, ${pct(v / D.meta.treasury, 2)} of what it holds.` : ".");
+      return `${ada(v)} ADA a year, from a budget or from fees` + (D.meta.treasury ? `: as much as ${pct(v / D.meta.treasury, 2)} of what the treasury holds.` : ".");
     case "split_gain":
       return `One actor posing as many DReps would gain ${pct(v)} of the budget.` + (v >= AX.split_gain.scale[0] ? " Coverage counts that as no Sybil resistance at all." : "");
     default:
@@ -402,6 +402,7 @@ function detail() {
   row("…of which from splitting", pct(f.newcomer_extra));
   row("Most an existing DRep gains by splitting", f.incumbent_extra >= 0.005 ? `${pct(f.incumbent_extra)} (rank ${f.incumbent_rank}, into ${f.incumbent_parts})` : "0%");
   row("Voting power kept", pct(f.power_kept));
+  if (f.fee_share) row("Paid by fees, at the past pace of actions", pct(f.fee_share));
   if (f.delegator_claimants) row(`Delegator payments under ${D.meta.min_payout} ADA`, pct(f.delegator_dust_share));
   const pay = s.results[state.scenario] && s.results[state.scenario].payments;
   if (pay) row("Payments a year", num(pay * YEAR, 0));
