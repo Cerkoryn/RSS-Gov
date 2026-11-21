@@ -7,15 +7,15 @@ const Checks = (() => {
   const INCUMBENT_SPLITS = [2, 5, 10, 20];
   const INCUMBENT_RANKS = [...Array(20).keys(), 49, 99, 199];
   const sum = (a) => { let t = 0; for (const v of a) t += v; return t; };
-  // largest stake first; equal stakes keep their order, as numpy's stable argsort
-  const byStake = (stake) => [...stake.keys()].sort((i, j) => stake[j] - stake[i] || i - j);
+  // largest voting power first; equal powers keep their order, as numpy's stable argsort
+  const byPower = (power) => [...power.keys()].sort((i, j) => power[j] - power[i] || i - j);
 
   function eligible(s, r) {
-    const n = r.stake.length, ok = new Array(n);
-    const floor = s.min_share ? s.min_share * sum(r.stake) : 0;
+    const n = r.power.length, ok = new Array(n);
+    const floor = s.min_share ? s.min_share * sum(r.power) : 0;
     for (let i = 0; i < n; i++) {
-      ok[i] = r.activity[i] > 0 && r.activity[i] >= s.activity_gate && r.stake[i] >= s.min_stake_ada && r.delegators[i] >= s.min_delegators;
-      if (s.min_share && !(r.stake[i] >= floor)) ok[i] = false;
+      ok[i] = r.activity[i] > 0 && r.activity[i] >= s.activity_gate && r.power[i] >= s.min_power_ada && r.delegators[i] >= s.min_delegators;
+      if (s.min_share && !(r.power[i] >= floor)) ok[i] = false;
     }
     return ok;
   }
@@ -25,7 +25,7 @@ const Checks = (() => {
   function ranked(s, r, ok, expected) {
     const keep = ok.map((v) => (v ? 1 : 0));
     if (!(s.k_exclude || s.n_pay)) return keep;
-    const order = byStake(r.stake);
+    const order = byPower(r.power);
     for (const i of order.slice(0, s.k_exclude)) keep[i] *= s.top_weight || 0;
     const rest = order.slice(s.k_exclude).filter((i) => ok[i]);
     if (s.roll_down) {
@@ -39,7 +39,7 @@ const Checks = (() => {
 
   // Reward weights as [fraction of the DReps' pot, weights]; zero means not paid.
   function parts(s, r, expected) {
-    const n = r.stake.length, ok = eligible(s, r);
+    const n = r.power.length, ok = eligible(s, r);
     if (!expected) expected = r.activity.map((a, i) => (ok[i] ? a : 0));
     const keep = ranked(s, r, ok, expected);
     const cap = s.cap_ada === null || s.cap_ada === undefined ? Infinity : s.cap_ada;
@@ -48,7 +48,7 @@ const Checks = (() => {
       votes[i] = keep[i] * r.activity[i] * (1 + s.rationale_bonus * r.rationale[i]);
       let size = r.delegators[i];
       if (s.basis !== "delegators") {
-        size = Math.min(r.stake[i], cap);
+        size = Math.min(r.power[i], cap);
         if (s.pledge_leverage > 0) size = Math.min(size, s.pledge_leverage * r.pledge[i]);
       }
       w[i] = votes[i] * (s.alpha === 0 ? 1 : Math.pow(size, s.alpha));
@@ -76,7 +76,7 @@ const Checks = (() => {
 
   // One round's pot: [DRep awards, delegator yield per ADA delegated].
   function allocate(s, r, pot) {
-    const n = r.stake.length;
+    const n = r.power.length;
     const zero = [new Float64Array(n), new Float64Array(n)];
     if (pot <= 0) return zero;
     const ps = parts(s, r);
@@ -86,12 +86,12 @@ const Checks = (() => {
     const yields = new Float64Array(n);
     const delegatorPot = pot * s.delegator_share;
     if (delegatorPot > 0) {
-      const paid = [...award.keys()].filter((i) => award[i] > 0 && r.stake[i] > 0);
+      const paid = [...award.keys()].filter((i) => award[i] > 0 && r.power[i] > 0);
       if (s.delegator_mode === "flat") {
-        const base = sum(paid.map((i) => r.stake[i] * r.activity[i]));
+        const base = sum(paid.map((i) => r.power[i] * r.activity[i]));
         if (base > 0) for (const i of paid) yields[i] = (delegatorPot * r.activity[i]) / base;
       } else {
-        for (const i of paid) yields[i] = (delegatorPot * award[i]) / total / r.stake[i];
+        for (const i of paid) yields[i] = (delegatorPot * award[i]) / total / r.power[i];
       }
     }
     return [award, yields];
@@ -100,14 +100,14 @@ const Checks = (() => {
   // Share of the pot going to the DReps `rows` and their delegators.
   function take(s, r, pot, rows) {
     const [award, yields] = allocate(s, r, pot);
-    return (sum(rows.map((i) => award[i])) + sum(rows.map((i) => yields[i] * r.stake[i]))) / pot;
+    return (sum(rows.map((i) => award[i])) + sum(rows.map((i) => yields[i] * r.power[i]))) / pot;
   }
   const range = (from, to) => Array.from({ length: to - from }, (_, k) => from + k);
 
   // The round with DRep `drop` removed (or nobody) and `copies` identical DReps added.
   function withCopies(r, drop, add, copies) {
     const out = {};
-    for (const k of ["stake", "activity", "rationale", "delegators", "pledge"]) {
+    for (const k of ["power", "activity", "rationale", "delegators", "pledge"]) {
       const kept = drop === null ? [...r[k]] : r[k].filter((_, i) => i !== drop);
       for (let c = 0; c < copies; c++) kept.push(add[k]);
       out[k] = kept;
@@ -120,9 +120,9 @@ const Checks = (() => {
     let best = 0, bestM = 1, single = 0;
     for (const m of NEWCOMER_SPLITS) {
       const each = t.capital / m - t.deposit;
-      if (each < Math.max(s.min_stake_ada, s.min_delegators * t.delegator_min, 1)) break;
-      const plus = withCopies(r, null, { stake: each, activity: 1, rationale: 1, delegators: Math.floor(each / t.delegator_min), pledge: each }, m);
-      const share = take(s, plus, pot, range(r.stake.length, r.stake.length + m));
+      if (each < Math.max(s.min_power_ada, s.min_delegators * t.delegator_min, 1)) break;
+      const plus = withCopies(r, null, { power: each, activity: 1, rationale: 1, delegators: Math.floor(each / t.delegator_min), pledge: each }, m);
+      const share = take(s, plus, pot, range(r.power.length, r.power.length + m));
       if (m === 1) single = share;
       if (share > best) { best = share; bestM = m; }
     }
@@ -130,15 +130,15 @@ const Checks = (() => {
   }
 
   function incumbentSplit(s, r, pot) {
-    const order = byStake(r.stake);
+    const order = byPower(r.power);
     let best = [0, null, 1];
     for (const rank of INCUMBENT_RANKS) {
       if (rank >= order.length) break;
       const i = order[rank];
       const whole = take(s, r, pot, [i]);
       for (const m of INCUMBENT_SPLITS) {
-        const parts = withCopies(r, i, { stake: r.stake[i] / m, activity: r.activity[i], rationale: r.rationale[i], delegators: r.delegators[i] / m, pledge: r.pledge[i] / m }, m);
-        const n = r.stake.length - 1;
+        const parts = withCopies(r, i, { power: r.power[i] / m, activity: r.activity[i], rationale: r.rationale[i], delegators: r.delegators[i] / m, pledge: r.pledge[i] / m }, m);
+        const n = r.power.length - 1;
         const extra = take(s, parts, pot, range(n, n + m)) - whole;
         if (extra > best[0]) best = [extra, rank + 1, m];
       }
@@ -171,7 +171,7 @@ const Checks = (() => {
     if (s.rationale_bonus > 0) out.push("An anchor proves a rationale exists, not that it is good.");
     if (s.basis === "delegators") out.push("Accounts are cheap to create: paying by their number invites fake ones.");
     if (s.delegator_share > 0) out.push("Many small delegator claims: needs a claim contract or minimum payout.");
-    if (s.pledge_leverage > 0) out.push("Own stake is not a ledger concept: DReps must declare their accounts.");
+    if (s.pledge_leverage > 0) out.push("Pledge is not a ledger concept: DReps must declare their accounts.");
     if (s.hard_cap) out.push("Capping voting power changes ratification rules: needs a hard fork.");
     if (s.fee_ada > 0) out.push("Today every governance action deposit is returned: keeping part of it as a fee changes the ledger's rules and needs a hard fork.");
     return out;
@@ -181,9 +181,9 @@ const Checks = (() => {
   // pays delegators; without it the delegator facts are null.
   function analyse(s, t, accounts) {
     const r = t;
-    const power = s.hard_cap ? r.stake.map((v, i) => Math.min(v, s.pledge_leverage * r.pledge[i])) : r.stake;
+    const power = s.hard_cap ? r.power.map((v, i) => Math.min(v, s.pledge_leverage * r.pledge[i])) : r.power;
     const row = {
-      paid_dreps: 0, max_award: null, top10_award_share: null, power_kept: sum(power) / sum(r.stake),
+      paid_dreps: 0, max_award: null, top10_award_share: null, power_kept: sum(power) / sum(r.power),
       newcomer_capture: 0, newcomer_extra: 0, newcomer_identities: null, incumbent_extra: 0, incumbent_rank: null,
       incumbent_parts: null, split_gain: 0, delegator_claimants: null, delegator_dust_share: null, fee_share: 0,
     };

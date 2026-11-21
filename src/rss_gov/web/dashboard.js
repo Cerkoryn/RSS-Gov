@@ -141,8 +141,8 @@ function measures() {
       ["The share of all delegated ADA, always-abstain included, whose DRep voted on a governance action.", `Mainnet average over the ${t.participation_actions} actions that closed in the last ${t.recent_epochs} epochs.`, sim(pct(b.participation, 1))]],
     tau67: ["Mainnet today", num(t.tau67, 0), `DReps hold two thirds of the power`,
       [`The fewer DReps it takes to reach two thirds, the more concentrated power is. There are ${num(t.dreps, 0)} DReps with voting power.`, sim(num(b.tau67, 1) + " DReps")]],
-    backing: ["Mainnet today", pct(t.backing, 2), "of voting power is DReps' own ADA",
-      ["Skin in the game: DReps who hold their own ADA bear the consequences of what they vote for.", "Own stake is estimated from accounts linked to each DRep on chain, such as the one that funded its registration.", sim(pct(b.backing, 2))]],
+    backing: ["Mainnet today", pct(t.backing, 2), "of voting power is DReps' pledge",
+      ["Skin in the game: DReps who pledge their own ADA bear the consequences of what they vote for.", "Pledge is estimated from accounts linked to each DRep on chain, such as the one that funded its registration.", sim(pct(b.backing, 2))]],
     annual_cost_ada: ["Mainnet today", "0 ADA", "paid in governance rewards",
       [m.treasury ? `The treasury holds ${ada(m.treasury)} ADA.` : "", `The named designs pay ${ada(m.budget)} ADA over six months: ${ada(m.budget * YEAR)} ADA a year${m.treasury ? `, ${pct((m.budget * YEAR) / m.treasury, 2)} of the treasury` : ""}.`].filter(Boolean)],
     split_gain: ["Mainnet today", "0%", "of the budget to gain: nothing is paid yet",
@@ -316,7 +316,7 @@ function sentence(s, axis) {
       return small ? `About the same: ${num(base, 0)} DReps hold two thirds of the power.`
         : `${num(base, 1)} → ${num(base + v, 1)} DReps hold two thirds of the power: power is ${v > 0 ? "more spread out" : "more concentrated"}.`;
     case "backing":
-      return small ? `No clear change: ${pct(base, 2)} of voting power is the DReps' own ADA.` : `${pct(base, 2)} → ${pct(base + v, 2)} of voting power is the DReps' own ADA.`;
+      return small ? `No clear change: ${pct(base, 2)} of voting power is the DReps' pledge.` : `${pct(base, 2)} → ${pct(base + v, 2)} of voting power is the DReps' pledge.`;
     case "annual_cost_ada":
       return `${ada(v)} ADA a year, from a budget or from fees` + (D.meta.treasury ? `: as much as ${pct(v / D.meta.treasury, 2)} of what the treasury holds.` : ".");
     case "split_gain":
@@ -469,7 +469,7 @@ function kin(s, limit = 8) {
     .sort((a, b) => a.diff.length - b.diff.length)
     .slice(0, limit);
 }
-// What sets a relative apart, in its own values: "≤10000× own stake".
+// What sets a relative apart, in its own values: "pledge soft cap 10000×".
 const diffText = (q, diff) => diff.length > 2 ? pretty(q.name) : diff.map((f) => tag(f, q.scheme[f.name])).join(", ");
 
 function relatives(s, host) {
@@ -1267,7 +1267,7 @@ function glossary() {
     ["± and intervals", `Each design is simulated ${runs} with different random luck. The ± is the 95% range of the average; differences smaller than it are not differences.`],
     ["Exact versus assumed", "Cost and Sybil risk are exact properties of a rule applied to today's DReps. The other three measures depend on the assumed reactions; the first tab shows which one."],
     ["Sybil tests", `Sybil risk is the larger of two tests: an outsider bringing ${ada(D.meta.capital)} ADA as many look-alike DReps, and an existing DRep splitting into 2–20 with its delegators following. The second is an upper bound.`],
-    ["Own stake", "Estimated from accounts linked to a DRep on chain (the funder of its registration, its declared payment address). It misses stake held elsewhere; a real programme would need signed declarations."],
+    ["Pledge", "The ADA a DRep owns itself and delegates to itself, estimated from accounts linked to it on chain (the funder of its registration, its declared payment address). It misses ADA held elsewhere; a real programme would need signed declarations."],
     ["Hard fork", "Limiting voting power itself changes how votes are counted, which needs a hard fork. Such designs are simulated mechanically: delegators of a capped DRep are not modelled as moving away."],
   ];
   const dl = $("#glossary");

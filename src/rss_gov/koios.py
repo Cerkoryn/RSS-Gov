@@ -328,7 +328,7 @@ def delegator_rows(k, drep, count):
 def own_accounts(k, drep_ids, updates, log=print):
     """Accounts that plausibly belong to each DRep, with their current balance.
 
-    A DRep's own stake is not a ledger concept. Two clues are on chain: the account that
+    A DRep's pledge (the ADA it owns itself) is not a ledger concept. Two clues are on chain: the account that
     funded the DRep's registration transaction, and the payment address the DRep declares
     in its metadata. Both are proxies: a registration can be paid for by someone else, and
     a declared address proves nothing about who controls it.
@@ -355,12 +355,12 @@ def own_accounts(k, drep_ids, updates, log=print):
             if isinstance(address, str) and address.startswith("addr1"):
                 declared[row["drep_id"]] = address.strip()
     addresses = sorted(set(declared.values()))
-    stake_of = {}
+    account_of = {}
     for i in range(0, len(addresses), 20):
         for row in k.page("address_info", None, {"_addresses": addresses[i : i + 20]}):
             if row.get("stake_address"):
-                stake_of[row["address"]] = row["stake_address"]
-    links |= {(d, stake_of[a], "declared") for d, a in declared.items() if a in stake_of}
+                account_of[row["address"]] = row["stake_address"]
+    links |= {(d, account_of[a], "declared") for d, a in declared.items() if a in account_of}
 
     accounts = sorted({account for _, account, _ in links})
     info = {}
@@ -378,7 +378,7 @@ def own_accounts(k, drep_ids, updates, log=print):
         for drep, account, source in sorted(links)
         if account in info
     ]
-    log(f"own-stake links {len(rows)} for {len({r['drep_id'] for r in rows})} DReps")
+    log(f"pledge links {len(rows)} for {len({r['drep_id'] for r in rows})} DReps")
     return pd.DataFrame(
         rows, columns=["drep_id", "stake_address", "source", "balance", "delegated_drep"]
     )

@@ -36,7 +36,7 @@ def test_a_stronger_drep_response_never_lowers_ballots_under_an_activity_scheme(
 
 
 def test_each_response_channel_is_off_unless_switched_on(world, params):
-    """Reinvestment and own-stake top-ups must not leak into the other scenarios."""
+    """Reinvestment and pledge top-ups must not leak into the other scenarios."""
     scheme = mechanisms.Scheme(name="soft", budget_ada=200_000.0, pledge_leverage=5)
 
     def backing(*response):
@@ -88,12 +88,12 @@ def test_cost_counts_what_was_paid_plus_delivery(world, params):
     assert run(world, params)["annual_cost_ada"] == 0
 
 
-def test_participation_counts_stake_outside_dreps_as_not_voting(world, params):
+def test_participation_counts_ada_outside_dreps_as_not_voting(world, params):
     out = run(world, params)
     assert 0 < out["participation"] < out["turnout"]
 
 
-def test_delegator_rewards_pull_stake_out_of_abstain(world, params):
+def test_delegator_rewards_pull_ada_out_of_abstain(world, params):
     base = run(world, params, "unpaid")
     paid = run(world, params, "delegator_flat", response=(0.0, 5.0), budget=5e7)
     assert paid["abstain"] < base["abstain"]
@@ -116,7 +116,7 @@ def test_trace_returns_one_row_per_epoch(world, params):
 def test_unpaid_concentration_stays_near_its_start(world, params):
     """Guards against the old model's failure: a baseline that dissolves on its own."""
     start = np.bincount(
-        world.acct_target[world.acct_target >= 0], weights=world.acct_stake[world.acct_target >= 0]
+        world.acct_target[world.acct_target >= 0], weights=world.acct_ada[world.acct_target >= 0]
     )
     from rss_gov.metrics import effective_number
 
@@ -124,7 +124,7 @@ def test_unpaid_concentration_stays_near_its_start(world, params):
     assert abs(out["effective_n"] / effective_number(start) - 1) < 0.35
 
 
-def test_pass_through_yield_dilutes_as_stake_arrives(params):
+def test_pass_through_yield_dilutes_as_delegation_arrives(params):
     """Two DReps share the same delegator award. Arrivals must not all pile into the
     smaller one: its yield falls as it fills."""
     from tests.conftest import make_params
@@ -132,23 +132,23 @@ def test_pass_through_yield_dilutes_as_stake_arrives(params):
     params = make_params(hazard_large=0.1, hazard_small=0.1, abstain_large=0.05, abstain_small=0.05)
     n = 2000
     target = np.concatenate([[0, 1], np.full(n, model.ABSTAIN)])
-    acct_stake = np.concatenate([[1_000.0, 100_000.0], np.full(n, 1_000.0)])
-    stake = np.array([1_000.0, 100_000.0])
-    yield_pp = 50_000.0 / stake  # the same award (in points x ADA) behind both DReps
+    acct_ada = np.concatenate([[1_000.0, 100_000.0], np.full(n, 1_000.0)])
+    power = np.array([1_000.0, 100_000.0])
+    yield_pp = 50_000.0 / power  # the same award (in points x ADA) behind both DReps
     scheme = mechanisms.Scheme(budget_ada=1.0, delegator_share=0.8)
     moved = model._move(
         params, scheme, model.Scenario("s", 0.0, 1.0), np.random.default_rng(0), target,
-        acct_stake, np.ones(n + 2), stake, np.array([True, True]), np.zeros(2), yield_pp,
+        acct_ada, np.ones(n + 2), power, np.array([True, True]), np.zeros(2), yield_pp,
         np.ones(2),
     )  # fmt: skip
-    after = np.bincount(moved[moved >= 0], weights=acct_stake[moved >= 0], minlength=2)
+    after = np.bincount(moved[moved >= 0], weights=acct_ada[moved >= 0], minlength=2)
     assert after.sum() > 300_000  # the yield pulled abstaining accounts in
-    assert after[0] > 20 * stake[0]  # the high-yield DRep grew a lot ...
+    assert after[0] > 20 * power[0]  # the high-yield DRep grew a lot ...
     assert after[0] < 0.5 * after.sum()  # ... but stopped attracting once its yield fell
 
 
-def test_own_stake_is_added_only_where_it_pays(world, params):
-    """Under a reward cap, a DRep adds own stake only for a return; under equal pay, never."""
+def test_pledge_is_added_only_where_it_pays(world, params):
+    """Under a pledge soft cap, a DRep adds pledge only for a return; under equal pay, never."""
 
     def backing(scheme, hurdle=0.0):
         scenario = model.Scenario("s", pledge_response=0.5, pledge_min_return=hurdle)
@@ -164,7 +164,7 @@ def test_own_stake_is_added_only_where_it_pays(world, params):
     assert backing(capped) < backing(soft)
 
 
-def test_own_stake_added_is_limited_by_wealth_and_votes_with_the_drep(world, params):
+def test_pledge_added_is_limited_by_wealth_and_votes_with_the_drep(world, params):
     soft = mechanisms.Scheme(name="soft", budget_ada=200_000.0, pledge_leverage=5)
 
     def out(multiple):
@@ -176,7 +176,7 @@ def test_own_stake_added_is_limited_by_wealth_and_votes_with_the_drep(world, par
     assert free["drep_power"] > poor["drep_power"] > base["drep_power"]
 
 
-def test_own_stake_added_counts_in_the_stake_participation_is_measured_against(world, params):
+def test_pledge_added_counts_in_the_ada_participation_is_measured_against(world, params):
     soft = mechanisms.Scheme(name="soft", budget_ada=200_000.0, pledge_leverage=1)
     scenario = model.Scenario("s", pledge_response=0.99)
     _, actions = model.run(world, params, soft, scenario, epochs=12, seed=3, trace=True)

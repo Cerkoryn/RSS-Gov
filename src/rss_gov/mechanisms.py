@@ -4,7 +4,7 @@ Rewards are paid for explicit votes only (Yes, No or Abstain all count): a DRep'
 is always proportional to the share of recently closed actions it voted on. A `Scheme` is
 a point in one parametric family that covers proportional, equal, power-law, capped,
 exclude-K/pay-N (middle-out, with or without roll-down), top-m and threshold-share,
-fixed pay per vote, equal-plus-stake blends, activity-gated, rationale-bonus,
+fixed pay per vote, equal-plus-power blends, activity-gated, rationale-bonus,
 delegator-count, pledge-weighted and delegator-sharing designs. Amounts are ADA (floats); a pilot would round at payout.
 """
 
@@ -18,11 +18,11 @@ import numpy as np
 class Round:
     """What a formula may read for one reward round, one entry per registered DRep."""
 
-    stake: np.ndarray  # delegated voting power, ADA
+    power: np.ndarray  # delegated voting power, ADA
     activity: np.ndarray  # share of recently closed actions the DRep voted on, 0..1
     rationale: np.ndarray  # share of those votes that carried a rationale anchor, 0..1
     delegators: np.ndarray  # delegating accounts holding at least the counting minimum
-    pledge: np.ndarray  # declared own stake, ADA (zero when no pledge programme exists)
+    pledge: np.ndarray  # the DRep's own ADA behind its votes (zero when no pledge programme exists)
     actions: float = 1.0  # actions closing per round on average: a full vote rate in votes
 
 
@@ -31,24 +31,26 @@ class Scheme:
     name: str = "unpaid"
     budget_ada: float = 0.0  # whole programme, spread evenly over its epochs
     fee_ada: float = 0.0  # added to the pot by each governance action that closes
-    alpha: float = 1.0  # weight grows as counted_stake ** alpha (0 = equal, 1 = proportional)
-    cap_ada: float = math.inf  # stake counted for rewards is at most this
+    alpha: float = 1.0  # weight grows as counted_power ** alpha (0 = equal, 1 = proportional)
+    cap_ada: float = math.inf  # voting power counted for rewards is at most this
     k_exclude: int = 0  # the K largest DReps are weighted by top_weight (0: paid nothing)
     top_weight: float = 0.0  # weight of the K largest relative to everyone else
     n_pay: int = 0  # after the K largest, only the next N eligible ranks are paid (0 = all)
     roll_down: bool = False  # a rank's slot passes down when a DRep above does not vote
-    min_stake_ada: float = 0.0
+    min_power_ada: float = 0.0
     min_share: float = 0.0  # minimum share of all DRep voting power (1/k: Threshold(k))
     min_delegators: int = 0
     activity_gate: float = 0.0  # minimum recent vote rate to qualify
     rationale_bonus: float = 0.0  # weight multiplied by 1 + bonus * rationale share
-    basis: str = "stake"  # what alpha applies to: "stake" or "delegators" (their count)
+    basis: str = "power"  # what alpha applies to: "power" or "delegators" (their count)
     equal_share: float = 0.0  # fraction of the DReps' pot split equally, the rest by weight
     per_vote_ada: float = 0.0  # fixed pay per vote (0: the pot is always split in full)
     max_award_share: float = 0.0  # no DRep gets more than this share of the DReps' pot
     delegator_share: float = 0.0  # fraction of the budget paid to delegators
     delegator_mode: str = "passthrough"  # "passthrough": follows the DRep's award; "flat": same yield for all qualifying DReps
-    pledge_leverage: float = 0.0  # counted stake is at most leverage * pledge (0 = off)
+    pledge_leverage: float = (
+        0.0  # counted power is at most leverage * pledge (0 = off): a pledge soft cap
+    )
     hard_cap: bool = False  # also cap voting power at leverage * pledge
 
     def __post_init__(self):
@@ -58,8 +60,8 @@ class Scheme:
             raise ValueError("delegator_share must be in [0, 1]")
         if self.alpha < 0 or self.rationale_bonus < 0:
             raise ValueError("alpha and rationale_bonus must be non-negative")
-        if self.basis not in {"stake", "delegators"}:
-            raise ValueError("basis must be 'stake' or 'delegators'")
+        if self.basis not in {"power", "delegators"}:
+            raise ValueError("basis must be 'power' or 'delegators'")
         if self.hard_cap and self.pledge_leverage <= 0:
             raise ValueError("a hard cap needs pledge_leverage > 0")
         if self.roll_down and not self.n_pay:
@@ -73,7 +75,7 @@ class Scheme:
             self.budget_ada,
             self.fee_ada,
             self.cap_ada,
-            self.min_stake_ada,
+            self.min_power_ada,
             self.pledge_leverage,
         )
         if min(*amounts, self.per_vote_ada) < 0:
@@ -101,8 +103,8 @@ class Scheme:
         if self.delegator_share > 0:
             notes.append("Many small delegator claims: needs a claim contract or minimum payout.")
         if self.pledge_leverage > 0:
-            inputs.append("DRep own-stake accounts (signed declaration, checked on chain)")
-            notes.append("Own stake is not a ledger concept: DReps must declare their accounts.")
+            inputs.append("DRep pledge accounts (signed declaration, checked on chain)")
+            notes.append("Pledge is not a ledger concept: DReps must declare their accounts.")
         if self.hard_cap:
             notes.append("Capping voting power changes ratification rules: needs a hard fork.")
         if self.fee_ada > 0:
@@ -124,7 +126,7 @@ class Scheme:
         """A short description of the rule, readable in a table."""
         if not self.paid:
             return "unpaid"
-        base = {0.0: "equal", 1.0: "linear"}.get(self.alpha, f"stake^{self.alpha:g}")
+        base = {0.0: "equal", 1.0: "linear"}.get(self.alpha, f"power^{self.alpha:g}")
         if self.basis == "delegators" and self.alpha:
             base = f"delegators^{self.alpha:g}"
         parts = [base]
@@ -141,8 +143,8 @@ class Scheme:
             parts.append(f"{top} at {self.top_weight:.0%}" if self.top_weight else f"skip {top}")
         if self.n_pay:
             parts.append(f"pay {self.n_pay}" + (" (roll-down)" if self.roll_down else ""))
-        if self.min_stake_ada:
-            parts.append(f"min {_ada(self.min_stake_ada)}")
+        if self.min_power_ada:
+            parts.append(f"min {_ada(self.min_power_ada)}")
         if self.min_share:
             parts.append(f"min {self.min_share:.2%} of power")
         if self.min_delegators:
@@ -154,11 +156,11 @@ class Scheme:
         if self.delegator_share:
             parts.append(f"{self.delegator_share:.0%} to delegators ({self.delegator_mode})")
         if self.pledge_leverage:
-            kind = "power cap" if self.hard_cap else "reward cap"
-            parts.append(f"{kind} {self.pledge_leverage:g}x own stake")
+            kind = "hard" if self.hard_cap else "soft"
+            parts.append(f"pledge {kind} cap {self.pledge_leverage:g}x")
         money = [f"{_ada(self.budget_ada)} ADA"] if self.budget_ada else []
         if self.fee_ada:
-            money.append(f"{_ada(self.fee_ada)} ADA per action")
+            money.append(f"{_ada(self.fee_ada)} ADA proposer fee")
         return ", ".join(parts) + "; " + " + ".join(money)
 
     def to_dict(self):
@@ -176,11 +178,11 @@ def scheme(**kwargs):
     return Scheme(**kwargs)
 
 
-def counted_stake(s, r):
-    stake = np.minimum(r.stake, s.cap_ada)
+def counted_power(s, r):
+    power = np.minimum(r.power, s.cap_ada)
     if s.pledge_leverage > 0:
-        stake = np.minimum(stake, s.pledge_leverage * r.pledge)
-    return stake
+        power = np.minimum(power, s.pledge_leverage * r.pledge)
+    return power
 
 
 def eligible(s, r):
@@ -188,11 +190,11 @@ def eligible(s, r):
     ok = (
         (r.activity > 0)
         & (r.activity >= s.activity_gate)
-        & (r.stake >= s.min_stake_ada)
+        & (r.power >= s.min_power_ada)
         & (r.delegators >= s.min_delegators)
     )
     if s.min_share:
-        ok &= r.stake >= s.min_share * r.stake.sum()
+        ok &= r.power >= s.min_share * r.power.sum()
     return ok
 
 
@@ -206,7 +208,7 @@ def _ranked(s, r, ok, expected):
     keep = ok.astype(float)
     if not (s.k_exclude or s.n_pay):
         return keep
-    order = np.argsort(-r.stake, kind="stable")
+    order = np.argsort(-r.power, kind="stable")
     keep[order[: s.k_exclude]] *= s.top_weight
     rest = order[s.k_exclude :]
     rest = rest[ok[rest]]
@@ -227,8 +229,8 @@ def _parts(s, r, expected=None):
     ok = eligible(s, r)
     expected = r.activity * ok if expected is None else expected
     votes = _ranked(s, r, ok, expected) * r.activity * (1 + s.rationale_bonus * r.rationale)
-    size = r.delegators if s.basis == "delegators" else counted_stake(s, r)
-    base = np.ones_like(r.stake) if s.alpha == 0 else np.power(size, s.alpha)
+    size = r.delegators if s.basis == "delegators" else counted_power(s, r)
+    base = np.ones_like(r.power) if s.alpha == 0 else np.power(size, s.alpha)
     if s.equal_share:
         return [(s.equal_share, votes), (1 - s.equal_share, votes * base)]
     return [(1.0, votes * base)]
@@ -264,7 +266,7 @@ def allocate(s, r, pot):
     own award with its delegators; `flat` pays one yield per ADA and per unit of the
     DRep's vote rate, whatever the DRep's size.
     """
-    n = len(r.stake)
+    n = len(r.power)
     if pot <= 0:
         return np.zeros(n), np.zeros(n)
     parts = _parts(s, r)
@@ -276,13 +278,13 @@ def allocate(s, r, pot):
     delegator_pot = pot * s.delegator_share
     yields = np.zeros(n)
     if delegator_pot > 0:
-        paid = (rep > 0) & (r.stake > 0)
+        paid = (rep > 0) & (r.power > 0)
         if s.delegator_mode == "flat":
-            base = (r.stake[paid] * r.activity[paid]).sum()
+            base = (r.power[paid] * r.activity[paid]).sum()
             if base > 0:
                 yields[paid] = delegator_pot * r.activity[paid] / base
         else:
-            yields[paid] = delegator_pot * rep[paid] / total / r.stake[paid]
+            yields[paid] = delegator_pot * rep[paid] / total / r.power[paid]
     return rep, yields
 
 
@@ -292,37 +294,37 @@ def vote_value(s, r, pot):
     Others are held at their current activity.
     """
     if pot <= 0:
-        return np.zeros(len(r.stake))
+        return np.zeros(len(r.power))
     expected = r.activity * eligible(s, r)
     full = _parts(s, replace_activity(r, np.ones_like(r.activity)), expected)
     now = _parts(s, r)
     totals = [w_now.sum() - w_now + w_full for (_, w_full), (_, w_now) in zip(full, now)]
     award = _awards(s, full, totals, pot * (1 - s.delegator_share), r.actions)
-    return np.zeros(len(r.stake)) + award / max(r.actions, 1e-9)
+    return np.zeros(len(r.power)) + award / max(r.actions, 1e-9)
 
 
-def own_stake_gain(s, r, pot, extra):
-    """Each DRep's gain in award per round from adding `extra` own stake.
+def pledge_gain(s, r, pot, extra):
+    """Each DRep's gain in award per round from adding `extra` pledge.
 
     Others are held as they are.
     """
     if pot <= 0:
-        return np.zeros(len(r.stake))
+        return np.zeros(len(r.power))
     now = _parts(s, r)
     more = _parts(s, replace(r, pledge=r.pledge + extra))
     reps = pot * (1 - s.delegator_share)
     alone = [w_now.sum() - w_now + w_more for (_, w_more), (_, w_now) in zip(more, now)]
     before = _awards(s, now, [w.sum() for _, w in now], reps, r.actions)
-    return np.zeros(len(r.stake)) + _awards(s, more, alone, reps, r.actions) - before
+    return np.zeros(len(r.power)) + _awards(s, more, alone, reps, r.actions) - before
 
 
 def replace_activity(r, activity):
     return replace(r, activity=activity)
 
 
-def voting_power(s, stake, pledge):
+def voting_power(s, power, pledge):
     """Power used for ratification and concentration. Only a hard cap changes it."""
-    return np.minimum(stake, s.pledge_leverage * pledge) if s.hard_cap else stake
+    return np.minimum(power, s.pledge_leverage * pledge) if s.hard_cap else power
 
 
 PRESETS = {
@@ -334,17 +336,17 @@ PRESETS = {
     "middle_out": dict(alpha=0.0, k_exclude=10, n_pay=100),
     "activity_gate": dict(alpha=1.0, activity_gate=0.7),
     "rationale_bonus": dict(alpha=0.5, rationale_bonus=1.0),
-    "small_drep_floor": dict(alpha=0.5, min_delegators=10, min_stake_ada=100_000),
+    "small_drep_floor": dict(alpha=0.5, min_delegators=10, min_power_ada=100_000),
     "delegator_flat": dict(alpha=1.0, delegator_share=0.8, delegator_mode="flat"),
     "delegator_passthrough_sqrt": dict(alpha=0.5, delegator_share=0.8),
-    "pledge_soft": dict(alpha=1.0, pledge_leverage=1000),
+    "pledge_soft_cap": dict(alpha=1.0, pledge_leverage=1000),
     "pledge_hard_cap": dict(alpha=1.0, pledge_leverage=1000, hard_cap=True),
     # Named designs from the literature and from other DAOs (METHODS.md lists the sources).
     "top_m_equal": dict(alpha=0.0, n_pay=100),
     "top_m_proportional": dict(alpha=1.0, n_pay=100),
     "threshold_k": dict(alpha=0.0, min_share=0.01, max_award_share=0.01),
     "threshold_k_proportional": dict(alpha=1.0, min_share=0.01),
-    "equal_plus_stake": dict(alpha=1.0, equal_share=0.5),
+    "equal_plus_power": dict(alpha=1.0, equal_share=0.5),
     "exclude_k_pay_n": dict(alpha=0.0, k_exclude=10, n_pay=200, roll_down=True, per_vote_ada=10),
     "top_haircut": dict(
         alpha=1.0, k_exclude=20, top_weight=0.25, activity_gate=0.7, min_delegators=10
@@ -358,10 +360,10 @@ PRESETS = {
         delegator_mode="flat",
     ),
     "delegator_count_sqrt": dict(alpha=0.5, basis="delegators", max_award_share=0.05),
-    # Simple designs that pay for own stake behind the votes (METHODS.md, "Named designs").
-    "own_stake_skip20": dict(alpha=1.0, k_exclude=20, pledge_leverage=1.0),
-    "own_stake_skip10": dict(alpha=1.0, k_exclude=10, pledge_leverage=2.0),
-    "own_stake_capped": dict(alpha=1.0, cap_ada=5_000_000, pledge_leverage=1.0),
+    # Simple pledge soft caps: pay for the pledge behind the votes (METHODS.md, "Named designs").
+    "pledge_soft_cap_skip20": dict(alpha=1.0, k_exclude=20, pledge_leverage=1.0),
+    "pledge_soft_cap_skip10": dict(alpha=1.0, k_exclude=10, pledge_leverage=2.0),
+    "pledge_soft_cap_capped": dict(alpha=1.0, cap_ada=5_000_000, pledge_leverage=1.0),
 }
 
 

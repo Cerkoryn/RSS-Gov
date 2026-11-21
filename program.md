@@ -32,8 +32,8 @@ not a recommendation: the report's shortlist also applies the guardrails.
 ```yaml
 - name: capped_floor_25          # unique, descriptive
   hypothesis: A floor of 25 delegators makes splitting costly without losing participation.
-  alpha: 1.0                     # weight = counted stake ** alpha
-  cap_ada: 10000000              # counted stake is at most this
+  alpha: 1.0                     # weight = counted voting power ** alpha
+  cap_ada: 10000000              # counted voting power is at most this
   min_delegators: 25
   budget_ada: 2500000            # optional; default is the programme budget
 - preset: sqrt                   # or start from a named scheme and override
@@ -41,8 +41,8 @@ not a recommendation: the report's shortlist also applies the guardrails.
   activity_gate: 0.5
 ```
 
-Fields: `budget_ada`, `alpha`, `basis` (`stake` or `delegators`), `cap_ada`, `k_exclude`,
-`top_weight`, `n_pay`, `roll_down`, `min_stake_ada`, `min_share`, `min_delegators`,
+Fields: `budget_ada`, `alpha`, `basis` (`power` or `delegators`), `cap_ada`, `k_exclude`,
+`top_weight`, `n_pay`, `roll_down`, `min_power_ada`, `min_share`, `min_delegators`,
 `activity_gate`, `rationale_bonus`, `equal_share`, `per_vote_ada`, `max_award_share`,
 `delegator_share`, `delegator_mode` (`passthrough` or `flat`), `pledge_leverage`, `hard_cap`,
 `fee_ada` (ADA per governance action, on top of `budget_ada`; needs a hard fork). See

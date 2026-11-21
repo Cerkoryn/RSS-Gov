@@ -8,7 +8,7 @@ Committee) can check the method and add to it. There are three ways to help.
 
 A proposal is a rule in the reward family described in `METHODS.md`: how pay grows with
 voting power, caps, who qualifies, what share goes to delegators, how pay is tied to a
-DRep's own stake, and the budget. Every rule pays only for explicit votes.
+DRep's pledge (the ADA it owns itself), and the budget. Every rule pays only for explicit votes.
 
 **On the site.** The [Propose a scheme](https://cerkoryn.github.io/RSS-Gov/propose.html)
 page builds the rule with a form and shows the exact checks at once (who would be paid,

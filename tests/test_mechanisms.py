@@ -6,7 +6,7 @@ from rss_gov import mechanisms as m
 
 def make_round(n=5):
     return m.Round(
-        stake=np.array([100.0, 50.0, 20.0, 10.0, 0.5])[:n] * 1e6,
+        power=np.array([100.0, 50.0, 20.0, 10.0, 0.5])[:n] * 1e6,
         activity=np.array([1.0, 0.5, 1.0, 0.0, 1.0])[:n],
         rationale=np.array([1.0, 0.0, 0.5, 0.0, 0.0])[:n],
         delegators=np.array([500.0, 100.0, 30.0, 5.0, 1.0])[:n],
@@ -19,7 +19,7 @@ def test_every_preset_pays_out_at_most_the_pot(name):
     scheme = m.preset(name, 3600.0)
     r = make_round()
     award, yields = m.allocate(scheme, r, 100.0)
-    total = award.sum() + (yields * r.stake).sum()
+    total = award.sum() + (yields * r.power).sum()
     assert (award >= 0).all() and (yields >= 0).all()
     assert total <= 100.0 + 1e-9
     ceiling = scheme.per_vote_ada or scheme.max_award_share  # these may leave money unspent
@@ -32,7 +32,7 @@ def test_unpaid_pays_nothing():
     assert award.sum() == 0 and yields.sum() == 0
 
 
-def test_proportional_pays_by_stake_times_activity():
+def test_proportional_pays_by_power_times_activity():
     award, _ = m.allocate(m.Scheme(budget_ada=1, alpha=1), make_round(), 100.0)
     weights = np.array([100, 25, 20, 0, 0.5])
     assert award == pytest.approx(100 * weights / weights.sum())
@@ -50,13 +50,13 @@ def test_exclude_k_pay_n_skips_the_largest_and_inactive():
     assert award[1] > 0 and award[2] > 0
 
 
-def test_cap_limits_counted_stake():
+def test_cap_limits_counted_power():
     award, _ = m.allocate(m.Scheme(budget_ada=1, cap_ada=20e6), make_round(3), 90.0)
-    assert award == pytest.approx([36, 18, 36])  # equal counted stake, so by vote rate only
+    assert award == pytest.approx([36, 18, 36])  # equal counted power, so by vote rate only
 
 
 def test_floors_and_gate_exclude():
-    scheme = m.Scheme(budget_ada=1, min_stake_ada=15e6, min_delegators=50, activity_gate=0.75)
+    scheme = m.Scheme(budget_ada=1, min_power_ada=15e6, min_delegators=50, activity_gate=0.75)
     award, _ = m.allocate(scheme, make_round(), 10.0)
     assert (award > 0).tolist() == [True, False, False, False, False]
 
@@ -67,7 +67,7 @@ def test_delegator_share_splits_the_pot():
         scheme = m.Scheme(budget_ada=1, delegator_share=0.8, delegator_mode=mode)
         award, yields = m.allocate(scheme, r, 100.0)
         assert award.sum() == pytest.approx(20.0)
-        assert (yields * r.stake).sum() == pytest.approx(80.0)
+        assert (yields * r.power).sum() == pytest.approx(80.0)
     scheme = m.Scheme(budget_ada=1, delegator_share=0.5, delegator_mode="flat")
     flat = m.allocate(scheme, r, 100.0)[1]
     per_vote = flat[flat > 0] / r.activity[flat > 0]
@@ -75,13 +75,13 @@ def test_delegator_share_splits_the_pot():
     assert flat[3] == 0  # delegators of a DRep that did not vote get nothing
 
 
-def test_soft_pledge_limits_counted_stake_but_not_power():
+def test_soft_pledge_limits_counted_power_but_not_voting_power():
     scheme = m.Scheme(budget_ada=1, pledge_leverage=10)
     r = make_round()
-    assert m.counted_stake(scheme, r)[1] == pytest.approx(1e6)
-    assert (m.voting_power(scheme, r.stake, r.pledge) == r.stake).all()
+    assert m.counted_power(scheme, r)[1] == pytest.approx(1e6)
+    assert (m.voting_power(scheme, r.power, r.pledge) == r.power).all()
     hard = m.Scheme(budget_ada=1, pledge_leverage=10, hard_cap=True)
-    assert m.voting_power(hard, r.stake, r.pledge)[1] == pytest.approx(1e6)
+    assert m.voting_power(hard, r.power, r.pledge)[1] == pytest.approx(1e6)
 
 
 def test_feasibility_flags_hard_fork_only_designs():
@@ -116,7 +116,7 @@ def test_a_fee_per_action_funds_the_pot_and_needs_a_hard_fork():
     fee = m.Scheme(name="fee", alpha=0.0, fee_ada=25_000)
     assert fee.paid and fee.income(36, 2) == 50_000 and fee.income(36, 0) == 0
     assert m.Scheme(name="mix", budget_ada=3.6e6, fee_ada=1e3).income(36, 1.5) == 101_500
-    assert fee.label() == "equal; 25k ADA per action"
+    assert fee.label() == "equal; 25k ADA proposer fee"
     flags = fee.feasibility()
     assert flags["requires_hard_fork"] and not flags["pilot_testable"]
     with pytest.raises(ValueError):
@@ -137,7 +137,7 @@ def test_every_named_design_is_also_paid_by_each_fee():
 def test_labels_describe_the_rule():
     assert m.preset("unpaid", 1).label() == "unpaid"
     assert m.preset("capped", 5e6).label() == "linear, cap 20M; 5M ADA"
-    assert "power cap 1000x own stake" in m.preset("pledge_hard_cap", 5e6).label()
+    assert "pledge hard cap 1000x" in m.preset("pledge_hard_cap", 5e6).label()
 
 
 def test_from_config_accepts_names_and_overrides():
@@ -193,7 +193,7 @@ def test_top_weight_pays_the_largest_a_fraction_instead_of_nothing():
 
 
 def test_roll_down_passes_a_slot_down_when_a_drep_above_may_not_vote():
-    r = make_round()  # by stake: 0 (votes always), 1 (half), 2, 3 (never), 4
+    r = make_round()  # by power: 0 (votes always), 1 (half), 2, 3 (never), 4
     hard = m.weights(m.Scheme(budget_ada=1, alpha=0, n_pay=2), r)
     rolled = m.weights(m.Scheme(budget_ada=1, alpha=0, n_pay=2, roll_down=True), r)
     assert hard == pytest.approx([1, 0.5, 0, 0, 0])
@@ -202,11 +202,11 @@ def test_roll_down_passes_a_slot_down_when_a_drep_above_may_not_vote():
         m.Scheme(budget_ada=1, roll_down=True)
 
 
-def test_equal_share_blends_equal_and_stake_parts():
+def test_equal_share_blends_equal_and_power_parts():
     r = make_round()
     award, _ = m.allocate(m.Scheme(budget_ada=1, alpha=1, equal_share=0.5), r, 100)
     votes = r.activity
-    weights = r.stake * r.activity
+    weights = r.power * r.activity
     want = 50 * votes / votes.sum() + 50 * weights / weights.sum()
     assert award == pytest.approx(want)
 
@@ -221,11 +221,11 @@ def test_delegator_basis_weighs_by_delegator_count():
     )
 
 
-def test_own_stake_gain_counts_only_while_own_stake_limits_the_reward():
+def test_pledge_gain_counts_only_while_pledge_limits_the_reward():
     r = make_round()
     scheme = m.Scheme(budget_ada=1, pledge_leverage=1)
-    gain = m.own_stake_gain(scheme, r, 1000.0, np.full(len(r.stake), 1e5))
-    limited = r.pledge < r.stake
+    gain = m.pledge_gain(scheme, r, 1000.0, np.full(len(r.power), 1e5))
+    limited = r.pledge < r.power
     assert (gain[limited & (r.activity > 0)] > 0).all() and (gain[~limited] <= 0).all()
     equal = m.Scheme(budget_ada=1, alpha=0.0, pledge_leverage=1)
-    assert not m.own_stake_gain(equal, r, 1000.0, 1e5).any()
+    assert not m.pledge_gain(equal, r, 1000.0, 1e5).any()

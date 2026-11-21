@@ -78,7 +78,7 @@ def ahead(data, first, last, half_life, strength, lag):
 
 
 def _salience(p, power, turnout):
-    """The common logit shift that makes expected stake-weighted turnout match the action."""
+    """The common logit shift that makes expected power-weighted turnout match the action."""
     lo, hi, base = -8.0, 8.0, model.logit(p)
     for _ in range(40):
         mid = (lo + hi) / 2
@@ -166,15 +166,15 @@ def churn(data, epoch):
     lookup = data.power.values
     rows = data.power.index.get_indexer
     cols = np.arange(data.power.shape[1])
-    entry_stake = lookup[rows(first[entered]), cols[entered.values]]
-    exit_stake = lookup[rows(last[left]), cols[left.values]]
+    entry_power = lookup[rows(first[entered]), cols[entered.values]]
+    exit_power = lookup[rows(last[left]), cols[left.values]]
     span = epoch - lo
     return dict(
         entry_rate=float(entered.sum() / span),
         exit_rate=float(left.sum() / span),
         entered=entered.values,
-        entry_stake=entry_stake,
-        exit_stake=exit_stake,
+        entry_power=entry_power,
+        exit_power=exit_power,
     )
 
 
@@ -208,13 +208,13 @@ def build_world(data, epoch, params):
     code = {d: i for i, d in enumerate(ids)}
     code[ABSTAIN], code[NO_CONFIDENCE] = model.ABSTAIN, model.NO_CONFIDENCE
     pledge = np.zeros(len(ids))
-    stake, count, target = [np.zeros(0)] * 3
+    balance, count, target = [np.zeros(0)] * 3
     covered = set()
     if data.delegators is not None:
         g = data.delegators[data.delegators.drep_id.isin(code.keys())]
         effective = g.amount * g.weight
         scale = g.drep_id.map(wanted) / effective.groupby(g.drep_id).transform("sum")
-        stake = (effective * scale).values
+        balance = (effective * scale).values
         count = g.weight.values
         target = g.drep_id.map(code).values
         covered = set(g.drep_id)
@@ -228,9 +228,9 @@ def build_world(data, epoch, params):
     if data.own is not None:
         holdings = data.own.reindex(ids).fillna(0.0).values
         pledge = data.pledged.reindex(ids).fillna(0.0).values
-    pledge = np.minimum(pledge, power.values[held])  # own stake behind the votes is in the power
+    pledge = np.minimum(pledge, power.values[held])  # the pledge is part of the voting power
     alone = [d for d in wanted if d not in covered and wanted[d] > 0]
-    stake = np.concatenate([stake, [wanted[d] for d in alone]])
+    balance = np.concatenate([balance, [wanted[d] for d in alone]])
     count = np.concatenate([count, np.ones(len(alone))])
     target = np.concatenate([target, [code[d] for d in alone]]).astype(int)
 
@@ -265,7 +265,7 @@ def build_world(data, epoch, params):
     )
     moves = churn(data, epoch)
     entrants = moves["entered"] if moves["entered"].any() else held
-    # A new DRep's own stake is drawn from what recent arrivals (or everyone) have voting for
+    # A new DRep's pledge is drawn from what recent arrivals (or everyone) have voting for
     # them, in ADA: large arrivals are mostly delegated to, not self-funded.
     arrived = moves["entered"][held]
     entrant_own = pledge[arrived] if arrived.any() else pledge
@@ -277,17 +277,17 @@ def build_world(data, epoch, params):
         last_active=last_active,
         pledge=pledge,
         holdings=holdings,
-        acct_stake=stake,
+        acct_ada=balance,
         acct_count=count,
         acct_target=target,
         window=window,
         closes=closes,
         actions=actions,
-        entrant_stake=moves["entry_stake"] if len(moves["entry_stake"]) else np.array([1000.0]),
+        entrant_power=moves["entry_power"] if len(moves["entry_power"]) else np.array([1000.0]),
         entrant_p=p_all[entrants],
         entrant_q=q_all[entrants],
         entrant_own=entrant_own,
-        exit_stake=moves["exit_stake"] if len(moves["exit_stake"]) else np.array([1000.0]),
+        exit_power=moves["exit_power"] if len(moves["exit_power"]) else np.array([1000.0]),
     )
 
 
@@ -312,12 +312,12 @@ def trace(world, params, epochs, seed):
 
 
 def _initial_shares(world):
-    stake = np.bincount(
+    power = np.bincount(
         world.acct_target[world.acct_target >= 0],
-        weights=world.acct_stake[world.acct_target >= 0],
+        weights=world.acct_ada[world.acct_target >= 0],
         minlength=len(world.p),
     )
-    return stake / stake.sum()
+    return power / power.sum()
 
 
 def fit_dynamics(data, params, start, end, seeds, rounds=8):
@@ -363,7 +363,7 @@ def fit(data, start, end, conventions, seeds=12, log=print):
         start,
         end,
         conventions.get("large_ada", 100_000.0),
-        conventions.get("stake_floor_ada", 1000.0),
+        conventions.get("power_floor_ada", 1000.0),
         voting["half_life"],
         strength,
     )

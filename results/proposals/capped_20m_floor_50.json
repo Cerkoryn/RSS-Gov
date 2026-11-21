@@ -9,12 +9,12 @@
   "top_weight": 0.0,
   "n_pay": 0,
   "roll_down": false,
-  "min_stake_ada": 0.0,
+  "min_power_ada": 0.0,
   "min_share": 0.0,
   "min_delegators": 50,
   "activity_gate": 0.0,
   "rationale_bonus": 0.0,
-  "basis": "stake",
+  "basis": "power",
   "equal_share": 0.0,
   "per_vote_ada": 0.0,
   "max_award_share": 0.0,
@@ -31,7 +31,7 @@
  "hypervolume_gain": 0.0,
  "hypervolume_gain_ci": [
   0.0,
-  4.320921650254723e-08
+  2.308570556637862e-08
  ],
  "reason": "no clear gain over the front",
  "change_from_unpaid": {
@@ -44,6 +44,6 @@
  "pilot_testable": true,
  "hypothesis": "A cap invites the largest DReps to split; a floor of 50 delegators per DRep makes each extra identity costly without giving up the participation the cap buys.",
  "author": "",
- "evaluated": "2026-11-21T14:33:57Z",
- "calibration": "78b9eabc24094a75"
+ "evaluated": "2026-11-21T15:38:21Z",
+ "calibration": "dd836a32862b79b8"
 }

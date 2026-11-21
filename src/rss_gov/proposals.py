@@ -43,18 +43,18 @@ FIELDS = [
         label="Budget over the whole programme",
         help="Total ADA paid over the programme (36 epochs, about six months). The cost a "
         "year is about twice this, plus a small fee per payment. 0 for a design paid only by "
-        "the fee per action below.",
+        "the proposer fee below.",
     ),
     dict(
         name="fee_ada",
-        short="Fee per action",
-        tag="{} ADA per action",
+        short="Proposer fee",
+        tag="{} ADA proposer fee",
         group="Budget",
         kind="ada",
         min=0,
         max=1_000_000,
         step=1_000,
-        label="Fee per governance action",
+        label="Proposer fee per governance action",
         help="Each governance action that closes adds this much to the pot, on top of the "
         "budget: part of its proposer's deposit kept as a fee instead of returned. Today every "
         "deposit is returned, so this needs a hard fork. The simulation does not change how "
@@ -74,7 +74,7 @@ FIELDS = [
         "12 epochs are paid. Pay always grows with the vote rate; this adds a floor.",
     ),
     dict(
-        name="min_stake_ada",
+        name="min_power_ada",
         short="Minimum voting power",
         tag="≥{} ADA power",
         group="Who qualifies",
@@ -181,7 +181,7 @@ FIELDS = [
         group="How the money is split",
         kind="choice",
         choices=[
-            ["stake", "Voting power"],
+            ["power", "Voting power"],
             ["delegators", "Number of delegators"],
         ],
         label="What size means",
@@ -199,7 +199,7 @@ FIELDS = [
         step=0.05,
         label="Share of the DReps' money split equally",
         help="This part is split by vote rate alone, whatever a DRep's size; the rest by the "
-        "rule above. 50% with proportional pay is a base-plus-stake hybrid.",
+        "rule above. 50% with proportional pay is a base-plus-power hybrid.",
     ),
     dict(
         name="per_vote_ada",
@@ -257,25 +257,25 @@ FIELDS = [
     ),
     dict(
         name="pledge_leverage",
-        short="Own-stake limit",
-        tag="≤{}× own stake",
-        group="Own stake",
+        short="Pledge soft cap",
+        tag="pledge soft cap {}×",
+        group="Pledge",
         kind="number",
         min=0,
         max=1_000_000,
         step=10,
-        label="Count at most this many times the DRep's own stake (0: off)",
-        help="Ties pay to stake the DRep holds itself: with 100, a DRep with 1,000 ADA of its "
+        label="Pledge soft cap: count at most this many times the DRep's pledge (0: off)",
+        help="Ties pay to the ADA the DRep owns itself, its pledge: with 100, a DRep with 1,000 ADA of "
         "own counts at most 100,000 ADA of voting power. Needs DReps to declare their accounts.",
     ),
     dict(
         name="hard_cap",
-        short="Limit voting power itself",
-        tag="hard cap",
-        group="Own stake",
+        short="Pledge hard cap",
+        tag="pledge hard cap",
+        group="Pledge",
         kind="bool",
-        label="Also limit voting power itself (needs a hard fork)",
-        help="Applies the own-stake limit to voting power, not only to pay. This changes how "
+        label="Pledge hard cap: also limit voting power itself (needs a hard fork)",
+        help="Applies the pledge cap to voting power, not only to pay. This changes how "
         "actions are ratified, so it needs a hard fork.",
     ),
     dict(
@@ -334,6 +334,8 @@ def tag(name, value):
     elif kind == "int":
         value = f"{int(value):,}"
     elif kind == "number":
+        if name == "pledge_leverage" and not value:
+            return "no " + field["short"].lower()
         value = f"{float(value):g}"
     return field["tag"].format(value)
 
@@ -435,7 +437,7 @@ def accept(config, payload):
     designs = known(config)
     scheme, meta = parse(payload, set(designs) | taken(config["results"]))
     if not scheme.paid:
-        raise ValueError("a proposal must have a budget or a fee per action")
+        raise ValueError("a proposal must have a budget or a proposer fee")
     fork = scheme.feasibility()["requires_hard_fork"]
     if fork and not config["search"].get("allow_hard_fork", False):
         raise ValueError("hard-fork designs are switched off in config.yaml")

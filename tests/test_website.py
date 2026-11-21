@@ -53,7 +53,7 @@ def test_generated_designs_get_short_distinct_names():
     }
     names = website.titles(schemes)
     assert names["g1_1"] == "Proportional, half to delegators, 10M ADA"
-    assert names["g1_2"] == "Proportional, half to delegators, ≤100× own stake, 10M ADA"
+    assert names["g1_2"] == "Proportional, half to delegators, pledge soft cap 100×, 10M ADA"
     assert names["g1_3"] == "Equal, ranks 21–420, 1M ADA"
     assert len(set(names.values())) == len(names)
 
@@ -76,7 +76,7 @@ def test_a_design_close_to_a_named_one_is_named_after_it():
     assert proposals.tag("roll_down", False) == "no roll-down"
     assert proposals.tag("min_share", 0.005) == "≥0.5% of power"
     assert proposals.tag("budget_ada", 0) == "no budget"
-    assert proposals.tag("fee_ada", 25_000) == "25k ADA per action"
+    assert proposals.tag("fee_ada", 25_000) == "25k ADA proposer fee"
     assert all(f["short"] and f["tag"] for f in proposals.FIELDS)
 
 
@@ -95,7 +95,7 @@ def test_the_browser_tags_settings_like_python():
         ("budget_ada", 2.5e6), ("min_share", 0.005), ("pledge_leverage", 10000.0),
         ("roll_down", False), ("roll_down", True), ("min_delegators", 50), ("n_pay", 1200),
         ("activity_gate", 0.7), ("basis", "delegators"), ("per_vote_ada", 10.0),
-        ("min_stake_ada", 10000.0), ("delegator_mode", "flat"), ("rationale_bonus", 1.0),
+        ("min_power_ada", 10000.0), ("delegator_mode", "flat"), ("rationale_bonus", 1.0),
         ("fee_ada", 25000.0), ("fee_ada", 0.0), ("budget_ada", 0.0),
     ]  # fmt: skip
     script = (
@@ -116,10 +116,10 @@ def test_designs_link_to_where_their_idea_comes_from():
     fee = mechanisms.from_config(dict(preset="capped", budget_ada=0, fee_ada=5e4), 5e6)
     titles = [r["title"] for r in website.references("capped_fee_50k", fee, "capped")]
     assert titles == [website._CIP1117[0], website._FEE[0]]
-    pledge = mechanisms.preset("pledge_soft", 5e6)
-    assert website.references("pledge_soft_1m", pledge, "pledge_soft") == website.references(
-        "pledge_soft", pledge
-    )
+    pledge = mechanisms.preset("pledge_soft_cap", 5e6)
+    assert website.references(
+        "pledge_soft_cap_1m", pledge, "pledge_soft_cap"
+    ) == website.references("pledge_soft_cap", pledge)
     assert website.references("g1_2", named) == []
     assert all(
         r[1].startswith(("https://", "methods.html#"))

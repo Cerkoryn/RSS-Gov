@@ -9,12 +9,12 @@
   "top_weight": 0.0,
   "n_pay": 400,
   "roll_down": true,
-  "min_stake_ada": 10000.0,
+  "min_power_ada": 10000.0,
   "min_share": 0.0,
   "min_delegators": 0,
   "activity_gate": 0.75,
   "rationale_bonus": 0.0,
-  "basis": "stake",
+  "basis": "power",
   "equal_share": 0.25,
   "per_vote_ada": 0.0,
   "max_award_share": 0.0,
@@ -23,17 +23,17 @@
   "pledge_leverage": 1000.0,
   "hard_cap": false
  },
- "rule": "linear, 25% equal, skip top 10, pay 400 (roll-down), min 10k, gate 75%, 25% to delegators (flat), reward cap 1000x own stake; 5M ADA",
+ "rule": "linear, 25% equal, skip top 10, pay 400 (roll-down), min 10k, gate 75%, 25% to delegators (flat), pledge soft cap 1000x; 5M ADA",
  "source": "issue #3",
  "holdout": 1000000,
  "rerun": true,
  "accepted": false,
- "hypervolume_gain": 3.8690384730442895e-06,
+ "hypervolume_gain": 0.0,
  "hypervolume_gain_ci": [
-  3.1140192088653826e-06,
-  3.775383453533702e-05
+  0.0,
+  9.036872646636833e-07
  ],
- "reason": "matched or beaten by a design already on the front",
+ "reason": "no clear gain over the front",
  "change_from_unpaid": {
   "participation": 0.02942575721285312,
   "tau67": 2.025740740740744,
@@ -44,6 +44,6 @@
  "pilot_testable": true,
  "hypothesis": "Trying to improve skin-in-the-game",
  "author": "Cerkoryn",
- "evaluated": "2026-11-21T14:34:10Z",
- "calibration": "78b9eabc24094a75"
+ "evaluated": "2026-11-21T15:38:35Z",
+ "calibration": "dd836a32862b79b8"
 }

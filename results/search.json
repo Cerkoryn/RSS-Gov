@@ -9,117 +9,122 @@
     {
       "generation": 1,
       "evaluated": 67,
-      "front": 22,
-      "hypervolume": 0.013694491514631922
+      "front": 23,
+      "hypervolume": 0.015113702854820136
     },
     {
       "generation": 2,
-      "evaluated": 86,
-      "front": 22,
-      "hypervolume": 0.013919491070585302
+      "evaluated": 87,
+      "front": 24,
+      "hypervolume": 0.015478772570683856
     },
     {
       "generation": 3,
-      "evaluated": 106,
-      "front": 24,
-      "hypervolume": 0.014058177191010922
+      "evaluated": 105,
+      "front": 29,
+      "hypervolume": 0.016703004052283782
     },
     {
       "generation": 4,
       "evaluated": 122,
-      "front": 24,
-      "hypervolume": 0.014322976152036372
+      "front": 31,
+      "hypervolume": 0.017006095508338346
     },
     {
       "generation": 5,
       "evaluated": 140,
-      "front": 26,
-      "hypervolume": 0.014682605427511297
+      "front": 37,
+      "hypervolume": 0.018147553050353087
     },
     {
       "generation": 6,
       "evaluated": 158,
-      "front": 30,
-      "hypervolume": 0.014843994607438953
+      "front": 34,
+      "hypervolume": 0.018690470462558194
     },
     {
       "generation": 7,
-      "evaluated": 179,
-      "front": 34,
-      "hypervolume": 0.01523456855089952
+      "evaluated": 177,
+      "front": 39,
+      "hypervolume": 0.018737303528481936
     },
     {
       "generation": 8,
-      "evaluated": 195,
-      "front": 38,
-      "hypervolume": 0.01583653710344858
+      "evaluated": 193,
+      "front": 42,
+      "hypervolume": 0.01891035486453205
     },
     {
       "generation": 9,
-      "evaluated": 213,
-      "front": 39,
-      "hypervolume": 0.016237846258435627
+      "evaluated": 209,
+      "front": 42,
+      "hypervolume": 0.018944883624359317
     },
     {
       "generation": 10,
-      "evaluated": 233,
-      "front": 37,
-      "hypervolume": 0.01622576378787117
+      "evaluated": 228,
+      "front": 42,
+      "hypervolume": 0.019556053073910645
     }
   ],
   "front": [
     "capped_1m",
     "capped_2m5",
-    "g0_14",
-    "g10_0",
-    "g10_1",
-    "g10_19",
-    "g10_23",
-    "g10_5",
+    "delegator_passthrough_sqrt",
+    "g0_10",
+    "g10_17",
     "g10_7",
+    "g1_22",
+    "g2_2",
+    "g3_1",
+    "g4_17",
     "g4_20",
-    "g5_0",
-    "g5_11",
-    "g6_3",
-    "g7_2",
-    "g7_5",
-    "g8_18",
-    "g8_5",
-    "own_stake_capped",
-    "own_stake_skip20",
+    "g5_22",
+    "g6_16",
+    "g6_4",
+    "g7_15",
+    "g8_1",
+    "g8_15",
+    "g8_17",
+    "g9_11",
     "pledge_hard_cap",
-    "pledge_soft",
+    "pledge_soft_cap",
+    "pledge_soft_cap_capped",
     "proportional",
     "proportional_gate_half_budget"
   ],
   "shortlist": [
-    "g0_14",
     "g10_7",
+    "g6_16",
+    "g6_4",
     "capped_1m",
     "capped_2m5",
-    "g10_19",
-    "g10_5",
-    "g5_0",
-    "g6_3",
-    "g8_18",
-    "g5_11",
-    "own_stake_capped",
-    "own_stake_skip20",
+    "g1_22",
+    "g4_20",
+    "g8_15",
+    "g10_17",
+    "g2_2",
+    "g3_1",
+    "g5_22",
+    "g7_15",
+    "pledge_soft_cap_capped",
     "top_100_gated"
   ],
   "pilot_shortlist": [
-    "g0_14",
     "g10_7",
+    "g6_16",
+    "g6_4",
     "capped_1m",
     "capped_2m5",
-    "g10_19",
-    "g10_5",
-    "g5_0",
-    "g6_3",
-    "g8_18",
-    "g5_11",
-    "own_stake_capped",
-    "own_stake_skip20",
+    "g1_22",
+    "g4_20",
+    "g8_15",
+    "g10_17",
+    "g2_2",
+    "g3_1",
+    "g5_22",
+    "g7_15",
+    "pledge_soft_cap_capped",
     "top_100_gated"
   ],
   "axes": [
@@ -141,16 +146,16 @@
     "annual_cost_ada": 0.0,
     "split_gain": 0.0
   },
-  "hypervolume": 0.017027813901656363,
+  "hypervolume": 0.02001764464624647,
   "hypervolume_ci": [
-    0.016703878578663834,
-    0.017372920395954453
+    0.019600357729521383,
+    0.020486686328156912
   ],
   "hypervolume_unpaid": 0.004545454545454546,
-  "search_gain": 0.0032821769840328495,
+  "search_gain": 0.006272007728622957,
   "search_gain_ci": [
-    0.003190125485817227,
-    0.003392950184112215
+    0.006059487966638653,
+    0.006498932773964301
   ],
   "holdout_seeds": 100
 }

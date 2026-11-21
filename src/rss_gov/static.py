@@ -21,11 +21,11 @@ def snapshot(study):
     w, p = study.world, study.params
     on_drep = w.acct_target >= 0
     n = len(w.p)
-    stake = np.bincount(w.acct_target[on_drep], weights=w.acct_stake[on_drep], minlength=n)
-    counted = w.acct_count * (w.acct_stake >= p.delegator_min_ada * w.acct_count)
+    power = np.bincount(w.acct_target[on_drep], weights=w.acct_ada[on_drep], minlength=n)
+    counted = w.acct_count * (w.acct_ada >= p.delegator_min_ada * w.acct_count)
     activity, rationale = model._activity(w.window, np.zeros(n), np.zeros(n))
     return mechanisms.Round(
-        stake=stake,
+        power=power,
         activity=activity,
         rationale=rationale,
         delegators=np.bincount(w.acct_target[on_drep], weights=counted[on_drep], minlength=n),
@@ -37,10 +37,10 @@ def snapshot(study):
 def _take(scheme, rnd, pot, rows):
     """Share of the pot going to these DReps and their delegators."""
     award, yields = mechanisms.allocate(scheme, rnd, pot)
-    return float((award[rows].sum() + (yields[rows] * rnd.stake[rows]).sum()) / pot)
+    return float((award[rows].sum() + (yields[rows] * rnd.power[rows]).sum()) / pot)
 
 
-def _with(rnd, drop, stake, activity, rationale, delegators, pledge, copies):
+def _with(rnd, drop, power, activity, rationale, delegators, pledge, copies):
     """The round with DRep `drop` removed (or nobody) and `copies` identical DReps added."""
 
     def join(values, new):
@@ -48,7 +48,7 @@ def _with(rnd, drop, stake, activity, rationale, delegators, pledge, copies):
         return np.concatenate([values, np.full(copies, new)])
 
     return mechanisms.Round(
-        stake=join(rnd.stake, stake),
+        power=join(rnd.power, power),
         activity=join(rnd.activity, activity),
         rationale=join(rnd.rationale, rationale),
         delegators=join(rnd.delegators, delegators),
@@ -58,19 +58,19 @@ def _with(rnd, drop, stake, activity, rationale, delegators, pledge, copies):
 
 
 def newcomer_split(scheme, rnd, pot, capital, deposit, delegator_min):
-    """An outsider splits own stake over fake DReps that vote on everything.
+    """An outsider splits its own ADA over fake DReps that vote on everything.
 
-    Each fake DRep pays its deposit, attaches a rationale to every vote, holds its stake
-    in minimum-size accounts, and counts its stake as its own. Returns the best share of
+    Each fake DRep pays its deposit, attaches a rationale to every vote, holds its power
+    in minimum-size accounts, and counts it as pledge. Returns the best share of
     the pot, the number of identities that achieves it, and the share with one identity.
     """
     best, best_m, single = 0.0, 1, 0.0
     for m in NEWCOMER_SPLITS:
         each = capital / m - deposit
-        if each < max(scheme.min_stake_ada, scheme.min_delegators * delegator_min, 1.0):
+        if each < max(scheme.min_power_ada, scheme.min_delegators * delegator_min, 1.0):
             break
         plus = _with(rnd, None, each, 1.0, 1.0, np.floor(each / delegator_min), each, m)
-        share = _take(scheme, plus, pot, slice(len(rnd.stake), None))
+        share = _take(scheme, plus, pot, slice(len(rnd.power), None))
         if m == 1:
             single = share
         if share > best:
@@ -81,11 +81,11 @@ def newcomer_split(scheme, rnd, pot, capital, deposit, delegator_min):
 def incumbent_split(scheme, rnd, pot):
     """The most any existing DRep gains by splitting into equal parts, as a share of the pot.
 
-    Its delegators and own stake are assumed to follow in equal parts. That takes
+    Its delegators and pledge are assumed to follow in equal parts. That takes
     cooperation a real DRep may not get, so this is an upper bound on the temptation.
-    Returns (extra share, stake rank of the DRep, number of parts).
+    Returns (extra share, power rank of the DRep, number of parts).
     """
-    order = np.argsort(-rnd.stake, kind="stable")
+    order = np.argsort(-rnd.power, kind="stable")
     best = (0.0, None, 1)
     for rank in INCUMBENT_RANKS:
         if rank >= len(order):
@@ -94,10 +94,10 @@ def incumbent_split(scheme, rnd, pot):
         whole = _take(scheme, rnd, pot, [i])
         for m in INCUMBENT_SPLITS:
             parts = _with(
-                rnd, i, rnd.stake[i] / m, rnd.activity[i], rnd.rationale[i],
+                rnd, i, rnd.power[i] / m, rnd.activity[i], rnd.rationale[i],
                 rnd.delegators[i] / m, rnd.pledge[i] / m, m,
             )  # fmt: skip
-            extra = _take(scheme, parts, pot, slice(len(rnd.stake) - 1, None)) - whole
+            extra = _take(scheme, parts, pot, slice(len(rnd.power) - 1, None)) - whole
             if extra > best[0]:
                 best = (extra, rank + 1, m)
     return best
@@ -125,18 +125,18 @@ def export(study):
     w = study.world
     on_drep = w.acct_target >= 0
     target, count = w.acct_target[on_drep], w.acct_count[on_drep]
-    unit = w.acct_stake[on_drep] / np.maximum(count, 1)
+    unit = w.acct_ada[on_drep] / np.maximum(count, 1)
     order = np.lexsort((unit, target))
     palette, which = np.unique(count, return_inverse=True)
     today = dict(
-        {k: getattr(rnd, k).tolist() for k in ("stake", "activity", "rationale", "delegators")},
+        {k: getattr(rnd, k).tolist() for k in ("power", "activity", "rationale", "delegators")},
         pledge=rnd.pledge.tolist(),
         actions=rnd.actions,
-        top10=np.argsort(-rnd.stake)[:10].tolist(),
+        top10=np.argsort(-rnd.power)[:10].tolist(),
         **_constants(study),
     )
     accounts = dict(
-        per_drep=np.bincount(target, minlength=len(rnd.stake)).tolist(),
+        per_drep=np.bincount(target, minlength=len(rnd.power)).tolist(),
         unit=unit[order].tolist(),
         palette=palette.tolist(),
         count=which[order].tolist(),
@@ -151,19 +151,19 @@ def analyse(study, schemes):
     c = _constants(study)
     deposit, capital, min_payout, epochs = c["deposit"], c["capital"], c["min_payout"], c["epochs"]
     on_drep = w.acct_target >= 0
-    unit = w.acct_stake[on_drep] / np.maximum(w.acct_count[on_drep], 1)
-    top10 = np.argsort(-rnd.stake)[:10]
+    unit = w.acct_ada[on_drep] / np.maximum(w.acct_count[on_drep], 1)
+    top10 = np.argsort(-rnd.power)[:10]
     rows = []
     for scheme in schemes:
         feasibility = scheme.feasibility()
-        power = mechanisms.voting_power(scheme, rnd.stake, rnd.pledge)
+        power = mechanisms.voting_power(scheme, rnd.power, rnd.pledge)
         row = dict(
             scheme=scheme.name,
             rule=scheme.label(),
             budget_ada=scheme.budget_ada,
             fee_ada=scheme.fee_ada,
             pilot_testable=feasibility["pilot_testable"],
-            power_kept=float(power.sum() / rnd.stake.sum()),
+            power_kept=float(power.sum() / rnd.power.sum()),
             paid_dreps=0,
             split_gain=0.0,
             newcomer_extra=0.0,

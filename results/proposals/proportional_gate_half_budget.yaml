@@ -4,7 +4,7 @@
   cap_ada: null
   k_exclude: 0
   n_pay: 0
-  min_stake_ada: 0.0
+  min_power_ada: 0.0
   min_delegators: 0
   activity_gate: 0.5
   rationale_bonus: 0.0

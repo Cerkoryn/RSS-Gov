@@ -33,7 +33,7 @@ EVIDENCE = dict(
         "on chain: DRep voting power each epoch",
     ),
     backing=(
-        "starts from accounts linked on chain; changes rest on the own-stake response",
+        "starts from accounts linked on chain; changes rest on the pledge response",
         "needs DReps to declare their accounts and sign for them",
     ),
     annual_cost_ada=(
@@ -265,16 +265,18 @@ def _fee_tables(central, fees, axes, budget):
     designs = list(dict.fromkeys(row["preset"] for row in fees.values()))
     by_fee = {(row["preset"], row["fee_ada"]): n for n, row in fees.items()}
     columns = {f"{mechanisms._ada(budget)} budget": designs}
-    columns |= {f"{mechanisms._ada(fee)} fee": [by_fee[d, fee] for d in designs] for fee in levels}
+    columns |= {
+        f"{mechanisms._ada(fee)} proposer fee": [by_fee[d, fee] for d in designs] for fee in levels
+    }
     cost = {
         c: f"{np.median(central.loc[names, 'annual_cost_ada']) / 1e6:.1f}M"
         for c, names in columns.items()
     }
     text = [
-        "### Paid from a budget or by a fee per governance action",
+        "### Paid from a budget or by a proposer fee",
         "",
         "Each named design with its budget, and the same rule with no budget, paid instead by "
-        "a fee kept from every governance action that closes; `central` scenario, change "
+        "a proposer fee kept from every governance action that closes; `central` scenario, change "
         "against unpaid. Simulated DReps react to the fee's average flow, so a fee differs "
         "from a budget by how much money it brings, how its cost varies with the number of "
         "actions, and the hard fork it needs. Median cost a year: "
@@ -358,22 +360,20 @@ def today(study):
     series = data.series()
     last = series.iloc[-1]
     on_drep = world.acct_target >= 0
-    stake = np.bincount(
-        world.acct_target[on_drep], weights=world.acct_stake[on_drep], minlength=len(world.p)
+    power = np.bincount(
+        world.acct_target[on_drep], weights=world.acct_ada[on_drep], minlength=len(world.p)
     )
     # Participation as the model defines it: voting power that voted on an action, over all
-    # delegated stake (always-abstain and no-confidence included), for recently closed actions.
+    # delegated ADA (always-abstain and no-confidence included), for recently closed actions.
     recent = data.closed(int(series.index[-1]) - RECENT_EPOCHS + 1)
     participation = None
     if len(recent):
         _, voted, _ = data.ballots(recent)
         shares = []
         for j, close in enumerate(recent.close.astype(int)):
-            power = data.power.loc[close].values
+            held = data.power.loc[close].values
             row = series.loc[close]
-            shares.append(
-                power[voted[:, j]].sum() / (power.sum() + row.abstain + row.no_confidence)
-            )
+            shares.append(held[voted[:, j]].sum() / (held.sum() + row.abstain + row.no_confidence))
         participation = float(np.mean(shares))
     return dict(
         participation=participation,
@@ -387,10 +387,10 @@ def today(study):
         no_confidence=float(last.no_confidence),
         closed_actions=len(data.closed()),
         ballots=len(data.votes),
-        own_stake=float(world.pledge.sum()),
-        linked_dreps=int(((world.pledge > 0) & (stake > 0)).sum()),
-        dreps_with_stake=int((stake > 0).sum()),
-        backing=float(np.minimum(stake, world.pledge).sum() / stake.sum()),
+        pledge=float(world.pledge.sum()),
+        linked_dreps=int(((world.pledge > 0) & (power > 0)).sum()),
+        dreps_with_power=int((power > 0).sum()),
+        backing=float(np.minimum(power, world.pledge).sum() / power.sum()),
     )
 
 
@@ -421,10 +421,10 @@ def write(study):
         f"to always-abstain and {now['no_confidence'] / 1e9:.2f}B to always-no-confidence.",
         f"- {now['closed_actions']} governance actions have closed; {now['ballots']:,} DRep ballots.",
         f"- Accounts that funded a DRep's registration or that it declares as its payment address "
-        f"hold {now['own_stake'] / 1e6:.1f}M ADA in total, for {now['linked_dreps']} of "
-        f"{now['dreps_with_stake']} DReps. That backs **{now['backing']:.2%}** of DRep voting "
+        f"hold {now['pledge'] / 1e6:.1f}M ADA in total, for {now['linked_dreps']} of "
+        f"{now['dreps_with_power']} DReps. That backs **{now['backing']:.2%}** of DRep voting "
         f"power: the average vote is cast with about {1 / now['backing']:,.0f} times the voter's "
-        "own stake.",
+        "pledge.",
         "",
         "## How schemes are compared",
         "",
@@ -470,7 +470,7 @@ def write(study):
         "",
     ]
     checks = pd.DataFrame(validation["checks"])
-    for name in ("drep_power", "abstain"):  # show stake in billions of ADA
+    for name in ("drep_power", "abstain"):  # show voting power in billions of ADA
         mask = checks.metric == name
         checks.loc[mask, ["observed", "simulated", "low", "high"]] /= 1e9
         checks.loc[mask, "metric"] = f"{name} (B ADA)"
@@ -721,9 +721,9 @@ def write(study):
         "strength. A result that holds only in `high` is a hope, not a finding.",
         "- Cost and the gain from splitting are exact for a given formula. The other axes "
         "are conditional on the response assumptions.",
-        "- Own stake comes from accounts linked to a DRep on chain (the funder of its "
-        "registration, its declared payment address). That misses own stake held elsewhere and "
-        "can count stake that is not the DRep's. A real programme needs signed declarations.",
+        "- Pledge comes from accounts linked to a DRep on chain (the funder of its "
+        "registration, its declared payment address). That misses ADA the DRep holds elsewhere and "
+        "can count ADA that is not the DRep's. A real programme needs signed declarations.",
         "- A hard cap on voting power is simulated mechanically: delegators of a capped DRep "
         "are not modelled as moving away, so its cost in participation is an upper bound.",
         "- Differences smaller than their ± are not differences.",

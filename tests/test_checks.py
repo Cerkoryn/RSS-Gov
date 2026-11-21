@@ -14,7 +14,7 @@ from tests.conftest import make_params, make_world
 RULES = [
     *(dict(mechanisms.PRESETS[name]) for name in mechanisms.PRESETS if name != "unpaid"),
     dict(alpha=0.25, k_exclude=3, n_pay=20, cap_ada=2e6),
-    dict(alpha=1.0, activity_gate=0.5, rationale_bonus=2.0, min_stake_ada=50_000),
+    dict(alpha=1.0, activity_gate=0.5, rationale_bonus=2.0, min_power_ada=50_000),
     dict(alpha=0.75, delegator_share=0.5, delegator_mode="flat", min_delegators=3),
     dict(alpha=1.0, delegator_share=0.3, pledge_leverage=50),
     dict(alpha=0.0, k_exclude=2, top_weight=0.5, n_pay=15, roll_down=True, per_vote_ada=3.0),

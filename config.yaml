@@ -13,7 +13,7 @@ conventions:
   activity_window: 12       # epochs of closed actions that count as "recent" activity
   delegator_min_ada: 100    # smallest account that counts as a delegator
   large_ada: 100000         # accounts at or above this get their own fitted move rate
-  stake_floor_ada: 1000     # keeps an empty DRep choosable by movers
+  power_floor_ada: 1000     # keeps an empty DRep choosable by movers
   prior_strength: 2         # pseudo-actions of shrinkage in a DRep's vote rate
   forecast_lag: 18          # epochs ahead that fitted vote rates must hold for (half the programme)
 
@@ -22,7 +22,7 @@ calibration:
   fit_seeds: 12
   validation_seeds: 40
   # Largest acceptable gap between the held-out history and the model started 40 epochs
-  # earlier. Relative, except turnout (absolute, in share of stake).
+  # earlier. Relative, except turnout (absolute, in share of voting power).
   tolerances:
     tau67: 0.15
     effective_n: 0.15
@@ -49,13 +49,13 @@ assumptions:
 #                      log(1 + reward per vote / vote cost).
 #   delegator_response Delegators chase yield: log-weight per point of annual yield.
 #   reinvest_response  Awards buy reach: a DRep's pull on movers is multiplied by
-#                      (1 + award / upkeep) ^ this. Under a stake-proportional rule this adds
+#                      (1 + award / upkeep) ^ this. Under a power-proportional rule this adds
 #                      about this much to the exponent with which movers favour large DReps.
-#   pledge_response    Share of the missing own stake a DRep adds over the programme when a
-#                      rule ties rewards or voting power to own stake.
-#   pledge_min_return  Under a reward cap, a DRep adds own stake only while the extra award
+#   pledge_response    Share of the missing pledge a DRep adds over the programme when a
+#                      rule ties rewards or voting power to pledge.
+#   pledge_min_return  Under a pledge soft cap, a DRep adds pledge only while the extra award
 #                      is at least this yearly return on the ADA added (a hurdle, not data).
-#   pledge_wealth_multiple  A DRep's own stake grows to at most this multiple of the ADA in its
+#   pledge_wealth_multiple  A DRep's pledge grows to at most this multiple of the ADA in its
 #                      linked accounts: how much more it could buy. Crypto is on average about
 #                      a fifth of its owners' financial wealth (5x), more than half for about a
 #                      fifth of owners (2x), under 15% for most (7x): Cleveland Fed WP 26-16.
@@ -83,7 +83,7 @@ ranking_scenarios: [low, central, high]   # a scheme's score is its mean over th
 axes:
   participation:
     family: Participation
-    label: Delegated stake casting an explicit vote
+    label: Delegated ADA casting an explicit vote
     better: higher
     meaningful: 0.01
     scale: [-0.05, 0.20]
@@ -95,7 +95,7 @@ axes:
     scale: [-5, 15]
   backing:
     family: Skin in the game
-    label: Voting power backed by the DRep's own stake
+    label: Voting power backed by the DRep's pledge
     better: higher
     meaningful: 0.002
     scale: [-0.005, 0.05]
@@ -113,7 +113,7 @@ axes:
     scale: [0.5, 0]   # a rule that loses half its budget to splitting covers nothing here
 
 sybil:
-  newcomer_capital_ada: 1000000   # own stake an outsider can split over fake DReps
+  newcomer_capital_ada: 1000000   # own ADA an outsider can split over fake DReps
 
 # A design is shortlisted only inside these limits. They are judgement calls, kept
 # separate from the measurements so they can be moved without re-running anything.
@@ -135,32 +135,32 @@ experiment:
     - small_drep_floor
     - delegator_flat
     - delegator_passthrough_sqrt
-    - pledge_soft
+    - pledge_soft_cap
     - pledge_hard_cap
     # Named designs from published proposals (METHODS.md, "Named designs").
     - top_m_equal
     - top_m_proportional
     - threshold_k
     - threshold_k_proportional
-    - equal_plus_stake
+    - equal_plus_power
     - exclude_k_pay_n
     - top_haircut
     - top_100_gated
     - delegators_first
     - delegator_count_sqrt
-    # Simple designs with two settings that pay for the own stake behind the votes.
-    - own_stake_skip20
-    - own_stake_skip10
-    - own_stake_capped
+    # Simple pledge soft caps with two settings: pay for the pledge behind the votes.
+    - pledge_soft_cap_skip20
+    - pledge_soft_cap_skip10
+    - pledge_soft_cap_capped
     # The same rule at other budgets: what more or less money buys.
     - {name: capped_1m, preset: capped, budget_ada: 1000000}
     - {name: capped_2m5, preset: capped, budget_ada: 2500000}
     - {name: capped_10m, preset: capped, budget_ada: 10000000}
-    # Paid by a fee per governance action instead of a budget (CIP PR #1117): a quarter of
+    # Paid by a proposer fee kept from each governance action instead of a budget (CIP PR #1117): a quarter of
     # today's 100,000 ADA deposit.
-    - {name: equal_plus_stake_fee_25k, preset: equal_plus_stake, budget_ada: 0, fee_ada: 25000}
-  # Every named design above is also run with no budget, paid by each of these fees per
-  # governance action instead (named e.g. capped_fee_50k): all, half and a tenth of today's
+    - {name: equal_plus_power_fee_25k, preset: equal_plus_power, budget_ada: 0, fee_ada: 25000}
+  # Every named design above is also run with no budget, paid by each of these proposer
+  # fees instead (named e.g. capped_fee_50k): all, half and a tenth of today's
   # deposit, to compare paying from a budget with paying from fees.
   fees_ada: [100000, 50000, 10000]
 

@@ -6,12 +6,12 @@
   top_weight: 0.0
   n_pay: 400
   roll_down: true
-  min_stake_ada: 10000.0
+  min_power_ada: 10000.0
   min_share: 0.0
   min_delegators: 0
   activity_gate: 0.75
   rationale_bonus: 0.0
-  basis: stake
+  basis: power
   equal_share: 0.25
   per_vote_ada: 0.0
   max_award_share: 0.0

@@ -3,7 +3,7 @@
 Research tool for governance reward designs on Cardano. Every way of paying
 DReps and their delegators trades something off: proportional pay feeds concentration,
 equal pay invites fake DReps, paying delegators spreads money thin, and ignoring a DRep's
-own stake rewards power with nothing at risk. RSS-Gov measures each payment rule on all
+pledge (the ADA it owns itself) rewards power with nothing at risk. RSS-Gov measures each payment rule on all
 of those dimensions at once, says how sure it is, and shortlists the rules that are not
 beaten across the board, so that the trade-offs of any reward design are in plain view.
 
@@ -18,9 +18,9 @@ reward rule there; it is simulated on GitHub's servers and listed with its resul
 
 | Family | Measure | Better |
 |---|---|---|
-| Participation | Share of all delegated stake that casts an explicit vote | higher |
+| Participation | Share of all delegated ADA that casts an explicit vote | higher |
 | Decentralisation | DReps needed for two thirds of DRep voting power | higher |
-| Skin in the game | Share of voting power backed by the DRep's own stake | higher |
+| Skin in the game | Share of voting power backed by the DRep's pledge | higher |
 | Reward sustainability | Cost a year, from a budget or from fees | lower |
 | Sybil resistance | Share of the budget gained by splitting one identity | lower |
 
@@ -83,8 +83,8 @@ show. Things to keep in mind:
    fitted on, it has to reproduce what then happened to concentration, delegation totals,
    turnout and ratification. `rss-gov calibrate` prints the result of each check.
 2. **The response to money is assumed.** Nobody has been paid yet. Four response channels
-   (DReps voting more, delegators chasing yield, awards buying reach, DReps adding own
-   stake) each run from "no reaction" to "strong reaction". A verdict counts only if it
+   (DReps voting more, delegators chasing yield, awards buying reach, DReps adding
+   pledge) each run from "no reaction" to "strong reaction". A verdict counts only if it
    holds from `low` to `high`, and the report shows which channel each result rests on.
 3. **Noise is measured.** Schemes are compared on the same seeds, and effects come with
    95% intervals. Finalists of the search are re-run on seeds the search never saw.
@@ -98,7 +98,7 @@ show. Things to keep in mind:
   modelled.
 - Vote direction and decision quality are not modelled; only whether DReps vote and
   publish a rationale.
-- A DRep's own stake is read from accounts linked to it on chain (the funder of its
+- A DRep's pledge (the ADA it owns itself) is read from accounts linked to it on chain (the funder of its
   registration, its declared payment address). That is a proxy with errors in both
   directions; a real programme needs signed declarations.
 - The insider splitting gain assumes a DRep's delegators follow it into its new

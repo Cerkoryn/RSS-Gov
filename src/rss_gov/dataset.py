@@ -167,7 +167,7 @@ def load(folder):
         # Koios reports a negative balance for the odd account; treat it as empty.
         balance = links.balance.clip(lower=0) / 1e6
         own = balance.groupby(links.drep_id).sum()
-        # Only own ADA delegated to the DRep itself stands behind its votes.
+        # Only own ADA delegated to the DRep itself stands behind its votes: its pledge.
         mine = links.delegated_drep == links.drep_id
         pledged = balance[mine].groupby(links.drep_id[mine]).sum().reindex(own.index).fillna(0.0)
 

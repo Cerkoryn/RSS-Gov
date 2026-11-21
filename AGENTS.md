@@ -1,7 +1,7 @@
 # Working in this repository
 
-RSS-Gov evaluates reward schemes for Cardano governance, paid from a budget or by a fee
-per governance action. Read `METHODS.md` before changing anything that affects results.
+RSS-Gov evaluates reward schemes for Cardano governance, paid from a budget or by a
+proposer fee kept from each governance action. Read `METHODS.md` before changing anything that affects results.
 
 ## Layout
 

@@ -122,7 +122,7 @@ def test_accept_refuses_a_rule_that_is_already_listed(tmp_path):
         proposals.accept(config, {**VALID, "pledge_leverage": 10, "hard_cap": True})
     with pytest.raises(ValueError, match="hard-fork"):
         proposals.accept(config, {**VALID, "budget_ada": 0, "fee_ada": 25_000})
-    with pytest.raises(ValueError, match="a budget or a fee"):
+    with pytest.raises(ValueError, match="a budget or a proposer fee"):
         proposals.accept(config, {**VALID, "budget_ada": 0})
     config["search"]["allow_hard_fork"] = True
     fee, _ = proposals.accept(config, {**VALID, "name": "fee", "budget_ada": 0, "fee_ada": 25_000})

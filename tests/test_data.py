@@ -81,10 +81,10 @@ def test_world_matches_observed_totals(pull, monkeypatch):
     data = dataset.load(pull)
     world = calibrate.build_world(data, 570, make_params())
     on_drep = world.acct_target >= 0
-    stake = np.bincount(world.acct_target[on_drep], weights=world.acct_stake[on_drep])
-    assert np.allclose(stake, data.power.loc[570].values)
-    assert world.acct_stake[world.acct_target == model.ABSTAIN].sum() == 5e6
-    assert world.acct_stake[world.acct_target == model.NO_CONFIDENCE].sum() == 1e5
+    power = np.bincount(world.acct_target[on_drep], weights=world.acct_ada[on_drep])
+    assert np.allclose(power, data.power.loc[570].values)
+    assert world.acct_ada[world.acct_target == model.ABSTAIN].sum() == 5e6
+    assert world.acct_ada[world.acct_target == model.NO_CONFIDENCE].sum() == 1e5
     assert world.pledge[0] == world.holdings[0] == 0.6e6  # the earliest delegator stands in
     assert world.actions.shape[1] == 4
 
@@ -104,7 +104,7 @@ def test_world_matches_observed_totals(pull, monkeypatch):
     assert table.loc["equal", "newcomer_identities"] > 100
 
 
-def test_linked_accounts_replace_the_stand_in_for_own_stake(pull, monkeypatch):
+def test_linked_accounts_replace_the_stand_in_for_pledge(pull, monkeypatch):
     import pandas as pd
 
     monkeypatch.setattr(calibrate, "FIRST_VOTING_EPOCH", 560)
@@ -132,7 +132,7 @@ def test_an_incumbent_above_a_cap_gains_by_splitting():
     from rss_gov import mechanisms
 
     rnd = mechanisms.Round(
-        stake=np.array([400.0, 30.0, 20.0, 10.0]) * 1e6,
+        power=np.array([400.0, 30.0, 20.0, 10.0]) * 1e6,
         activity=np.ones(4),
         rationale=np.zeros(4),
         delegators=np.full(4, 100.0),

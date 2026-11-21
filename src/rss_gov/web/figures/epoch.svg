@@ -29,7 +29,7 @@
   <rect class="box" x="500" y="172" width="212" height="96" rx="10"/>
   <rect class="react" x="505" y="184" width="4" height="72" rx="2"/>
   <text class="t" x="520" y="200">4  DReps react</text>
-  <text x="520" y="224">Vote more, add own stake, buy</text>
+  <text x="520" y="224">Vote more, add pledge, buy</text>
   <text x="520" y="242">reach: the assumed reactions.</text>
 
   <rect class="box" x="254" y="172" width="212" height="96" rx="10"/>
@@ -58,7 +58,7 @@
   <!-- what is measured -->
   <rect class="box" x="8" y="290" width="704" height="70" rx="10"/>
   <text x="24" y="311"><tspan class="t" style="font-size:12px">Measured along the way:</tspan> participation on every action in step 6; how spread out voting power is,</text>
-  <text x="24" y="330">and how much of it is the DReps' own ADA, at the end of each epoch; the cost from what step 3 pays.</text>
+  <text x="24" y="330">and how much of it is the DReps' pledge, at the end of each epoch; the cost from what step 3 pays.</text>
   <text x="24" y="349">Sybil risk is not simulated: it is computed exactly from the rule and today's chain.</text>
 
   <!-- legend -->

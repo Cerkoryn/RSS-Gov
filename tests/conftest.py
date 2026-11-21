@@ -27,12 +27,12 @@ def make_params(**overrides):
 
 
 def make_world(n=60, accounts_each=8, seed=0):
-    """A small synthetic world: n DReps with skewed stake and size-related vote rates."""
+    """A small synthetic world: n DReps with skewed voting power and size-related vote rates."""
     rng = np.random.default_rng(seed)
-    drep_stake = np.sort(rng.lognormal(13, 2, n))[::-1]
+    drep_size = np.sort(rng.lognormal(13, 2, n))[::-1]
     target = np.repeat(np.arange(n), accounts_each)
-    stake = (
-        (drep_stake[target] / accounts_each)
+    balance = (
+        (drep_size[target] / accounts_each)
         * rng.dirichlet(np.ones(accounts_each), n).ravel()
         * accounts_each
     )
@@ -40,7 +40,7 @@ def make_world(n=60, accounts_each=8, seed=0):
     target = np.concatenate(
         [target, np.full(extra, model.ABSTAIN), np.full(5, model.NO_CONFIDENCE)]
     )
-    stake = np.concatenate([stake, rng.lognormal(12, 2, extra), rng.lognormal(10, 1, 5)])
+    balance = np.concatenate([balance, rng.lognormal(12, 2, extra), rng.lognormal(10, 1, 5)])
     p = np.clip(np.linspace(0.9, 0.02, n), 0.002, 0.998)
     window = [(np.full(n, 2.0), np.round(2 * p), np.round(p)) for _ in range(12)]
     actions = np.array(
@@ -57,19 +57,19 @@ def make_world(n=60, accounts_each=8, seed=0):
         p=p,
         q=np.full(n, 0.4),
         last_active=np.full(n, 100.0),
-        pledge=drep_stake * 0.05,
-        holdings=drep_stake * 0.08,
-        acct_stake=stake,
-        acct_count=np.ones(len(stake)),
+        pledge=drep_size * 0.05,
+        holdings=drep_size * 0.08,
+        acct_ada=balance,
+        acct_count=np.ones(len(balance)),
         acct_target=target.astype(int),
         window=window,
         closes=np.array([0, 1, 1, 2, 3]),
         actions=actions,
-        entrant_stake=np.array([1000.0, 50_000.0]),
+        entrant_power=np.array([1000.0, 50_000.0]),
         entrant_p=np.array([0.1, 0.5]),
         entrant_q=np.array([0.3, 0.3]),
         entrant_own=np.array([500.0, 20_000.0]),
-        exit_stake=np.array([500.0, 5000.0]),
+        exit_power=np.array([500.0, 5000.0]),
     )
 
 

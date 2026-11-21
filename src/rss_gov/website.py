@@ -50,7 +50,7 @@ DISPLAY = dict(
         "change in DReps", "", 1,
     ),
     backing=(
-        "Skin in the game", "How much voting power is backed by DReps' own ADA",
+        "Skin in the game", "How much voting power is backed by DReps' pledge",
         "change in points", " pts", 2,
     ),
     annual_cost_ada=("Cost", "ADA paid out each year, from a budget or from fees", "M ADA a year", "M", 1),
@@ -63,7 +63,7 @@ CHANNELS = dict(
     voting_only="DReps vote more",
     yield_only="Delegators chase yield",
     reinvest_only="Awards buy reach",
-    pledge_only="DReps add own stake",
+    pledge_only="DReps add pledge",
 )
 FACTS = [
     "paid_dreps", "max_award", "top10_award_share", "newcomer_capture", "newcomer_extra",
@@ -96,7 +96,7 @@ _PLEDGE = (
     "https://arxiv.org/abs/1807.11218",
 )
 _OWN = ("How it works: named designs", "methods.html#named-designs")
-_FEE = ("How it works: paying from a fee per action", "methods.html#paying-from-a-fee-per-action")
+_FEE = ("How it works: paying from a proposer fee", "methods.html#paying-from-a-proposer-fee")
 REFERENCES = {
     "middle_out": [_EKPN],
     "exclude_k_pay_n": [_EKPN],
@@ -104,16 +104,16 @@ REFERENCES = {
     "top_m_proportional": [_IO],
     "threshold_k": [_THRESHOLD, _IO],
     "threshold_k_proportional": [_THRESHOLD, _IO],
-    "equal_plus_stake": [_CIP1117],
+    "equal_plus_power": [_CIP1117],
     "top_haircut": [_FORUM],
     "top_100_gated": [_DAOSTAR],
     "delegators_first": [_FORUM],
     "delegator_count_sqrt": [_FORUM],
-    "pledge_soft": [_PLEDGE],
+    "pledge_soft_cap": [_PLEDGE],
     "pledge_hard_cap": [_PLEDGE],
-    "own_stake_skip20": [_OWN, _PLEDGE],
-    "own_stake_skip10": [_OWN, _PLEDGE],
-    "own_stake_capped": [_OWN, _PLEDGE],
+    "pledge_soft_cap_skip20": [_OWN, _PLEDGE],
+    "pledge_soft_cap_skip10": [_OWN, _PLEDGE],
+    "pledge_soft_cap_capped": [_OWN, _PLEDGE],
 }
 
 
@@ -176,15 +176,16 @@ def _features(s):
     if s["rationale_bonus"] >= 1:
         out.append(f"rationales ×{1 + s['rationale_bonus']:g}")
     if s["pledge_leverage"]:
-        out.append(f"≤{s['pledge_leverage']:g}× own stake")
+        kind = "hard" if s["hard_cap"] else "soft"
+        out.append(f"pledge {kind} cap {s['pledge_leverage']:g}×")
     if 0 < share < 0.5:
         out.append(f"{share:.0%} to delegators")
     if 0 < s["rationale_bonus"] < 1:
         out.append(f"rationales ×{1 + s['rationale_bonus']:g}")
     if s["activity_gate"]:
         out.append(f"{s['activity_gate']:.0%} turnout")
-    if s["min_stake_ada"]:
-        out.append(f"min {proposals.amount(s['min_stake_ada'])}")
+    if s["min_power_ada"]:
+        out.append(f"min {proposals.amount(s['min_power_ada'])}")
     if s["min_delegators"]:
         out.append(f"{int(s['min_delegators'])}+ delegators")
     if cap is not None and np.isfinite(cap) and not small_cap:
@@ -204,7 +205,7 @@ def titles(schemes):
         feats = _features(s)
         money = [f"{proposals.amount(s['budget_ada'])} ADA"] if s["budget_ada"] else []
         if s.get("fee_ada"):
-            money.append(f"{proposals.amount(s['fee_ada'])} ADA per action")
+            money.append(f"{proposals.amount(s['fee_ada'])} ADA proposer fee")
         parts[name] = (shape, feats, feats[:1], " + ".join(money))
     name_of = {n: ", ".join([p[0], *p[2], p[3]]) for n, p in parts.items()}
     groups = {}
