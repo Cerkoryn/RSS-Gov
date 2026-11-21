@@ -81,6 +81,9 @@ class Scenario:
     # ...and only until its pledge is this multiple of the ADA in its linked accounts:
     # how much more it could buy (0: no limit).
     pledge_wealth_multiple: float = 0.0
+    # Own ADA that cannot be traced on chain: a DRep's holdings are taken to be at least
+    # this share of its voting power at the start.
+    untraced_wealth_share: float = 0.0
 
 
 @dataclass
@@ -147,6 +150,9 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
     last_active = np.concatenate([world.last_active, np.zeros(n_new)])
     pledge = np.concatenate([world.pledge, new_own])
     holdings = np.concatenate([world.holdings, new_own])
+    if scenario.untraced_wealth_share > 0:
+        start = np.concatenate([_by_drep(world.acct_target, world.acct_ada, n0), new_power])
+        holdings = np.maximum(holdings, scenario.untraced_wealth_share * start)
     added = np.zeros(D)  # pledge added during the programme; it votes with the DRep
     acct_ada = np.concatenate([world.acct_ada, np.zeros(n_new)])
     acct_count = np.concatenate([world.acct_count, np.zeros(n_new)])

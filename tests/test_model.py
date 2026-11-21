@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 
 from rss_gov import mechanisms, model
@@ -180,6 +181,22 @@ def test_pledge_added_is_limited_by_wealth_and_votes_with_the_drep(world, params
     base, poor, free = run(world, params, "unpaid"), out(1.0), out(0.0)
     assert base["backing"] < poor["backing"] < free["backing"]
     assert free["drep_power"] > poor["drep_power"] > base["drep_power"]
+
+
+def test_untraced_wealth_raises_what_a_drep_can_add_and_nothing_else(world, params):
+    soft = mechanisms.Scheme(name="soft", budget_ada=200_000.0, pledge_leverage=1)
+
+    def out(scheme, share):
+        scenario = model.Scenario(
+            "s", pledge_response=0.5, pledge_wealth_multiple=1.0, untraced_wealth_share=share
+        )
+        return model.run(world, params, scheme, scenario, epochs=12, seed=3)
+
+    traced, rich = out(soft, 0.0), out(soft, 0.5)
+    assert rich["backing"] > traced["backing"]
+    assert out(soft, 1e-12)["backing"] == pytest.approx(traced["backing"])
+    plain = mechanisms.Scheme(name="plain", budget_ada=200_000.0)  # no pledge in the rule
+    assert out(plain, 0.5) == out(plain, 0.0)
 
 
 def test_pledge_added_counts_in_the_ada_participation_is_measured_against(world, params):

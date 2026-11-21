@@ -61,20 +61,25 @@ assumptions:
 #                      linked accounts: how much more it could buy. Crypto is on average about
 #                      a fifth of its owners' financial wealth (5x), more than half for about a
 #                      fifth of owners (2x), under 15% for most (7x): Cleveland Fed WP 26-16.
+#   untraced_wealth_share  Own ADA the chain cannot show: a DRep's holdings are taken to be
+#                      at least this share of its voting power. The largest DReps' linked
+#                      accounts are mostly small operating wallets (METHODS.md, "Pledge"), so
+#                      0 is a strict lower bound; at 1% the limit hardly binds any more.
 # low / central / high move all channels together; the *_only rows isolate one channel at
 # its central value and are used to attribute effects, not to rank schemes.
 # With every channel off, paying changes nothing (the tests check this), so that case is not run.
 scenarios:
   low: {drep_response: 0.25, delegator_response: 0.5, reinvest_response: 0.1, pledge_response: 0.1,
-        pledge_min_return: 0.10, pledge_wealth_multiple: 2}
+        pledge_min_return: 0.10, pledge_wealth_multiple: 2, untraced_wealth_share: 0}
   central: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2, pledge_response: 0.25,
-            pledge_min_return: 0.05, pledge_wealth_multiple: 5}
+            pledge_min_return: 0.05, pledge_wealth_multiple: 5, untraced_wealth_share: 0.001}
   high: {drep_response: 1.0, delegator_response: 2.0, reinvest_response: 0.4, pledge_response: 0.5,
-         pledge_min_return: 0.02, pledge_wealth_multiple: 7}
+         pledge_min_return: 0.02, pledge_wealth_multiple: 7, untraced_wealth_share: 0.01}
   voting_only: {drep_response: 0.5}
   yield_only: {delegator_response: 1.0}
   reinvest_only: {reinvest_response: 0.2}
-  pledge_only: {pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 5}
+  pledge_only: {pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 5,
+                untraced_wealth_share: 0.001}
 ranking_scenarios: [low, central, high]   # a scheme's score is its mean over these
 
 # The axes schemes are compared on: one per objective family. Nothing is folded into a

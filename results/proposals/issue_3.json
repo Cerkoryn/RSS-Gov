@@ -37,15 +37,15 @@
  ],
  "reason": "no clear gain over the front",
  "change_from_unpaid": {
-  "participation": 0.02942575721285312,
-  "tau67": 2.025740740740744,
-  "backing": -0.0002638756397825128,
-  "annual_cost_ada": 10139073.164968425,
+  "participation": 0.031244933591683677,
+  "tau67": 1.5633333333333326,
+  "backing": -0.0002029270986424192,
+  "annual_cost_ada": 10139081.967385644,
   "split_gain": 0.1019076937353482
  },
  "pilot_testable": true,
  "hypothesis": "Trying to improve skin-in-the-game",
  "author": "Cerkoryn",
- "evaluated": "2026-11-21T18:27:31Z",
+ "evaluated": "2026-11-21T20:38:45Z",
  "calibration": "4a6c2a9aafd4970d"
 }

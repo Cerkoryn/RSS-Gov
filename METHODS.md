@@ -190,6 +190,35 @@ metadata. Of the ADA in those accounts:
 New DReps get the pledge of a real recent newcomer, no more than their voting power, and
 their holdings are taken to be that pledge.
 
+**What the chain cannot show.** For most small DReps the trace works: many delegate their
+own wallet to themselves, and it makes up most of their voting power. For most of the
+largest it does not. Their linked accounts are usually a small operating wallet holding a
+few hundred ADA or less, and following every registration, update and vote transaction
+leads back to the same wallet. Several of the largest DReps are organisations (wallets,
+staking providers, ecosystem companies) whose own ADA sits in accounts nothing on chain
+ties to them. A DRep's large delegators cannot be attributed either: the same account
+sizes recur across DReps (delegation programmes), and staking providers delegate their
+clients' ADA. Two other ways of estimating were tried and rejected. A line fitted through
+pledge against voting power explains little of the spread, predicts very different things
+depending on which way it is fitted, and is fitted on the same small wallets, so it
+inherits their bias; stake pools, whose pledge the ledger enforces, show the same weak
+link between own ADA and size. A larger `pledge_wealth_multiple` only scales the traced
+balances, so it helps the few DReps whose real wallets were found and leaves the rest
+with almost nothing.
+
+So what DReps own beyond what can be traced is an assumption, `untraced_wealth_share`:
+a DRep's holdings are taken to be at least that share of its voting power at the start,
+0 at low (only what can be traced), 0.1% at central and 1% at high. At 0.1% a DRep with
+100M ADA of voting power is taken to own at least 100,000 ADA; at 1% the limit on top-ups hardly binds any more, so the high scenario
+is close to no limit at all. Only holdings change: a DRep's starting pledge, and so
+today's backing, stay at what can be traced, a floor. In a pilot DReps would declare
+their accounts, and own ADA revealed that way would show up as added pledge.
+
+What depends on it: with more untraced wealth, large DReps can add pledge under rules
+tied to it, so those rules raise backing more and spread voting power less, and a pledge
+hard cap takes far less voting power away. Designs that pay no attention to pledge are
+unaffected.
+
 A rule can use pledge in three ways. A *minimum pledge* (`min_pledge_ada`) pays only DReps
 with at least that much, and their delegators. Or, set by a *leverage* L:
 
@@ -215,8 +244,10 @@ once an epoch:
 3. **What it can afford.** Its pledge can grow to at most `pledge_wealth_multiple` times
    its holdings. Surveys of crypto owners find crypto is on average about a fifth of their
    financial wealth, more than half of it for about a fifth of owners, and under 15% for
-   most; hence 5 times at the central strength, 2 at low and 7 at high. A DRep with no
-   linked accounts adds nothing: nothing is known about what it owns.
+   most; hence 5 times at the central strength, 2 at low and 7 at high. Holdings are what
+   its linked accounts hold, or `untraced_wealth_share` of its voting power if that is
+   more (see *What the chain cannot show*); at low, a DRep with no linked accounts adds
+   nothing.
 4. **Whether it pays.** The extra reward a year the step would bring, with everyone else as
    they are, must be at least `pledge_min_return` of the ADA added: 5% at the central
    strength. Under a rule that pays everyone the same, pledge earns nothing and nobody
@@ -564,7 +595,7 @@ on. With every channel at zero, paying changes nothing (the tests check this).
 | `drep_response` | A DRep's log-odds of voting rise by `response × log(1 + reward for one more vote / vote cost)`. The same strength scales rationale publishing and new registrations. | Participation |
 | `delegator_response` | A mover's log-weight for a DRep rises by `response` per point of annual yield; accounts earning less than a typical paying DRep offers become more likely to move. Yield falls as delegation arrives. | Mobilising idle ADA; where it goes |
 | `reinvest_response` | A DRep's pull on movers is multiplied by `(1 + award / upkeep)^response`: awards pay for reach. Under a power-proportional rule this adds about `response` to the exponent with which movers already favour large DReps. | Concentration under proportional pay |
-| `pledge_response` | Under a rule that ties rewards or voting power to pledge, a DRep closes this share of its missing pledge over the programme. Under a pledge soft cap, only the pledge that would count for rewards is missing (no more than any cap on counted power allows), and a DRep adds each part only while the extra award it brings is at least `pledge_min_return` a year on that ADA. Under a pledge hard cap a DRep adds it to keep its voting power, whatever it earns. Either way its pledge grows to at most `pledge_wealth_multiple` times the ADA in its linked accounts, a bound on what it could buy, and the ADA it adds joins its voting power. | Skin in the game |
+| `pledge_response` | Under a rule that ties rewards or voting power to pledge, a DRep closes this share of its missing pledge over the programme. Under a pledge soft cap, only the pledge that would count for rewards is missing (no more than any cap on counted power allows), and a DRep adds each part only while the extra award it brings is at least `pledge_min_return` a year on that ADA. Under a pledge hard cap a DRep adds it to keep its voting power, whatever it earns. Either way its pledge grows to at most `pledge_wealth_multiple` times its holdings (the ADA in its linked accounts, or `untraced_wealth_share` of its voting power if more), a bound on what it could buy, and the ADA it adds joins its voting power. | Skin in the game |
 
 `low`, `central` and `high` move all four together. `voting_only`, `yield_only`,
 `reinvest_only` and `pledge_only` switch on one channel at its central value; the report

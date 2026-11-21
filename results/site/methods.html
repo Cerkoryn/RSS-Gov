@@ -320,6 +320,32 @@ metadata. Of the ADA in those accounts:</p>
 </ul>
 <p>New DReps get the pledge of a real recent newcomer, no more than their voting power, and
 their holdings are taken to be that pledge.</p>
+<p><strong>What the chain cannot show.</strong> For most small DReps the trace works: many delegate their
+own wallet to themselves, and it makes up most of their voting power. For most of the
+largest it does not. Their linked accounts are usually a small operating wallet holding a
+few hundred ADA or less, and following every registration, update and vote transaction
+leads back to the same wallet. Several of the largest DReps are organisations (wallets,
+staking providers, ecosystem companies) whose own ADA sits in accounts nothing on chain
+ties to them. A DRep's large delegators cannot be attributed either: the same account
+sizes recur across DReps (delegation programmes), and staking providers delegate their
+clients' ADA. Two other ways of estimating were tried and rejected. A line fitted through
+pledge against voting power explains little of the spread, predicts very different things
+depending on which way it is fitted, and is fitted on the same small wallets, so it
+inherits their bias; stake pools, whose pledge the ledger enforces, show the same weak
+link between own ADA and size. A larger <code>pledge_wealth_multiple</code> only scales the traced
+balances, so it helps the few DReps whose real wallets were found and leaves the rest
+with almost nothing.</p>
+<p>So what DReps own beyond what can be traced is an assumption, <code>untraced_wealth_share</code>:
+a DRep's holdings are taken to be at least that share of its voting power at the start,
+0 at low (only what can be traced), 0.1% at central and 1% at high. At 0.1% a DRep with
+100M ADA of voting power is taken to own at least 100,000 ADA; at 1% the limit on top-ups hardly binds any more, so the high scenario
+is close to no limit at all. Only holdings change: a DRep's starting pledge, and so
+today's backing, stay at what can be traced, a floor. In a pilot DReps would declare
+their accounts, and own ADA revealed that way would show up as added pledge.</p>
+<p>What depends on it: with more untraced wealth, large DReps can add pledge under rules
+tied to it, so those rules raise backing more and spread voting power less, and a pledge
+hard cap takes far less voting power away. Designs that pay no attention to pledge are
+unaffected.</p>
 <p>A rule can use pledge in three ways. A <em>minimum pledge</em> (<code>min_pledge_ada</code>) pays only DReps
 with at least that much, and their delegators. Or, set by a <em>leverage</em> L:</p>
 <ul>
@@ -357,10 +383,10 @@ once an epoch:</p>
   <rect class="box" x="370" y="16" width="160" height="138" rx="10"/>
   <text class="t" x="384" y="42">3  Can it afford it?</text>
   <text x="384" y="66">Pledge stops at a</text>
-  <text x="384" y="84">multiple of the ADA in</text>
-  <text x="384" y="102">its linked accounts:</text>
-  <text x="384" y="120">2×, 5× or 7×, from the</text>
-  <text x="384" y="138">low to the high scenario.</text>
+  <text x="384" y="84">multiple of its holdings</text>
+  <text x="384" y="102">(traced, or a share of</text>
+  <text x="384" y="120">its power): 2×, 5× or 7×,</text>
+  <text x="384" y="138">low to high scenario.</text>
 
   <rect class="box" x="551" y="16" width="160" height="138" rx="10"/>
   <text class="t" x="565" y="42">4  Does it pay?</text>
@@ -398,8 +424,10 @@ once an epoch:</p>
 <li><strong>What it can afford.</strong> Its pledge can grow to at most <code>pledge_wealth_multiple</code> times
    its holdings. Surveys of crypto owners find crypto is on average about a fifth of their
    financial wealth, more than half of it for about a fifth of owners, and under 15% for
-   most; hence 5 times at the central strength, 2 at low and 7 at high. A DRep with no
-   linked accounts adds nothing: nothing is known about what it owns.</li>
+   most; hence 5 times at the central strength, 2 at low and 7 at high. Holdings are what
+   its linked accounts hold, or <code>untraced_wealth_share</code> of its voting power if that is
+   more (see <em>What the chain cannot show</em>); at low, a DRep with no linked accounts adds
+   nothing.</li>
 <li><strong>Whether it pays.</strong> The extra reward a year the step would bring, with everyone else as
    they are, must be at least <code>pledge_min_return</code> of the ADA added: 5% at the central
    strength. Under a rule that pays everyone the same, pledge earns nothing and nobody
@@ -878,7 +906,7 @@ on. With every channel at zero, paying changes nothing (the tests check this).</
 </tr>
 <tr>
 <td><code>pledge_response</code></td>
-<td>Under a rule that ties rewards or voting power to pledge, a DRep closes this share of its missing pledge over the programme. Under a pledge soft cap, only the pledge that would count for rewards is missing (no more than any cap on counted power allows), and a DRep adds each part only while the extra award it brings is at least <code>pledge_min_return</code> a year on that ADA. Under a pledge hard cap a DRep adds it to keep its voting power, whatever it earns. Either way its pledge grows to at most <code>pledge_wealth_multiple</code> times the ADA in its linked accounts, a bound on what it could buy, and the ADA it adds joins its voting power.</td>
+<td>Under a rule that ties rewards or voting power to pledge, a DRep closes this share of its missing pledge over the programme. Under a pledge soft cap, only the pledge that would count for rewards is missing (no more than any cap on counted power allows), and a DRep adds each part only while the extra award it brings is at least <code>pledge_min_return</code> a year on that ADA. Under a pledge hard cap a DRep adds it to keep its voting power, whatever it earns. Either way its pledge grows to at most <code>pledge_wealth_multiple</code> times its holdings (the ADA in its linked accounts, or <code>untraced_wealth_share</code> of its voting power if more), a bound on what it could buy, and the ADA it adds joins its voting power.</td>
 <td>Skin in the game</td>
 </tr>
 </tbody>
@@ -1030,7 +1058,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=818a4e254c"></script>
+<script src="data.js?v=97293851cd"></script>
 <script src="common.js?v=9c15bd357b"></script>
 </body>
 </html>
