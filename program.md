@@ -43,8 +43,9 @@ not a recommendation: the report's shortlist also applies the guardrails.
 
 Fields: `budget_ada`, `alpha`, `basis` (`power` or `delegators`), `cap_ada`, `k_exclude`,
 `top_weight`, `n_pay`, `roll_down`, `min_power_ada`, `min_share`, `min_delegators`,
-`activity_gate`, `rationale_bonus`, `equal_share`, `per_vote_ada`, `max_award_share`,
-`delegator_share`, `delegator_mode` (`passthrough` or `flat`), `pledge_leverage`, `hard_cap`,
+`min_pledge_ada`, `activity_gate`, `rationale_bonus`, `equal_share`, `per_vote_ada`,
+`max_award_share`, `delegator_share`, `delegator_mode` (`passthrough` or `flat`),
+`delegator_k_exclude`, `pledge_leverage`, `hard_cap`,
 `fee_ada` (ADA per governance action, on top of `budget_ada`; needs a hard fork). See
 `src/rss_gov/mechanisms.py`.
 Every scheme pays only for explicit votes; that is not a parameter.

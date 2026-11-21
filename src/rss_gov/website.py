@@ -68,7 +68,7 @@ CHANNELS = dict(
 FACTS = [
     "paid_dreps", "max_award", "top10_award_share", "newcomer_capture", "newcomer_extra",
     "newcomer_identities", "incumbent_extra", "incumbent_rank", "incumbent_parts", "power_kept",
-    "delegator_claimants", "delegator_dust_share", "fee_share",
+    "paid_delegators", "fee_share",
 ]  # fmt: skip
 EXACT = ("annual_cost_ada", "split_gain")
 
@@ -114,6 +114,12 @@ REFERENCES = {
     "pledge_soft_cap_skip20": [_OWN, _PLEDGE],
     "pledge_soft_cap_skip10": [_OWN, _PLEDGE],
     "pledge_soft_cap_capped": [_OWN, _PLEDGE],
+    "pledge_backed_delegators": [_OWN, _PLEDGE],
+    "skip_top20_delegators": [_OWN, _PLEDGE],
+    "haircut_top20_delegators": [_OWN, _PLEDGE],
+    "small_drep_delegators": [_OWN, _PLEDGE],
+    "delegators_not_top20": [_OWN],
+    "top100_delegators_not_top20": [_OWN],
 }
 
 
@@ -152,6 +158,8 @@ def _features(s):
     small_cap = cap is not None and np.isfinite(cap) and cap <= 2e6
     if share >= 0.5:
         out.append("half to delegators" if share == 0.5 else f"{share:.0%} to delegators")
+    if share and s["delegator_k_exclude"]:
+        out.append(f"not via top {int(s['delegator_k_exclude'])}")
     if s["per_vote_ada"]:
         out.append(f"{s['per_vote_ada']:g} ADA a vote")
     if s["min_share"]:
@@ -188,6 +196,8 @@ def _features(s):
         out.append(f"min {proposals.amount(s['min_power_ada'])}")
     if s["min_delegators"]:
         out.append(f"{int(s['min_delegators'])}+ delegators")
+    if s["min_pledge_ada"]:
+        out.append(f"pledge ≥{proposals.amount(s['min_pledge_ada'])}")
     if cap is not None and np.isfinite(cap) and not small_cap:
         out.append(f"{proposals.amount(cap)} cap")
     return out
@@ -491,7 +501,6 @@ def build(study):
                 validation_passed=study.validation_passed,
                 validation=calibration,
                 capital=config["sybil"]["newcomer_capital_ada"],
-                min_payout=study.params.min_payout_ada,
                 repository=site.get("repository"),
                 built=proposals.now(),
             ),

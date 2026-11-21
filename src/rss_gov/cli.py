@@ -104,7 +104,7 @@ def cmd_static(args):
     table.to_csv(study.results / "static.csv", index=False)
     columns = [
         "scheme", "paid_dreps", "max_award", "top10_award_share", "newcomer_capture",
-        "newcomer_extra", "incumbent_extra", "split_gain", "power_kept", "delegator_dust_share",
+        "newcomer_extra", "incumbent_extra", "split_gain", "power_kept", "paid_delegators",
         "pilot_testable",
     ]  # fmt: skip
     with pd.option_context("display.width", 250, "display.float_format", "{:,.3f}".format):

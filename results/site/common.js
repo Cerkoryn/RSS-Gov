@@ -126,6 +126,7 @@ function describe(s, always = false) {
   if (s.min_delegators) who.push(`have at least ${num(s.min_delegators, 0)} delegators`);
   if (s.min_power_ada) who.push(`hold at least ${ada(s.min_power_ada)} ADA of voting power`);
   if (s.min_share) who.push(`hold at least ${pct(s.min_share, 1)} of all DRep voting power`);
+  if (s.min_pledge_ada) who.push(`pledge at least ${ada(s.min_pledge_ada)} ADA of their own`);
   let first = "Pays DReps for their votes";
   if (who.length) first = `Pays DReps that ${who.join(" and ")}`;
   const skip = s.top_weight ? `paying the ${num(s.k_exclude, 0)} largest only ${pct(s.top_weight)} of their share` : `skipping the ${num(s.k_exclude, 0)} largest`;
@@ -155,6 +156,7 @@ function describe(s, always = false) {
     out.push(s.delegator_mode === "flat"
       ? `${pct(s.delegator_share)} of the budget goes to delegators of DReps that vote, at the same rate per ADA whichever DRep they chose.`
       : `${pct(s.delegator_share)} of the budget goes to delegators, each sharing in their DRep's award.`);
+    if (s.delegator_k_exclude) out.push(`Delegators of the ${num(s.delegator_k_exclude, 0)} largest DReps get nothing, though those DReps can still be paid; their part goes to the other delegators.`);
   }
   if (s.budget_ada && (always || s.fee_ada || !D.meta || s.budget_ada !== D.meta.budget)) out.push(`Budget: ${ada(s.budget_ada)} ADA over the programme.`);
   if (s.fee_ada) out.push(`${s.budget_ada ? "On top of that, each" : "Paid by fees alone: each"} governance action that closes adds a ${ada(s.fee_ada)} ADA proposer fee, kept from its deposit instead of returned.`);

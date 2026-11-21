@@ -22,7 +22,8 @@ def test_every_preset_pays_out_at_most_the_pot(name):
     total = award.sum() + (yields * r.power).sum()
     assert (award >= 0).all() and (yields >= 0).all()
     assert total <= 100.0 + 1e-9
-    ceiling = scheme.per_vote_ada or scheme.max_award_share  # these may leave money unspent
+    # These may leave money unspent; so may skipping the delegators of every DRep there is.
+    ceiling = scheme.per_vote_ada or scheme.max_award_share or scheme.delegator_k_exclude >= 5
     if award.sum() > 0 and not ceiling:
         assert total == pytest.approx(100.0)
 
@@ -232,3 +233,27 @@ def test_pledge_gain_counts_only_while_pledge_limits_the_reward():
     assert (gain[limited & (r.activity > 0)] > 0).all() and (gain[~limited] <= 0).all()
     equal = m.Scheme(budget_ada=1, alpha=0.0, pledge_leverage=1)
     assert not m.pledge_gain(equal, r, 1000.0, 1e5).any()
+
+
+def test_delegators_of_the_largest_are_not_paid_but_their_dreps_are():
+    r = make_round()
+    plain = m.scheme(budget_ada=1, alpha=1.0, delegator_share=0.5)
+    skip = m.scheme(budget_ada=1, alpha=1.0, delegator_share=0.5, delegator_k_exclude=1)
+    award, yields = m.allocate(skip, r, 100.0)
+    assert award[0] > 0 and yields[0] == 0  # the largest DRep is paid, its delegators are not
+    assert np.allclose(award, m.allocate(plain, r, 100.0)[0])
+    assert (yields * r.power).sum() == pytest.approx(50.0)  # their part goes to the others
+    assert yields[2] > m.allocate(plain, r, 100.0)[1][2]
+    flat = m.scheme(
+        budget_ada=1, alpha=1.0, delegator_share=0.5, delegator_mode="flat", delegator_k_exclude=1
+    )
+    assert m.allocate(flat, r, 100.0)[1][0] == 0
+
+
+def test_a_minimum_pledge_keeps_drep_and_delegators_unpaid():
+    r = make_round()
+    scheme = m.scheme(budget_ada=1, alpha=1.0, delegator_share=0.5, min_pledge_ada=500_000)
+    award, yields = m.allocate(scheme, r, 100.0)
+    assert award[1] == 0 and yields[1] == 0  # 100k pledge: below the floor
+    assert award[0] > 0 and yields[0] > 0
+    assert "Pledge is not a ledger concept" in " ".join(scheme.feasibility()["notes"])

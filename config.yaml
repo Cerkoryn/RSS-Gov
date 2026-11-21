@@ -40,8 +40,10 @@ assumptions:
   vote_cost_ada: 50         # effort of one considered vote; also the unit for a DRep's upkeep
   rationale_cost_ada: 100   # extra effort of publishing a rationale
   max_yield_pp: 50          # delegators ignore yield beyond this many points a year
-  min_payout_ada: 5         # smaller programme totals are not worth a transaction
-  payout_fee_ada: 0.3       # delivery cost of one payment
+  # Payments are CIP-159 direct deposits into reward accounts, scripted in batches: no
+  # minimum amount and no claiming. One deposit adds about 40 bytes to a transaction
+  # (44 lovelace a byte) plus a share of its 0.155 ADA base fee.
+  payout_fee_ada: 0.002     # delivery cost of one payment
 
 # How strongly behaviour reacts to money. One channel per trade-off, so a result can be
 # traced to the assumption it rests on. With every channel at zero, paying changes nothing.
@@ -152,10 +154,29 @@ experiment:
     - pledge_soft_cap_skip20
     - pledge_soft_cap_skip10
     - pledge_soft_cap_capped
+    # Paying delegators to move away from the largest DReps (METHODS.md, "Named designs").
+    - pledge_backed_delegators
+    - skip_top20_delegators
+    - haircut_top20_delegators
+    - small_drep_delegators
+    - delegators_not_top20
+    - top100_delegators_not_top20
     # The same rule at other budgets: what more or less money buys.
     - {name: capped_1m, preset: capped, budget_ada: 1000000}
     - {name: capped_2m5, preset: capped, budget_ada: 2500000}
     - {name: capped_10m, preset: capped, budget_ada: 10000000}
+    # Variations of the delegator designs: pledge soft cap, how much and which DReps.
+    - {name: pledge_backed_delegators_2x, preset: pledge_backed_delegators, pledge_leverage: 2}
+    - {name: pledge_backed_delegators_5x, preset: pledge_backed_delegators, pledge_leverage: 5}
+    - {name: pledge_backed_delegators_uncapped, preset: pledge_backed_delegators, cap_ada: null}
+    - {name: pledge_backed_delegators_half, preset: pledge_backed_delegators, delegator_share: 0.5}
+    - {name: skip_top10_delegators, preset: skip_top20_delegators, k_exclude: 10}
+    - {name: delegators_not_top10, preset: delegators_not_top20, delegator_k_exclude: 10}
+    - {name: delegators_not_top20_pledge, preset: delegators_not_top20, pledge_leverage: 1000}
+    # A minimum pledge per DRep: each fake DRep then needs that much of its owner's own ADA.
+    - {name: skip_top20_delegators_min_pledge, preset: skip_top20_delegators, min_pledge_ada: 10000}
+    - {name: top100_delegators_not_top20_min_pledge, preset: top100_delegators_not_top20, min_pledge_ada: 10000}
+    - {name: pledge_soft_cap_skip20_min_pledge, preset: pledge_soft_cap_skip20, min_pledge_ada: 10000}
     # Paid by a proposer fee kept from each governance action instead of a budget (CIP PR #1117): a quarter of
     # today's 100,000 ADA deposit.
     - {name: equal_plus_power_fee_25k, preset: equal_plus_power, budget_ada: 0, fee_ada: 25000}

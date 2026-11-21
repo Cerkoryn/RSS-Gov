@@ -14,7 +14,7 @@ const Checks = (() => {
     const n = r.power.length, ok = new Array(n);
     const floor = s.min_share ? s.min_share * sum(r.power) : 0;
     for (let i = 0; i < n; i++) {
-      ok[i] = r.activity[i] > 0 && r.activity[i] >= s.activity_gate && r.power[i] >= s.min_power_ada && r.delegators[i] >= s.min_delegators;
+      ok[i] = r.activity[i] > 0 && r.activity[i] >= s.activity_gate && r.power[i] >= s.min_power_ada && r.delegators[i] >= s.min_delegators && r.pledge[i] >= (s.min_pledge_ada || 0);
       if (s.min_share && !(r.power[i] >= floor)) ok[i] = false;
     }
     return ok;
@@ -86,12 +86,15 @@ const Checks = (() => {
     const yields = new Float64Array(n);
     const delegatorPot = pot * s.delegator_share;
     if (delegatorPot > 0) {
-      const paid = [...award.keys()].filter((i) => award[i] > 0 && r.power[i] > 0);
+      // not through the K largest DReps (delegator_k_exclude): their part goes to the others
+      const skipped = new Set(byPower(r.power).slice(0, s.delegator_k_exclude || 0));
+      const paid = [...award.keys()].filter((i) => award[i] > 0 && r.power[i] > 0 && !skipped.has(i));
       if (s.delegator_mode === "flat") {
         const base = sum(paid.map((i) => r.power[i] * r.activity[i]));
         if (base > 0) for (const i of paid) yields[i] = (delegatorPot * r.activity[i]) / base;
       } else {
-        for (const i of paid) yields[i] = (delegatorPot * award[i]) / total / r.power[i];
+        const shared = sum(paid.map((i) => award[i]));
+        if (shared > 0) for (const i of paid) yields[i] = (delegatorPot * award[i]) / shared / r.power[i];
       }
     }
     return [award, yields];
@@ -120,11 +123,11 @@ const Checks = (() => {
     let best = 0, bestM = 1, single = 0;
     for (const m of NEWCOMER_SPLITS) {
       const each = t.capital / m - t.deposit;
-      if (each < Math.max(s.min_power_ada, s.min_delegators * t.delegator_min, 1)) break;
+      if (each < Math.max(s.min_power_ada, s.min_delegators * t.delegator_min, s.min_pledge_ada || 0, 1)) break;
       const plus = withCopies(r, null, { power: each, activity: 1, rationale: 1, delegators: Math.floor(each / t.delegator_min), pledge: each }, m);
       const share = take(s, plus, pot, range(r.power.length, r.power.length + m));
       if (m === 1) single = share;
-      if (share > best) { best = share; bestM = m; }
+      if (share > best + 1e-12) { best = share; bestM = m; } // in a tie, the fewest identities
     }
     return [best, bestM, single];
   }
@@ -146,20 +149,13 @@ const Checks = (() => {
     return best;
   }
 
-  // Delegating accounts that would have a claim, and the share of them under the minimum payout.
-  function claims(yields, t, accounts) {
-    let claimants = 0, dust = 0, k = 0;
+  // Delegating accounts that would be paid anything at all.
+  function paidDelegators(yields, accounts) {
+    let paid = 0, k = 0;
     accounts.per_drep.forEach((rows, d) => {
-      for (let j = 0; j < rows; j++, k++) {
-        const claim = yields[d] * accounts.unit[k] * t.epochs;
-        if (claim > 0) {
-          const holders = accounts.palette[accounts.count[k]];
-          claimants += holders;
-          if (claim < t.min_payout) dust += holders;
-        }
-      }
+      for (let j = 0; j < rows; j++, k++) if (yields[d] * accounts.unit[k] > 0) paid += accounts.palette[accounts.count[k]];
     });
-    return [claimants, claimants ? dust / claimants : null];
+    return paid;
   }
 
   const isPaid = (s) => s.budget_ada > 0 || s.fee_ada > 0; // Scheme.paid
@@ -170,8 +166,8 @@ const Checks = (() => {
     const out = [];
     if (s.rationale_bonus > 0) out.push("An anchor proves a rationale exists, not that it is good.");
     if (s.basis === "delegators") out.push("Accounts are cheap to create: paying by their number invites fake ones.");
-    if (s.delegator_share > 0) out.push("Many small delegator claims: needs a claim contract or minimum payout.");
-    if (s.pledge_leverage > 0) out.push("Pledge is not a ledger concept: DReps must declare their accounts.");
+    if (s.delegator_share > 0) out.push("Pays every delegating account, however little: one CIP-159 direct deposit each.");
+    if (s.pledge_leverage > 0 || s.min_pledge_ada > 0) out.push("Pledge is not a ledger concept: DReps must declare their accounts.");
     if (s.hard_cap) out.push("Capping voting power changes ratification rules: needs a hard fork.");
     if (s.fee_ada > 0) out.push("Today every governance action deposit is returned: keeping part of it as a fee changes the ledger's rules and needs a hard fork.");
     return out;
@@ -185,7 +181,7 @@ const Checks = (() => {
     const row = {
       paid_dreps: 0, max_award: null, top10_award_share: null, power_kept: sum(power) / sum(r.power),
       newcomer_capture: 0, newcomer_extra: 0, newcomer_identities: null, incumbent_extra: 0, incumbent_rank: null,
-      incumbent_parts: null, split_gain: 0, delegator_claimants: null, delegator_dust_share: null, fee_share: 0,
+      incumbent_parts: null, split_gain: 0, paid_delegators: null, fee_share: 0,
     };
     if (!isPaid(s)) return row;
     // Scheme.income: a fee per action is counted at the average pace of closing actions.
@@ -203,8 +199,8 @@ const Checks = (() => {
       split_gain: Math.max(best - single, extra),
       fee_share: (s.fee_ada || 0) * r.actions / pot,
     });
-    if (s.delegator_share > 0 && accounts) [row.delegator_claimants, row.delegator_dust_share] = claims(yields, t, accounts);
-    else if (!(s.delegator_share > 0)) row.delegator_claimants = 0;
+    if (s.delegator_share > 0 && accounts) row.paid_delegators = paidDelegators(yields, accounts);
+    else if (!(s.delegator_share > 0)) row.paid_delegators = 0;
     return row;
   }
 

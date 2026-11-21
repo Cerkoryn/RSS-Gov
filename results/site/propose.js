@@ -186,7 +186,7 @@ function renderChecks(r) {
     h("p", { className: "status err" }, host, r.error);
     return;
   }
-  h("span", { className: "badge" }, badges, r.pilot_testable ? "Works on today's Cardano" : "Needs a hard fork");
+  h("span", { className: "badge" }, badges, r.pilot_testable ? "Needs only CIP-159" : "Needs another hard fork");
   if (r.same_as) h("span", { className: "badge bad" }, badges, "Same rule as " + pretty(r.same_as));
   const c = r.checks;
   const kpis = h("div", { className: "kpis" }, host);
@@ -209,7 +209,7 @@ function renderChecks(r) {
   row("Most an existing DRep gains by splitting", pct(c.incumbent_extra));
   row("Voting power kept", pct(c.power_kept));
   if (c.fee_share) row("Paid by fees, at the past pace of actions", pct(c.fee_share));
-  if (c.delegator_dust_share !== null) row(`Delegator payments under ${D.meta.min_payout} ADA`, pct(c.delegator_dust_share));
+  if (c.paid_delegators) row("Delegating accounts paid today", num(c.paid_delegators, 0));
   if (r.notes && r.notes.length) {
     const ul = h("ul", { className: "notes" }, more);
     for (const n of r.notes) h("li", {}, ul, n);

@@ -193,7 +193,6 @@ METRICS = [
     "paid_per_round",
     "top10_reward_share",
     "payments",
-    "dust_share",
     "spent_ada",
 ]
 

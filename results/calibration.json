@@ -24,8 +24,7 @@
     "vote_cost_ada": 50,
     "rationale_cost_ada": 100,
     "max_yield_pp": 50,
-    "min_payout_ada": 5,
-    "payout_fee_ada": 0.3
+    "payout_fee_ada": 0.002
   },
   "detail": {
     "voting": {
@@ -203,8 +202,7 @@
       "vote_cost_ada": 50,
       "rationale_cost_ada": 100,
       "max_yield_pp": 50,
-      "min_payout_ada": 5,
-      "payout_fee_ada": 0.3
+      "payout_fee_ada": 0.002
     },
     "detail": {
       "voting": {

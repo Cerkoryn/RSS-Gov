@@ -66,13 +66,14 @@ def newcomer_split(scheme, rnd, pot, capital, deposit, delegator_min):
     best, best_m, single = 0.0, 1, 0.0
     for m in NEWCOMER_SPLITS:
         each = capital / m - deposit
-        if each < max(scheme.min_power_ada, scheme.min_delegators * delegator_min, 1.0):
+        floor = (scheme.min_power_ada, scheme.min_delegators * delegator_min, scheme.min_pledge_ada)
+        if each < max(*floor, 1.0):
             break
         plus = _with(rnd, None, each, 1.0, 1.0, np.floor(each / delegator_min), each, m)
         share = _take(scheme, plus, pot, slice(len(rnd.power), None))
         if m == 1:
             single = share
-        if share > best:
+        if share > best + 1e-12:  # in a tie (up to rounding), the fewest identities
             best, best_m = share, m
     return best, best_m, single
 
@@ -107,7 +108,6 @@ def _constants(study):
         deposit=float(study.data.params.get("drep_deposit", 500_000_000)) / 1e6,
         capital=float(study.config["sybil"]["newcomer_capital_ada"]),
         delegator_min=float(study.params.delegator_min_ada),
-        min_payout=float(study.params.min_payout_ada),
         epochs=int(study.epochs),
     )
 
@@ -148,7 +148,7 @@ def analyse(study, schemes):
     rnd = snapshot(study)
     w = study.world
     c = _constants(study)
-    deposit, capital, min_payout, epochs = c["deposit"], c["capital"], c["min_payout"], c["epochs"]
+    deposit, capital, epochs = c["deposit"], c["capital"], c["epochs"]
     on_drep = w.acct_target >= 0
     unit = w.acct_ada[on_drep] / np.maximum(w.acct_count[on_drep], 1)
     top10 = np.argsort(-rnd.power)[:10]
@@ -178,9 +178,7 @@ def analyse(study, schemes):
                 scheme, rnd, pot, capital, deposit, c["delegator_min"]
             )
             extra, rank, parts = incumbent_split(scheme, rnd, pot)
-            claims = yields[w.acct_target[on_drep]] * unit * epochs
-            holders = w.acct_count[on_drep]
-            claimants = holders[claims > 0].sum()
+            paid_to = yields[w.acct_target[on_drep]] * unit > 0
             row.update(
                 paid_dreps=int(len(paid)),
                 max_award=float(paid.max()) if len(paid) else 0.0,
@@ -193,12 +191,7 @@ def analyse(study, schemes):
                 incumbent_parts=parts,
                 split_gain=max(best - single, extra),
                 fee_share=float(scheme.fee_ada * rnd.actions / pot),
-                delegator_claimants=float(claimants),
-                delegator_dust_share=float(
-                    holders[(claims > 0) & (claims < min_payout)].sum() / claimants
-                )
-                if claimants
-                else np.nan,
+                paid_delegators=float(w.acct_count[on_drep][paid_to].sum()),
             )
         row["notes"] = " ".join(feasibility["notes"])
         rows.append(row)

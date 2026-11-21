@@ -284,7 +284,7 @@ function compareTable() {
     const n = h("div", { className: "dname" }, td);
     h("span", { className: "kind", style: `background:${KIND[s.kind].color}` }, n);
     n.appendChild(document.createTextNode(pretty(s.name)));
-    if (!s.pilot) h("span", { className: "tag" }, td, "Needs a hard fork");
+    if (!s.pilot) h("span", { className: "tag" }, td, "Needs another hard fork");
     for (const a of D.axes) {
       const c = h("td", { className: "num" }, tr);
       c.dataset.label = a.short;
@@ -337,7 +337,7 @@ function detail() {
   h("h2", { id: "detail-title" }, host, pretty(s.name));
   h("p", { className: "desc" }, host, describe(s.scheme));
   const badges = h("div", { className: "meta", style: "margin:10px 0 0" }, host);
-  h("span", { className: "badge" }, badges, s.pilot ? "Works on today's Cardano" : "Needs a hard fork");
+  h("span", { className: "badge" }, badges, s.pilot ? "Needs only CIP-159" : "Needs another hard fork");
   const g = givesUp(s.breaks);
   if (g === "") h("span", { className: "badge good" }, badges, "✓ Inside every guardrail");
   else if (g) h("span", { className: "badge bad" }, badges, g.charAt(0).toUpperCase() + g.slice(1));
@@ -411,15 +411,15 @@ function detail() {
   row("Most an existing DRep gains by splitting", f.incumbent_extra >= 0.005 ? `${pct(f.incumbent_extra)} (rank ${f.incumbent_rank}, into ${f.incumbent_parts})` : "0%");
   row("Voting power kept", pct(f.power_kept));
   if (f.fee_share) row("Paid by fees, at the past pace of actions", pct(f.fee_share));
-  if (f.delegator_claimants) row(`Delegator payments under ${D.meta.min_payout} ADA`, pct(f.delegator_dust_share));
+  if (f.paid_delegators) row("Delegating accounts paid today", num(f.paid_delegators, 0));
   const pay = s.results[state.scenario] && s.results[state.scenario].payments;
   if (pay) row("Payments a year", num(pay * YEAR, 0));
 
   const more3 = h("details", { className: "more" }, host);
   h("summary", {}, more3, "What it would take to run");
   h("p", { className: "small" }, more3, s.pilot
-    ? "It works on today's Cardano: everything it reads is on chain."
-    : "It changes how voting power counts, which needs a hard fork.");
+    ? "Besides CIP-159 direct deposits for its payments, it needs no change to the ledger: everything it reads is on chain."
+    : "It needs a change to the ledger beyond CIP-159, so another hard fork: see below.");
   if (s.notes && s.notes.length) { const ul2 = h("ul", { className: "notes" }, more3); for (const n of s.notes) h("li", {}, ul2, n); }
 
   const act = h("div", { className: "actions", style: "margin-top:20px" }, host);
@@ -683,7 +683,7 @@ function scatterControls() {
   toggle("named", "Named designs", KIND.named.color);
   if (hasKind("search")) toggle("search", "Found by search", KIND.search.color);
   if (hasKind("proposed")) toggle("proposed", "Community", KIND.proposed.color);
-  if (D.schemes.some((s) => !s.pilot)) toggle("fork", "Needs a hard fork", "var(--ink-2)", true);
+  if (D.schemes.some((s) => !s.pilot)) toggle("fork", "Needs another hard fork", "var(--ink-2)", true);
   const key = $("#pair-key");
   let span = h("span", {}, key);
   let svg = el("svg", { width: 20, height: 12 }, span);
@@ -832,7 +832,7 @@ function scatter() {
     layer.style.cursor = p.s.kind === "unpaid" ? "default" : "pointer";
     ring.setAttribute("cx", p.px); ring.setAttribute("cy", p.py); ring.setAttribute("visibility", "visible");
     if (p.s.kind === "unpaid") { showTip(e, [{ value: "Paying nothing" }, { label: "Every other point is a change from here." }]); return; }
-    const lines = [{ value: pretty(p.s.name) }, { label: KIND[p.s.kind].label + (p.s.pilot ? "" : "; needs a hard fork") + (onFront.has(p.s.name) ? "; on the line" : "") }];
+    const lines = [{ value: pretty(p.s.name) }, { label: KIND[p.s.kind].label + (p.s.pilot ? "" : "; needs another hard fork") + (onFront.has(p.s.name) ? "; on the line" : "") }];
     if (near(p)) lines.push({ label: `Differs from ${pretty(chosen.name)}: ${family.get(p.s.name)}` });
     for (const axis of [state.x, state.y]) lines.push({ value: AX[axis].short + ":", label: sentence(p.s, axis) });
     lines.push({ label: "Click for details" });
@@ -1046,7 +1046,7 @@ function contributions(shown) {
   info(row, [
     "The designs switched on above the chart, ranked by how much coverage each adds on top of the designs above it. The bars add up to the total.",
     "A design high on the list reaches a corner of the five measures that nothing above it reaches. A design near the bottom does something the others already do; it is not necessarily worse.",
-    "Switch groups on or off to re-rank: for example, switch on “Needs a hard fork” to see what those designs add.",
+    "Switch groups on or off to re-rank: for example, switch on “Needs another hard fork” to see what those designs add.",
   ]);
   if (state.round !== null) {
     const chip = h("button", { className: "toggle", type: "button", title: "Show every design" }, head);
@@ -1073,7 +1073,7 @@ function contributions(shown) {
     const dot = h("span", { className: "dot" }, nm);
     dot.style.background = KIND[s.kind].color;
     nm.appendChild(document.createTextNode(pretty(p.name)));
-    if (!s.pilot) h("span", { className: "tag" }, nm, "Needs a hard fork");
+    if (!s.pilot) h("span", { className: "tag" }, nm, "Needs another hard fork");
     const bar = h("span", { className: "bar" }, b);
     h("span", { style: `width:${(p.adds / max) * 100}%` }, bar);
     h("span", { className: "val" }, b, p.adds / base < 0.005 ? "≈0" : "+" + num(p.adds / base, 2) + "×");

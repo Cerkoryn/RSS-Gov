@@ -43,7 +43,7 @@ on it. Every scheme pays only for explicit votes (Yes, No and Abstain count alik
 | Check and store a proposal (YAML or a GitHub issue) | `rss-gov submit` | |
 
 `rss-gov all` runs everything after the download, stored proposals included. On an 8-core
-desktop the whole run takes about 35 minutes; one simulated six-month
+desktop the whole run takes about 50 minutes; one simulated six-month
 programme takes 0.1–0.25 seconds. `--processes` set to the number of physical cores is
 usually fastest: simulations gain little from a second thread per core.
 

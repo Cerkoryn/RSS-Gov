@@ -88,6 +88,12 @@ def test_cost_counts_what_was_paid_plus_delivery(world, params):
     assert run(world, params)["annual_cost_ada"] == 0
 
 
+def test_every_recipient_is_paid_however_little(world, params):
+    """CIP-159 direct deposits: no minimum payout, so who is paid does not depend on how much."""
+    tiny, large = (run(world, params, "delegator_flat", budget=b) for b in (1.0, 200_000.0))
+    assert tiny["payments"] == large["payments"] > 0
+
+
 def test_participation_counts_ada_outside_dreps_as_not_voting(world, params):
     out = run(world, params)
     assert 0 < out["participation"] < out["turnout"]

@@ -211,8 +211,8 @@ def figure_front(front, path, named):
     """The trade-off no formula escapes: resisting splitting against spreading power."""
     fig, ax = plt.subplots(figsize=(9.6, 6.0))
     groups = (
-        (front.pilot_testable, BLUE, "o", "works on today's Cardano"),
-        (~front.pilot_testable, NEUTRAL, "D", "needs a hard fork"),
+        (front.pilot_testable, BLUE, "o", "needs only CIP-159"),
+        (~front.pilot_testable, NEUTRAL, "D", "needs another hard fork"),
     )
     for mask, colour, marker, label in groups:
         part = front[mask]
@@ -507,8 +507,8 @@ def write(study):
                 "of which from splitting": static.newcomer_extra.map("{:.0%}".format),
                 "insider split gain": static.incumbent_extra.map("{:.0%}".format),
                 "voting power kept": static.power_kept.map("{:.0%}".format),
-                "dust claims": [
-                    "" if np.isnan(v) else f"{v:.0%}" for v in static.delegator_dust_share
+                "delegators paid": [
+                    "" if np.isnan(v) or not v else f"{v:,.0f}" for v in static.paid_delegators
                 ],
             }
         )
@@ -522,8 +522,8 @@ def write(study):
             "from splitting rather than from simply taking part. `insider split gain` is the "
             "most any existing DRep adds by splitting into 2–20 DReps with its delegators "
             "following (an upper bound: delegators may not follow). The Sybil axis is the larger "
-            "of the two splitting gains. `dust claims` is the share of delegator claims below "
-            f"{study.params.min_payout_ada:g} ADA over the programme.",
+            "of the two splitting gains. `delegators paid` counts the delegating accounts that "
+            "would be paid anything at all: each gets a CIP-159 direct deposit, however small.",
             "",
             _table(view[static.paid_dreps > 0]),
             "",
@@ -688,7 +688,9 @@ def write(study):
             part = part.assign(split=part.split_gain.round(2)).sort_values(
                 ["split", "participation_diff"], ascending=[True, False]
             )
-            title = f"### Accepting a cost in {breaks}" + ("" if pilot else " (needs a hard fork)")
+            title = f"### Accepting a cost in {breaks}" + (
+                "" if pilot else " (needs another hard fork)"
+            )
             note = f"{len(part)} unbeaten among the finalists that give up exactly this"
             if len(part) > 10:
                 note += "; the 10 that are hardest to game by splitting are shown"

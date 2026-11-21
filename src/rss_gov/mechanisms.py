@@ -40,6 +40,7 @@ class Scheme:
     min_power_ada: float = 0.0
     min_share: float = 0.0  # minimum share of all DRep voting power (1/k: Threshold(k))
     min_delegators: int = 0
+    min_pledge_ada: float = 0.0  # a DRep needs at least this much pledge to be paid
     activity_gate: float = 0.0  # minimum recent vote rate to qualify
     rationale_bonus: float = 0.0  # weight multiplied by 1 + bonus * rationale share
     basis: str = "power"  # what alpha applies to: "power" or "delegators" (their count)
@@ -48,6 +49,7 @@ class Scheme:
     max_award_share: float = 0.0  # no DRep gets more than this share of the DReps' pot
     delegator_share: float = 0.0  # fraction of the budget paid to delegators
     delegator_mode: str = "passthrough"  # "passthrough": follows the DRep's award; "flat": same yield for all qualifying DReps
+    delegator_k_exclude: int = 0  # delegators of the K largest DReps are not paid (the DReps are)
     # Counted power is at most leverage * pledge (0 = off): a pledge soft cap.
     pledge_leverage: float = 0.0
     hard_cap: bool = False  # also cap voting power at leverage * pledge
@@ -75,10 +77,13 @@ class Scheme:
             self.fee_ada,
             self.cap_ada,
             self.min_power_ada,
+            self.min_pledge_ada,
             self.pledge_leverage,
         )
         if min(*amounts, self.per_vote_ada) < 0:
             raise ValueError("amounts must be non-negative")
+        if self.delegator_k_exclude < 0:
+            raise ValueError("delegator_k_exclude must be non-negative")
 
     @property
     def paid(self):
@@ -100,8 +105,10 @@ class Scheme:
         if self.basis == "delegators":
             notes.append("Accounts are cheap to create: paying by their number invites fake ones.")
         if self.delegator_share > 0:
-            notes.append("Many small delegator claims: needs a claim contract or minimum payout.")
-        if self.pledge_leverage > 0:
+            notes.append(
+                "Pays every delegating account, however little: one CIP-159 direct deposit each."
+            )
+        if self.pledge_leverage > 0 or self.min_pledge_ada > 0:
             inputs.append("DRep pledge accounts (signed declaration, checked on chain)")
             notes.append("Pledge is not a ledger concept: DReps must declare their accounts.")
         if self.hard_cap:
@@ -148,12 +155,16 @@ class Scheme:
             parts.append(f"min {self.min_share:.2%} of power")
         if self.min_delegators:
             parts.append(f"min {self.min_delegators} delegators")
+        if self.min_pledge_ada:
+            parts.append(f"min pledge {_ada(self.min_pledge_ada)}")
         if self.activity_gate:
             parts.append(f"gate {self.activity_gate:.0%}")
         if self.rationale_bonus:
             parts.append(f"rationale +{self.rationale_bonus:.0%}")
         if self.delegator_share:
             parts.append(f"{self.delegator_share:.0%} to delegators ({self.delegator_mode})")
+            if self.delegator_k_exclude:
+                parts.append(f"not via top {self.delegator_k_exclude}")
         if self.pledge_leverage:
             kind = "hard" if self.hard_cap else "soft"
             parts.append(f"pledge {kind} cap {self.pledge_leverage:g}x")
@@ -191,6 +202,7 @@ def eligible(s, r):
         & (r.activity >= s.activity_gate)
         & (r.power >= s.min_power_ada)
         & (r.delegators >= s.min_delegators)
+        & (r.pledge >= s.min_pledge_ada)
     )
     if s.min_share:
         ok &= r.power >= s.min_share * r.power.sum()
@@ -261,9 +273,10 @@ def _awards(s, parts, totals, reps, actions):
 def allocate(s, r, pot):
     """Split one round's pot. Returns (DRep awards, delegator yield per ADA delegated).
 
-    Delegators are paid only through a DRep that voted. `passthrough` shares each DRep's
-    own award with its delegators; `flat` pays one yield per ADA and per unit of the
-    DRep's vote rate, whatever the DRep's size.
+    Delegators are paid only through a DRep that voted, and not through the K largest
+    with `delegator_k_exclude`: their part goes to the other delegators. `passthrough`
+    shares each DRep's own award with its delegators; `flat` pays one yield per ADA and per
+    unit of the DRep's vote rate, whatever the DRep's size.
     """
     n = len(r.power)
     if pot <= 0:
@@ -278,12 +291,14 @@ def allocate(s, r, pot):
     yields = np.zeros(n)
     if delegator_pot > 0:
         paid = (rep > 0) & (r.power > 0)
+        if s.delegator_k_exclude:
+            paid[np.argsort(-r.power, kind="stable")[: s.delegator_k_exclude]] = False
         if s.delegator_mode == "flat":
             base = (r.power[paid] * r.activity[paid]).sum()
             if base > 0:
                 yields[paid] = delegator_pot * r.activity[paid] / base
-        else:
-            yields[paid] = delegator_pot * rep[paid] / total / r.power[paid]
+        elif rep[paid].sum() > 0:
+            yields[paid] = delegator_pot * rep[paid] / rep[paid].sum() / r.power[paid]
     return rep, yields
 
 
@@ -363,6 +378,40 @@ PRESETS = {
     "pledge_soft_cap_skip20": dict(alpha=1.0, k_exclude=20, pledge_leverage=1.0),
     "pledge_soft_cap_skip10": dict(alpha=1.0, k_exclude=10, pledge_leverage=2.0),
     "pledge_soft_cap_capped": dict(alpha=1.0, cap_ada=5_000_000, pledge_leverage=1.0),
+    # Paying delegators to move away from the largest DReps (METHODS.md, "Named designs").
+    "pledge_backed_delegators": dict(
+        alpha=1.0, cap_ada=5_000_000, pledge_leverage=1.0, delegator_share=0.8
+    ),
+    "skip_top20_delegators": dict(
+        alpha=1.0,
+        k_exclude=20,
+        activity_gate=0.7,
+        pledge_leverage=2.0,
+        delegator_share=0.8,
+        delegator_mode="flat",
+    ),
+    "haircut_top20_delegators": dict(
+        alpha=1.0,
+        k_exclude=20,
+        top_weight=0.25,
+        activity_gate=0.7,
+        pledge_leverage=2.0,
+        delegator_share=0.8,
+        delegator_mode="flat",
+    ),
+    "small_drep_delegators": dict(
+        alpha=0.5,
+        min_delegators=10,
+        min_power_ada=100_000,
+        pledge_leverage=1.0,
+        delegator_share=0.8,
+    ),
+    "delegators_not_top20": dict(
+        alpha=1.0, delegator_share=0.5, delegator_mode="flat", delegator_k_exclude=20
+    ),
+    "top100_delegators_not_top20": dict(
+        alpha=1.0, n_pay=100, delegator_share=0.5, delegator_mode="flat", delegator_k_exclude=20
+    ),
 }
 
 

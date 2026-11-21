@@ -2,131 +2,131 @@
   "history": [
     {
       "generation": 0,
-      "evaluated": 52,
-      "front": 20,
-      "hypervolume": 0.013669386159595674
+      "evaluated": 68,
+      "front": 21,
+      "hypervolume": 0.02787464864564192
     },
     {
       "generation": 1,
-      "evaluated": 69,
-      "front": 25,
-      "hypervolume": 0.013923375066987747
+      "evaluated": 88,
+      "front": 26,
+      "hypervolume": 0.028277375515918583
     },
     {
       "generation": 2,
-      "evaluated": 86,
-      "front": 25,
-      "hypervolume": 0.014083837036253904
+      "evaluated": 108,
+      "front": 26,
+      "hypervolume": 0.0294823250722444
     },
     {
       "generation": 3,
-      "evaluated": 106,
-      "front": 25,
-      "hypervolume": 0.014916868561968985
+      "evaluated": 129,
+      "front": 27,
+      "hypervolume": 0.02969547487480532
     },
     {
       "generation": 4,
-      "evaluated": 125,
-      "front": 25,
-      "hypervolume": 0.015007803121052427
+      "evaluated": 148,
+      "front": 29,
+      "hypervolume": 0.030027638564227875
     },
     {
       "generation": 5,
-      "evaluated": 143,
+      "evaluated": 167,
       "front": 30,
-      "hypervolume": 0.015226850689798014
+      "hypervolume": 0.03015284445401825
     },
     {
       "generation": 6,
-      "evaluated": 161,
-      "front": 34,
-      "hypervolume": 0.016274453992959795
+      "evaluated": 186,
+      "front": 38,
+      "hypervolume": 0.03210168851278712
     },
     {
       "generation": 7,
-      "evaluated": 181,
-      "front": 33,
-      "hypervolume": 0.016191176399643133
+      "evaluated": 204,
+      "front": 41,
+      "hypervolume": 0.03281167003611836
     },
     {
       "generation": 8,
-      "evaluated": 197,
-      "front": 31,
-      "hypervolume": 0.019717577556546264
+      "evaluated": 218,
+      "front": 46,
+      "hypervolume": 0.03359356257332374
     },
     {
       "generation": 9,
-      "evaluated": 214,
-      "front": 36,
-      "hypervolume": 0.0209844721298067
+      "evaluated": 233,
+      "front": 49,
+      "hypervolume": 0.0338519986174792
     },
     {
       "generation": 10,
-      "evaluated": 232,
-      "front": 39,
-      "hypervolume": 0.02103200822778437
+      "evaluated": 250,
+      "front": 55,
+      "hypervolume": 0.03396112173528297
     }
   ],
   "front": [
-    "proportional",
     "pledge_hard_cap",
-    "pledge_soft_cap_skip20",
+    "skip_top20_delegators",
+    "small_drep_delegators",
     "capped_1m",
     "capped_2m5",
-    "g8_1",
-    "g9_13",
-    "g9_10",
-    "g6_16",
-    "g6_14",
-    "g2_17",
-    "g9_2",
-    "g6_1",
-    "g8_15",
-    "g3_15",
-    "g8_18",
-    "g7_15",
-    "g6_23",
-    "g9_4",
-    "g7_19",
-    "g10_7",
-    "g0_0",
+    "pledge_backed_delegators_5x",
+    "pledge_backed_delegators_half",
+    "g3_19",
+    "g6_19",
+    "g7_7",
+    "g8_0",
+    "g0_11",
+    "g9_22",
+    "g7_8",
+    "g1_12",
+    "g4_20",
+    "g5_18",
+    "g2_22",
+    "g9_5",
+    "g10_4",
+    "g5_11",
+    "g9_8",
+    "g8_16",
+    "g1_1",
     "proportional_gate_half_budget"
   ],
   "shortlist": [
-    "g2_17",
-    "g9_4",
+    "skip_top20_delegators",
+    "small_drep_delegators",
+    "pledge_backed_delegators_5x",
+    "pledge_backed_delegators_half",
+    "g3_19",
+    "g6_19",
+    "g7_7",
+    "g7_8",
+    "g2_22",
+    "g10_4",
     "capped_1m",
     "capped_2m5",
-    "g8_1",
-    "g9_10",
-    "g6_16",
-    "g6_14",
-    "g9_2",
-    "g8_15",
-    "g8_18",
-    "g7_19",
-    "g0_0",
-    "pledge_soft_cap_skip20",
-    "g9_13",
-    "g3_15"
+    "g8_0",
+    "g4_20",
+    "g8_16"
   ],
   "pilot_shortlist": [
-    "g2_17",
-    "g9_4",
+    "skip_top20_delegators",
+    "small_drep_delegators",
+    "pledge_backed_delegators_5x",
+    "pledge_backed_delegators_half",
+    "g3_19",
+    "g6_19",
+    "g7_7",
+    "g7_8",
+    "g2_22",
+    "g10_4",
     "capped_1m",
     "capped_2m5",
-    "g8_1",
-    "g9_10",
-    "g6_16",
-    "g6_14",
-    "g9_2",
-    "g8_15",
-    "g8_18",
-    "g7_19",
-    "g0_0",
-    "pledge_soft_cap_skip20",
-    "g9_13",
-    "g3_15"
+    "g8_0",
+    "g4_20",
+    "g8_16"
   ],
   "axes": [
     "participation",
@@ -147,16 +147,16 @@
     "annual_cost_ada": 0.0,
     "split_gain": 0.0
   },
-  "hypervolume": 0.021578682678936086,
+  "hypervolume": 0.0342908336369311,
   "hypervolume_ci": [
-    0.0211318601192761,
-    0.022068970450836806
+    0.03363256776027406,
+    0.03505596204553051
   ],
   "hypervolume_unpaid": 0.004545454545454546,
-  "search_gain": 0.008042343304466185,
+  "search_gain": 0.006109124307223754,
   "search_gain_ci": [
-    0.007697226244457056,
-    0.00845325473804857
+    0.005904762800499519,
+    0.006388830103203004
   ],
   "holdout_seeds": 100
 }

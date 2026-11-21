@@ -269,6 +269,20 @@ FIELDS = [
         "own counts at most 100,000 ADA of voting power. Needs DReps to declare their accounts.",
     ),
     dict(
+        name="min_pledge_ada",
+        short="Minimum pledge",
+        tag="≥{} ADA pledge",
+        group="Pledge",
+        kind="ada",
+        min=0,
+        max=100_000_000,
+        step=1_000,
+        label="Minimum pledge to be paid",
+        help="DReps with less pledge than this are not paid, nor are their delegators. Every "
+        "extra (fake) DRep then needs this much of its owner's own ADA. Needs DReps to declare "
+        "their accounts.",
+    ),
+    dict(
         name="hard_cap",
         short="Pledge hard cap",
         tag="pledge hard cap",
@@ -304,6 +318,20 @@ FIELDS = [
         label="How delegators are paid",
         help="Passthrough follows the DRep rule. Flat pays delegators of small and large DReps "
         "alike, per ADA and per unit of the DRep's vote rate.",
+    ),
+    dict(
+        name="delegator_k_exclude",
+        short="Not via the largest",
+        tag="delegators not via top {}",
+        group="Delegators",
+        kind="int",
+        min=0,
+        max=500,
+        step=1,
+        label="Delegators of the largest DReps are not paid",
+        help="Delegators of this many of the DReps with the most voting power get nothing, "
+        "though those DReps themselves can still be paid; their part goes to the other "
+        "delegators. Rewards delegating away from the largest DReps.",
     ),
 ]
 BY_NAME = {f["name"]: f for f in FIELDS}

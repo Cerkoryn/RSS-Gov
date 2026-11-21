@@ -36,6 +36,8 @@ CHOICES = dict(
     rationale_bonus=[0.0, 0.0, 0.5, 1.0, 2.0],
     delegator_share=[0.0, 0.0, 0.25, 0.5, 0.8],
     delegator_mode=["passthrough", "flat"],
+    delegator_k_exclude=[0, 0, 0, 10, 20],
+    min_pledge_ada=[0.0, 0.0, 0.0, 1e4, 1e5],
     pledge_leverage=[0.0, 0.0, 0.0, 100.0, 1000.0, 10000.0],
     min_share=[0.0, 0.0, 0.0, 0.002, 0.005, 0.01],
     top_weight=[0.0, 0.0, 0.25, 0.5],
@@ -64,6 +66,8 @@ def _make(values, name):
         values["hard_cap"] = False
     if values.get("roll_down") and not values.get("n_pay"):
         values["roll_down"] = False
+    if not values.get("delegator_share"):
+        values["delegator_k_exclude"] = 0
     if values.get("alpha") or values.get("delegator_share"):
         values["per_vote_ada"] = 0.0  # pay per vote is the same for every DRep
     return mechanisms.Scheme(name=name, **values)

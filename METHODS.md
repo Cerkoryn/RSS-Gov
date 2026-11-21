@@ -47,7 +47,8 @@ So RSS-Gov does three things:
 **What comes out.** No rule wins on every count. Paying in proportion to voting power
 draws more votes but, if awards help DReps attract delegation, concentrates power. Paying
 everyone the same invites fake DReps. Caps and "skip the largest" invite large DReps to
-split themselves. Paying delegators moves some delegation but costs many tiny payments. Tying
+split themselves. Paying delegators moves delegation toward the DReps they are paid
+through, which spreads power or concentrates it depending on which DReps those are. Tying
 pay to pledge shows how little pledge stands behind today's votes. The results
 page shows these trade-offs side by side, and which designs are not beaten on all five at
 once.
@@ -189,7 +190,8 @@ metadata. Of the ADA in those accounts:
 New DReps get the pledge of a real recent newcomer, no more than their voting power, and
 their holdings are taken to be that pledge.
 
-A rule can use pledge in two ways, set by a *leverage* L:
+A rule can use pledge in three ways. A *minimum pledge* (`min_pledge_ada`) pays only DReps
+with at least that much, and their delegators. Or, set by a *leverage* L:
 
 - **A pledge soft cap**, for pay. Only up to L times its pledge counts toward the DRep's
   reward. With L = 2, a DRep with 10M ADA of voting power and 1M of pledge is paid as if
@@ -225,6 +227,10 @@ ADA a DRep adds counts as its pledge from then on and joins its voting power, so
 votes. The model treats it as new ADA brought into governance, not taken from another
 DRep, and it leaves with the DRep if the DRep retires.
 
+A minimum pledge does not trigger top-ups: a DRep below it is taken to stay below it. A
+real DRep close to the minimum might add the rest, so the model understates how many
+would qualify.
+
 ### How the five measures are taken
 
 Four of the five measures come out of each run. The fifth, Sybil risk, is exact and needs
@@ -244,10 +250,10 @@ no simulation.
    power covered by its pledge, including any top-ups; summed over DReps and divided
    by all DRep voting power. A DRep with more pledge than voting power does not make up
    for another's shortfall. It is averaged over the second half of the programme.
-4. **Cost.** All ADA paid out during the run, to DReps and to delegators, plus 0.3 ADA for
-   each payment, turned into ADA a year. Each recipient gets one payment for the whole
-   programme, and totals under 5 ADA are not sent. Money a rule does not pay out is not a
-   cost.
+4. **Cost.** All ADA paid out during the run, to DReps and to delegators, plus about
+   0.002 ADA for each payment (`payout_fee_ada`), turned into ADA a year. Each recipient
+   gets one payment for the whole programme, however small (see *How payments are made*).
+   Money a rule does not pay out is not a cost.
 5. **Sybil risk.** The largest share of the budget someone could gain by splitting one
    identity into several DReps, computed from the rule and today's chain without a
    simulation: see [Tier A](#tier-a-static-analysis-staticpy).
@@ -275,7 +281,7 @@ history and reported as `supported_ratified` in the run tables.
 | Participation | Share of all delegated ADA, including always-abstain and no-confidence, that casts an explicit vote on an action (`participation`) | higher | B |
 | Decentralisation | DReps needed to exceed two thirds of DRep voting power (`tau67`) | higher | B |
 | Skin in the game | Share of DRep voting power backed by the DRep's pledge: Σ min(power, pledge) / Σ power (`backing`) | higher | B, from an on-chain start |
-| Reward sustainability | Cost a year: what is paid out, from a budget or from fees, plus one transaction fee per payment (`annual_cost_ada`) | lower | A |
+| Reward sustainability | Cost a year: what is paid out, from a budget or from fees, plus a small fee per payment (`annual_cost_ada`) | lower | A |
 | Sybil resistance | Largest share of the budget gained by splitting one identity into several (`split_gain`) | lower | A |
 
 Notes on the choices:
@@ -343,7 +349,8 @@ with `basis: delegators`, its number of delegating accounts. Weight is linear in
 rate, so every vote earns the same increment.
 
 - `eligible` applies a minimum voting power in ADA, a minimum share of all DRep voting
-  power (`min_share`), a minimum number of delegators and a minimum vote rate.
+  power (`min_share`), a minimum number of delegators, a minimum pledge
+  (`min_pledge_ada`) and a minimum vote rate.
 - `rank` handles "skip the K largest, pay the next N". The K largest are weighted by
   `top_weight` (0 skips them; 0.25 pays them a quarter). With `roll_down`, a place among
   the N passes down when a DRep above does not vote: a DRep keeps the part of a place left
@@ -363,7 +370,18 @@ the unspent ADA stays in the budget:
 A share of the pot can go to delegators, always through a DRep that voted: `passthrough`
 shares each DRep's own award with its delegators, `flat` pays one yield per ADA and per
 unit of the DRep's vote rate. Delegating to always-abstain or to a DRep that does not vote
-earns nothing.
+earns nothing. `delegator_k_exclude` pays nothing to the delegators of the K DReps with
+the most voting power, though those DReps can still be paid themselves; the delegators'
+part is shared among the delegators of the other paid DReps. Under pass-through, a pledge
+soft cap also lowers what a DRep's delegators get: each ADA they delegate earns in
+proportion to how much of the DRep's voting power its pledge covers.
+
+**How payments are made.** Payments go straight into reward accounts as direct deposits,
+which [CIP-159](https://cips.cardano.org/cip/CIP-159) adds to the ledger: no transaction
+output, so no minimum amount, and nothing for a recipient to claim. CIP-159 comes with a
+hard fork; every design here assumes it is live, and every recipient is paid however
+little it earned. `pilot_testable` marks the designs that need no ledger change beyond it. Payments are scripted in batches; each
+deposit adds about 40 bytes to a transaction, about 0.002 ADA in fees.
 
 `leverage` ties the voting power that counts for rewards to the DRep's pledge: a pledge soft
 cap. With `hard_cap` it limits *voting power* itself: a pledge hard cap. That changes ratification
@@ -404,7 +422,10 @@ Besides the generic shapes (`proportional`, `equal`, `sqrt`, `capped`, gates, fl
 rationale bonus, delegator designs and pledge caps), the named designs come from published
 proposals. Each is the closest point in the family, not an exact copy. The `pledge_soft_cap_*`
 designs were found by hand: they have only two settings each, so they are easy to explain
-and to implement.
+and to implement. The delegator designs at the end of the table pay delegators to move
+away from the largest DReps, by pledge, by rank or both; `config.yaml` also runs
+variations of them (other leverages, no cap, half to delegators, the top 10 instead of
+the top 20, a pledge soft cap, and a minimum pledge of 10,000 ADA).
 
 | Name | Rule | Source |
 |---|---|---|
@@ -421,6 +442,12 @@ and to implement.
 | `pledge_soft_cap_skip20` | by voting power, counting no more than the DRep's pledge, the 20 largest paid nothing | this project: simple pledge soft caps |
 | `pledge_soft_cap_skip10` | the same, counting up to twice the pledge, the 10 largest paid nothing | this project |
 | `pledge_soft_cap_capped` | by voting power, counting no more than the pledge or 5M ADA | this project |
+| `pledge_backed_delegators` | `pledge_soft_cap_capped` with 80% passed through to delegators: each delegated ADA earns in proportion to how much of its DRep's power is pledge | this project: paying delegators to move |
+| `skip_top20_delegators` | by voting power up to twice the pledge, 70% vote rate; the 20 largest and their delegators paid nothing; 80% to delegators, flat | this project |
+| `haircut_top20_delegators` | the same, but the 20 largest paid at a quarter | this project |
+| `small_drep_delegators` | square root of power up to the pledge, at least 100k ADA and 10 delegators; 80% passed through to delegators, so yield per ADA is higher at smaller DReps | this project |
+| `delegators_not_top20` | by voting power, half to delegators, flat, but not to delegators of the 20 largest (who are still paid themselves) | this project |
+| `top100_delegators_not_top20` | the same, paying only the 100 largest DReps: their delegators from rank 21 to 100 | this project |
 
 ### What the family cannot express
 
@@ -432,8 +459,8 @@ and to implement.
   ratings. None is computable from the chain; a rationale anchor is the closest.
 - **Linking DReps run by one operator**: the chain has no identity.
 - **Delegator mechanics**: time-weighted balances, one-time bonuses for leaving
-  always-abstain, matching new delegation, caps per delegator, and a pool that grows with
-  participation. Each needs a response assumption with no data behind it.
+  always-abstain or a large DRep, matching new delegation, caps per delegator, and a pool
+  that grows with participation. Each needs a response assumption with no data behind it.
 - **A base for everyone plus a bonus for the top m** (IO Research variant 3): the family
   applies one eligibility rule to the whole pot.
 
@@ -443,9 +470,9 @@ Pay per action is approximated per epoch: `roll_down` uses expected votes, and
 ## Tier A: static analysis (`static.py`)
 
 The rule is applied to today's real DReps with no behaviour change. Reported: how many
-are paid, the size of awards, the share going to the ten largest DReps, the share of
-delegator claims too small to be worth a transaction, the voting power a hard cap would
-leave, and two splitting measures. A proposer fee is counted at the average pace of
+are paid, the size of awards, the share going to the ten largest DReps, how many
+delegating accounts would be paid, the voting power a hard cap would leave, and two
+splitting measures. A proposer fee is counted at the average pace of
 closing actions in history; `fee_share` is the share of the money it brings in.
 
 **An outsider splitting.** Someone brings a fixed amount of its own ADA (default 1M ADA) and

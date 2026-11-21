@@ -50,8 +50,7 @@ class Params:
     vote_cost_ada: float = 50.0
     rationale_cost_ada: float = 100.0
     max_yield_pp: float = 50.0
-    min_payout_ada: float = 5.0  # smaller programme totals are not worth a transaction
-    payout_fee_ada: float = 0.3  # cost of one payment output
+    payout_fee_ada: float = 0.002  # cost of one payment: a CIP-159 direct deposit
 
     def to_dict(self):
         return asdict(self)
@@ -368,11 +367,8 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
         return float(np.mean(values)) if values else np.nan
 
     ballots = sum(a["ballots"] for a in actions)
-    # Delivery: one payment per recipient whose programme total is worth sending.
-    claim = acct_total / np.maximum(acct_count, 1)
-    payable = (claim >= params.min_payout_ada) & (acct_count > 0)
-    payments = (drep_total >= params.min_payout_ada).sum() + acct_count[payable].sum()
-    dust = drep_total[drep_total < params.min_payout_ada].sum() + acct_total[~payable].sum()
+    # Delivery: one CIP-159 direct deposit per recipient of anything at all, however small.
+    payments = (drep_total > 0).sum() + acct_count[acct_total > 0].sum()
     return dict(
         participation=action_mean("participation"),
         backing=late_mean("backing"),
@@ -380,7 +376,6 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
             (spent + payments * params.payout_fee_ada) * EPOCHS_PER_YEAR / epochs
         ),
         payments=float(payments),
-        dust_share=float(dust / spent) if spent > 0 else 0.0,
         turnout=action_mean("turnout"),
         turnout_active=action_mean("turnout_active"),
         tau67=late_mean("tau67"),
