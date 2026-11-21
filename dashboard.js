@@ -371,6 +371,14 @@ function detail() {
     }
   }
   relatives(s, host);
+  if (s.refs && s.refs.length) {
+    h("h3", { style: "margin-top:22px" }, host, "References");
+    const refs = h("ul", { className: "notes" }, host);
+    for (const r of s.refs) {
+      const away = /^https?:/.test(r.url) ? { target: "_blank", rel: "noopener" } : {};
+      h("a", { href: r.url, ...away }, h("li", {}, refs), r.title);
+    }
+  }
 
   const more1 = h("details", { className: "more" }, host);
   h("summary", {}, more1, "Numbers for each reaction strength");
