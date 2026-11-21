@@ -48,9 +48,8 @@ class Scheme:
     max_award_share: float = 0.0  # no DRep gets more than this share of the DReps' pot
     delegator_share: float = 0.0  # fraction of the budget paid to delegators
     delegator_mode: str = "passthrough"  # "passthrough": follows the DRep's award; "flat": same yield for all qualifying DReps
-    pledge_leverage: float = (
-        0.0  # counted power is at most leverage * pledge (0 = off): a pledge soft cap
-    )
+    # Counted power is at most leverage * pledge (0 = off): a pledge soft cap.
+    pledge_leverage: float = 0.0
     hard_cap: bool = False  # also cap voting power at leverage * pledge
 
     def __post_init__(self):
@@ -403,6 +402,6 @@ def from_config(row, default_budget):
         if "preset" in row
         else Scheme(budget_ada=default_budget)
     )
-    if row.get("cap_ada") is None:
-        row.pop("cap_ada", None)
+    if "cap_ada" in row and row["cap_ada"] is None:  # null: no cap, even over a preset's
+        row["cap_ada"] = math.inf
     return replace(base, **row)

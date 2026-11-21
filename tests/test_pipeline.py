@@ -10,7 +10,7 @@ import yaml
 
 from rss_gov import calibrate, dataset, experiment, mechanisms, model, proposals, report, search
 from rss_gov import static
-from rss_gov import research, website
+from rss_gov import cli, research, website
 from tests.conftest import make_params
 
 CONFIG = Path(__file__).parents[1] / "config.yaml"
@@ -91,6 +91,42 @@ def test_an_accepted_proposal_is_judged_with_the_front(study, monkeypatch):
     assert name in [s["name"] for s in yaml.safe_load((study.results / "front.yaml").read_text())]
     judged = pd.read_csv(study.results / "search_front.csv")
     assert name in set(judged.scheme)
+
+
+def _accept(study, monkeypatch):
+    monkeypatch.setattr(search, "bootstrap", lambda *a: (1.0, 1.0))
+    monkeypatch.setattr(
+        search,
+        "front_of",
+        lambda points, names, axes, members=None: list(names if members is None else members),
+    )
+    name = _try(study, PROPOSAL)
+    monkeypatch.undo()
+    return name
+
+
+def test_an_accepted_proposal_tried_again_is_judged_again_not_copied(study, monkeypatch):
+    name = _accept(study, monkeypatch)
+    search.try_candidates(study, search.stored_rows(study.results), QUIET, processes=1)
+    assert sorted(p.stem for p in (study.results / "proposals").glob("*.yaml")) == [name]
+    assert [e["rerun"] for e in search.ledger(study.results)] == [False, True]
+    finalists = yaml.safe_load((study.results / "search_finalists.yaml").read_text())
+    assert [r["name"] for r in finalists].count(name) <= 1
+    holdout = pd.read_parquet(study.results / "search_holdout_runs.parquet")
+    assert len(holdout[holdout.scheme == name]) in (0, len(holdout[holdout.scheme == "unpaid"]))
+
+
+def test_an_accepted_proposal_is_not_counted_as_a_named_design(study, monkeypatch):
+    name = _accept(study, monkeypatch)
+    assert name not in search.named(study) and "capped" in search.named(study)
+    named = report.write(study).read_text().split("### Where the named schemes end up")[1]
+    assert name not in named.split("\n\n##")[0]
+
+
+def test_all_re_tries_the_stored_proposals_before_the_report():
+    assert (
+        cli.ALL.index(cli.cmd_search) < cli.ALL.index(cli.cmd_try) < cli.ALL.index(cli.cmd_report)
+    )
 
 
 def test_a_stored_proposal_is_refreshed_in_place_after_the_family_grows(study):

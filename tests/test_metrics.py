@@ -14,11 +14,6 @@ def test_effective_number_of_equal_holders_is_their_count():
     assert metrics.effective_number([1, 0, 0]) == 1
 
 
-def test_gini_is_zero_for_equal_and_high_for_concentrated():
-    assert metrics.gini([5, 5, 5]) == 0
-    assert metrics.gini([0, 0, 0, 100]) == 0.75
-
-
 def test_pareto_front_drops_dominated_points():
     points = [[1, 2], [2, 1], [1, 1], [2, 2]]
     assert metrics.pareto_front(points) == [3]

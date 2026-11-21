@@ -61,8 +61,8 @@ assumptions:
 #                      fifth of owners (2x), under 15% for most (7x): Cleveland Fed WP 26-16.
 # low / central / high move all channels together; the *_only rows isolate one channel at
 # its central value and are used to attribute effects, not to rank schemes.
+# With every channel off, paying changes nothing (the tests check this), so that case is not run.
 scenarios:
-  no_response: {}
   low: {drep_response: 0.25, delegator_response: 0.5, reinvest_response: 0.1, pledge_response: 0.1,
         pledge_min_return: 0.10, pledge_wealth_multiple: 2}
   central: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2, pledge_response: 0.25,

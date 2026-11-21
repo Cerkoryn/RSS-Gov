@@ -149,6 +149,9 @@ def test_from_config_accepts_names_and_overrides():
         5,
         10,
     )
+    uncapped = m.from_config({"preset": "capped", "name": "uncapped", "cap_ada": None}, 10)
+    assert uncapped.cap_ada == float("inf")  # null removes the preset's cap
+    assert m.from_config({"preset": "capped", "name": "kept"}, 10).cap_ada == 20_000_000
     with pytest.raises(ValueError):
         m.preset("nope", 1)
     with pytest.raises(ValueError):

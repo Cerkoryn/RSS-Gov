@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 
 from rss_gov import mechanisms, model
-from rss_gov.metrics import gini
 
 NEWCOMER_SPLITS = (1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000)
 INCUMBENT_SPLITS = (2, 5, 10, 20)
@@ -184,10 +183,8 @@ def analyse(study, schemes):
             claimants = holders[claims > 0].sum()
             row.update(
                 paid_dreps=int(len(paid)),
-                median_award=float(np.median(paid)) if len(paid) else 0.0,
                 max_award=float(paid.max()) if len(paid) else 0.0,
                 top10_award_share=float(award[top10].sum() / max(award.sum(), 1e-9)),
-                award_gini=gini(paid) if len(paid) else np.nan,
                 newcomer_capture=best,
                 newcomer_identities=identities,
                 newcomer_extra=best - single,

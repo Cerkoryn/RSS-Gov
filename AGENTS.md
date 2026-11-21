@@ -33,7 +33,7 @@ proposer fee kept from each governance action. Read `METHODS.md` before changing
 
     uv sync --extra dev        # or: uv venv --python 3.12 && uv pip install -e ".[dev]"
     rss-gov data pull          # needs network; KOIOS_API_KEY in the environment or .env is optional
-    rss-gov all                # calibrate, static, experiment, search, report
+    rss-gov all                # calibrate, static, experiment, search, try --stored, report
     pytest -q && ruff check . && ruff format --check .
 
 ## Rules

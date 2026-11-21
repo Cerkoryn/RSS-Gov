@@ -8,124 +8,125 @@
     },
     {
       "generation": 1,
-      "evaluated": 67,
-      "front": 23,
-      "hypervolume": 0.015113702854820136
+      "evaluated": 69,
+      "front": 25,
+      "hypervolume": 0.013923375066987747
     },
     {
       "generation": 2,
-      "evaluated": 87,
-      "front": 24,
-      "hypervolume": 0.015478772570683856
+      "evaluated": 86,
+      "front": 25,
+      "hypervolume": 0.014083837036253904
     },
     {
       "generation": 3,
-      "evaluated": 105,
-      "front": 29,
-      "hypervolume": 0.016703004052283782
+      "evaluated": 106,
+      "front": 25,
+      "hypervolume": 0.014916868561968985
     },
     {
       "generation": 4,
-      "evaluated": 122,
-      "front": 31,
-      "hypervolume": 0.017006095508338346
+      "evaluated": 125,
+      "front": 25,
+      "hypervolume": 0.015007803121052427
     },
     {
       "generation": 5,
-      "evaluated": 140,
-      "front": 37,
-      "hypervolume": 0.018147553050353087
+      "evaluated": 143,
+      "front": 30,
+      "hypervolume": 0.015226850689798014
     },
     {
       "generation": 6,
-      "evaluated": 158,
+      "evaluated": 161,
       "front": 34,
-      "hypervolume": 0.018690470462558194
+      "hypervolume": 0.016274453992959795
     },
     {
       "generation": 7,
-      "evaluated": 177,
-      "front": 39,
-      "hypervolume": 0.018737303528481936
+      "evaluated": 181,
+      "front": 33,
+      "hypervolume": 0.016191176399643133
     },
     {
       "generation": 8,
-      "evaluated": 193,
-      "front": 42,
-      "hypervolume": 0.01891035486453205
+      "evaluated": 197,
+      "front": 31,
+      "hypervolume": 0.019717577556546264
     },
     {
       "generation": 9,
-      "evaluated": 209,
-      "front": 42,
-      "hypervolume": 0.018944883624359317
+      "evaluated": 214,
+      "front": 36,
+      "hypervolume": 0.0209844721298067
     },
     {
       "generation": 10,
-      "evaluated": 228,
-      "front": 42,
-      "hypervolume": 0.019556053073910645
+      "evaluated": 232,
+      "front": 39,
+      "hypervolume": 0.02103200822778437
     }
   ],
   "front": [
+    "proportional",
+    "pledge_hard_cap",
+    "pledge_soft_cap_skip20",
     "capped_1m",
     "capped_2m5",
-    "delegator_passthrough_sqrt",
-    "g0_10",
-    "g10_17",
-    "g10_7",
-    "g1_22",
-    "g2_2",
-    "g3_1",
-    "g4_17",
-    "g4_20",
-    "g5_22",
-    "g6_16",
-    "g6_4",
-    "g7_15",
     "g8_1",
+    "g9_13",
+    "g9_10",
+    "g6_16",
+    "g6_14",
+    "g2_17",
+    "g9_2",
+    "g6_1",
     "g8_15",
-    "g8_17",
-    "g9_11",
-    "pledge_hard_cap",
-    "pledge_soft_cap",
-    "pledge_soft_cap_capped",
-    "proportional",
+    "g3_15",
+    "g8_18",
+    "g7_15",
+    "g6_23",
+    "g9_4",
+    "g7_19",
+    "g10_7",
+    "g0_0",
     "proportional_gate_half_budget"
   ],
   "shortlist": [
-    "g10_7",
-    "g6_16",
-    "g6_4",
+    "g2_17",
+    "g9_4",
     "capped_1m",
     "capped_2m5",
-    "g1_22",
-    "g4_20",
+    "g8_1",
+    "g9_10",
+    "g6_16",
+    "g6_14",
+    "g9_2",
     "g8_15",
-    "g10_17",
-    "g2_2",
-    "g3_1",
-    "g5_22",
-    "g7_15",
-    "pledge_soft_cap_capped",
-    "top_100_gated"
+    "g8_18",
+    "g7_19",
+    "g0_0",
+    "pledge_soft_cap_skip20",
+    "g9_13",
+    "g3_15"
   ],
   "pilot_shortlist": [
-    "g10_7",
-    "g6_16",
-    "g6_4",
+    "g2_17",
+    "g9_4",
     "capped_1m",
     "capped_2m5",
-    "g1_22",
-    "g4_20",
+    "g8_1",
+    "g9_10",
+    "g6_16",
+    "g6_14",
+    "g9_2",
     "g8_15",
-    "g10_17",
-    "g2_2",
-    "g3_1",
-    "g5_22",
-    "g7_15",
-    "pledge_soft_cap_capped",
-    "top_100_gated"
+    "g8_18",
+    "g7_19",
+    "g0_0",
+    "pledge_soft_cap_skip20",
+    "g9_13",
+    "g3_15"
   ],
   "axes": [
     "participation",
@@ -146,16 +147,16 @@
     "annual_cost_ada": 0.0,
     "split_gain": 0.0
   },
-  "hypervolume": 0.02001764464624647,
+  "hypervolume": 0.021578682678936086,
   "hypervolume_ci": [
-    0.019600357729521383,
-    0.020486686328156912
+    0.0211318601192761,
+    0.022068970450836806
   ],
   "hypervolume_unpaid": 0.004545454545454546,
-  "search_gain": 0.006272007728622957,
+  "search_gain": 0.008042343304466185,
   "search_gain_ci": [
-    0.006059487966638653,
-    0.006498932773964301
+    0.007697226244457056,
+    0.00845325473804857
   ],
   "holdout_seeds": 100
 }

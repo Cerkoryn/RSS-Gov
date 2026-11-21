@@ -31,7 +31,7 @@
  "hypervolume_gain": 0.0,
  "hypervolume_gain_ci": [
   0.0,
-  2.308570556637862e-08
+  2.0619372363087744e-08
  ],
  "reason": "no clear gain over the front",
  "change_from_unpaid": {
@@ -44,6 +44,6 @@
  "pilot_testable": true,
  "hypothesis": "A cap invites the largest DReps to split; a floor of 50 delegators per DRep makes each extra identity costly without giving up the participation the cap buys.",
  "author": "",
- "evaluated": "2026-11-21T15:38:21Z",
+ "evaluated": "2026-11-21T17:07:27Z",
  "calibration": "dd836a32862b79b8"
 }

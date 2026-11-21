@@ -87,10 +87,14 @@ def signature(scheme):
 
 
 def per_seed(runs, axes, scenarios):
-    """Axis values per scheme and seed, averaged over the given scenarios."""
+    """Axis values per scheme and seed, averaged over the given scenarios.
+
+    Schemes keep the order they were simulated in, never their names' order: of designs
+    that score exactly alike, the fronts keep the first (named designs come first).
+    """
     runs = runs[runs.scenario.isin(scenarios)]
     columns = [a.name for a in axes]
-    table = runs.groupby(["scheme", "seed"])[columns].mean()
+    table = runs.groupby(["scheme", "seed"], sort=False)[columns].mean()
     names = list(table.index.get_level_values(0).unique())
     seeds = sorted(runs.seed.unique())
     cube = np.stack([table.loc[name].reindex(seeds).values for name in names])
@@ -127,6 +131,11 @@ def bootstrap(cube, names, statistic, rng, draws=BOOTSTRAPS):
     n = cube.shape[1]
     values = [statistic(cube[:, rng.integers(0, n, n), :], names) for _ in range(draws)]
     return np.quantile(values, [0.025, 0.975])
+
+
+def named(study):
+    """The config's own designs: everything but these was made by the search or proposed."""
+    return {s.name for s in study.schemes(study.config["experiment"]["schemes"])}
 
 
 def run(study, log=print, processes=None):
@@ -172,6 +181,8 @@ def run(study, log=print, processes=None):
             f"front {len(front)}, hypervolume {size:.5f}"
         )
         by_name = {s.name: s for s in known.values()}
+        if generation == int(config["generations"]):
+            break
         parents = [by_name[n] for n in front] or presets
         population = [
             mutate(parents[rng.integers(len(parents))], rng, f"g{generation + 1}_{i}", options)
@@ -182,9 +193,9 @@ def run(study, log=print, processes=None):
 
     # Keep the finalists that add the most hypervolume, then judge them on unseen seeds.
     finalists = _largest_contributors(cube, names, axes, front, FINALISTS)
-    for preset in presets:  # familiar schemes stay in for comparison
-        if preset.name not in finalists:
-            finalists.append(preset.name)
+    # Familiar schemes stay in for comparison, listed first so that they keep any exact tie.
+    familiar = [p.name for p in presets]
+    finalists = familiar + [n for n in finalists if n not in familiar]
     schemes = [baseline] + [by_name[n] for n in finalists]
     holdout = experiment.evaluate(study, schemes, scenarios, holdout_seeds(study), processes)
     out = study.results
@@ -375,7 +386,7 @@ def judge(study, holdout, schemes, log=print):
     rng = np.random.default_rng(7)
     size = volume(cube, names, axes, candidates)
     low, high = bootstrap(cube, names, lambda c, n: volume(c, n, axes, candidates), rng)
-    presets = [n for n in candidates if not proposals.GENERATED.fullmatch(n)]
+    presets = [n for n in candidates if n in named(study)]
     gain = size - volume(cube, names, axes, presets)
     gain_low, gain_high = bootstrap(
         cube,
@@ -432,18 +443,25 @@ def try_candidates(study, rows, log=print, processes=None, source="cli"):
     stored = proposals.submitted(out)
     taken = set(holdout.scheme.unique())
     rng = np.random.default_rng(11)
-    widened = False
+    changed = False
     for row in rows:
         row, meta = proposals.split(row)
         scheme = study.schemes([row])[0]
         holder = stored.get(scheme.name)
-        if (
-            holder is not None
-            and scheme.name not in taken
-            # through Scheme, so fields added since it was stored read as their default
-            and study.schemes([proposals.split(holder)[0]])[0] == scheme
-        ):
+        # through Scheme, so fields added since it was stored read as their default
+        if holder is not None and study.schemes([proposals.split(holder)[0]])[0] == scheme:
             meta = {**proposals.split(holder)[1], **meta}  # the same proposal: refresh its results
+            if scheme.name in taken:  # accepted earlier on these seeds: judge it again from scratch
+                holdout = holdout[holdout.scheme != scheme.name]
+                front = [s for s in front if s["name"] != scheme.name]
+                finalists = yaml.safe_load((out / "search_finalists.yaml").read_text())
+                (out / "search_finalists.yaml").write_text(
+                    yaml.safe_dump(
+                        [r for r in finalists if r["name"] != scheme.name], sort_keys=False
+                    )
+                )
+                holdout.to_parquet(out / "search_holdout_runs.parquet")
+                changed = True
         elif scheme.name in taken or holder is not None:
             scheme = replace(scheme, name=proposals.unique(scheme.name, taken | set(stored)))
             holder = None
@@ -492,7 +510,7 @@ def try_candidates(study, rows, log=print, processes=None, source="cli"):
                 pilot_testable=scheme.feasibility()["pilot_testable"],
             )
             if accepted:
-                widened = True
+                changed = True
                 holdout = both
                 front.append(scheme.to_dict())
                 finalists = yaml.safe_load((out / "search_finalists.yaml").read_text())
@@ -513,6 +531,6 @@ def try_candidates(study, rows, log=print, processes=None, source="cli"):
             )
     holdout.to_parquet(out / "search_holdout_runs.parquet")
     (out / "front.yaml").write_text(yaml.safe_dump(front, sort_keys=False))
-    if widened:  # the site's coverage and front counts come from the judged finalists
+    if changed:  # the site's coverage and front counts come from the judged finalists
         rejudge(study, log=lambda *_: None)
-        log("the front changed: re-judged the finalists with the accepted proposals")
+        log("the finalists changed: judged them again")

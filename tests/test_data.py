@@ -1,9 +1,11 @@
 import json
+from types import SimpleNamespace
 
 import numpy as np
+import pandas as pd
 import pytest
 
-from rss_gov import calibrate, dataset, experiment, koios, model, static
+from rss_gov import calibrate, dataset, experiment, koios, model, report, static
 from tests.conftest import make_params
 
 
@@ -142,3 +144,15 @@ def test_an_incumbent_above_a_cap_gains_by_splitting():
     linear = static.incumbent_split(mechanisms.preset("proportional", 1), rnd, 100.0)
     assert capped[0] > 0.3 and capped[1] == 1  # the largest DRep is the one that gains
     assert linear[0] < 1e-9
+
+
+def test_todays_facts_hold_when_a_drep_with_past_power_has_none_now(pull):
+    """History has more DReps than today's snapshot: recent votes are read against history."""
+    path = pull / "tables" / "drep_power.parquet"
+    gone = [dict(drep_id="drep_gone", epoch_no=e, amount=int(2e12)) for e in range(560, 570)]
+    pd.concat([pd.read_parquet(path), pd.DataFrame(gone)]).to_parquet(path)
+    data = dataset.load(pull)
+    world = calibrate.build_world(data, data.tip_epoch, make_params())
+    assert data.power.shape[1] > len(world.p)
+    now = report.today(SimpleNamespace(data=data, world=world))
+    assert now["dreps_with_power"] == len(world.p) and 0 < now["participation"] < 1

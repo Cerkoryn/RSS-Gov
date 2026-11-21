@@ -3,11 +3,12 @@ import math
 import re
 import shutil
 import subprocess
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from rss_gov import website
+from rss_gov import experiment, website
 
 
 def test_every_page_and_asset_ships_with_the_package():
@@ -136,3 +137,15 @@ def test_every_diagram_in_the_methods_page_exists(tmp_path):
     page.write_text(f"# M\n\nText.\n\n<!--FIGURE:{names[0]}-->\n\n*Caption.*\n")
     body = website.methods(page)[1]
     assert '<figure class="diagram"><svg' in body and "<!--FIGURE" not in body
+
+
+def test_the_top_up_diagram_quotes_the_scenarios_in_config_yaml():
+    """web/figures/top-up.svg spells out the pledge scenarios: it must follow the config."""
+    config = experiment.load_config(Path(__file__).parents[1] / "config.yaml")
+    low, central, high = (config["scenarios"][k] for k in ("low", "central", "high"))
+    svg = (website.WEB / "figures" / "top-up.svg").read_text()
+    multiple = [f"{s['pledge_wealth_multiple']:g}×" for s in (low, central, high)]
+    assert f"{multiple[0]}, {multiple[1]} or {multiple[2]}" in svg
+    floor = [f"{s['pledge_min_return']:.0%}" for s in (low, central, high)]
+    assert f"{floor[0]}, {floor[1]} or" in svg and f"{floor[2]} of the ADA added" in svg
+    assert central["pledge_response"] == 0.25 and "a quarter" in svg

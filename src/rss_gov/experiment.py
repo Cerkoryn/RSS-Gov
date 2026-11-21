@@ -172,7 +172,7 @@ def evaluate(study, schemes, scenario_names, seeds, processes=None):
     return runs
 
 
-STATIC = ["split_gain", "newcomer_extra", "incumbent_extra"]  # exact properties of a rule
+STATIC = ["split_gain"]  # an exact property of a rule
 METRICS = [
     "participation",
     "tau67",
@@ -220,10 +220,3 @@ def summarise(runs, axes=(), metrics=METRICS, baseline=BASELINE):
                     )
         rows.append(row)
     return pd.DataFrame(rows)
-
-
-def ranking(runs, scenarios):
-    """Per scheme and seed, each metric averaged over the ranking scenarios."""
-    runs = runs[runs.scenario.isin(scenarios)]
-    mean = runs.groupby(["scheme", "seed"], sort=False)[METRICS].mean().reset_index()
-    return mean.assign(scenario="ranking")

@@ -182,11 +182,12 @@ def churn(data, epoch):
 
 
 def build_world(data, epoch, params):
-    """The observed state at `epoch`, using nothing recorded after it except account sizes.
+    """The observed state at `epoch`, from what was recorded by then where history has it.
 
-    DRep totals, votes and registrations are the real values for that epoch. How a DRep's
-    total splits into accounts is only known at the tip, so for earlier epochs today's
-    split is rescaled to the DRep's total at the time.
+    DRep totals, votes and registrations are the real values for that epoch. Two things
+    are only known at the tip: how a DRep's total splits into accounts (for earlier epochs
+    today's split is rescaled to the DRep's total at the time), and the ADA in the accounts
+    linked to each DRep (its pledge and holdings are today's balances).
     """
     power = data.power.loc[epoch]
     held = power.values > 0

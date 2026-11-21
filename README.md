@@ -42,8 +42,10 @@ on it. Every scheme pays only for explicit votes (Yes, No and Abstain count alik
 | Write `results/report.md` with figures, and the results site in `results/site/` | `rss-gov report` | |
 | Check and store a proposal (YAML or a GitHub issue) | `rss-gov submit` | |
 
-`rss-gov all` runs everything after the download. On a 16-core desktop the whole run takes
-about half an hour; one simulated six-month programme takes 0.1–0.4 seconds.
+`rss-gov all` runs everything after the download, stored proposals included. On an 8-core
+desktop the whole run takes about 35 minutes; one simulated six-month
+programme takes 0.1–0.25 seconds. `--processes` set to the number of physical cores is
+usually fastest: simulations gain little from a second thread per core.
 
 ## Quick start
 
@@ -53,8 +55,8 @@ about half an hour; one simulated six-month programme takes 0.1–0.4 seconds.
     pytest -q
 
 To work on the published results instead of a fresh pull, download the data they were
-computed from: `gh release download data-epoch-666 -p data.tar.gz` (the epoch is
-`tip_epoch` in `results/calibration.json`), unpack it into `data/pull/`, and check it with
+computed from: `gh release download data-epoch-<tip> -p data.tar.gz`, where `<tip>` is
+`tip_epoch` in `results/calibration.json`. Unpack it into `data/pull/` and check it with
 `rss-gov data verify`. To replace it with the latest data, run `rss-gov data pull --fresh`.
 
 Settings live in `config.yaml`: the programme budget and length, the axes and what counts

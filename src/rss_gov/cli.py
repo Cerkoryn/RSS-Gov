@@ -133,7 +133,6 @@ def cmd_experiment(args):
     started = time.time()
     runs = experiment.evaluate(study, schemes, list(study.scenarios), seeds, args.processes)
     summary = experiment.summarise(runs, study.axes)
-    runs.to_parquet(study.results / "experiment_runs.parquet")
     summary.to_csv(study.results / "experiment_summary.csv", index=False)
     _say(f"{len(runs)} runs in {time.time() - started:.0f}s")
     scenario = "central" if "central" in study.scenarios else list(study.scenarios)[-1]
@@ -205,10 +204,14 @@ def cmd_site(args):
 
 def cmd_all(args):
     args.action, args.out, args.no_delegators, args.fresh = "summary", None, False, False
-    args.schemes = args.seeds = None
-    for step in (cmd_data, cmd_calibrate, cmd_static, cmd_experiment, cmd_search, cmd_report):
+    args.schemes = args.seeds = args.file = None
+    args.stored, args.source = True, "cli"  # a new calibration makes every stored proposal stale
+    for step in ALL:
         _say(f"\n== {step.__name__[4:]} ==")
         step(args)
+
+
+ALL = (cmd_data, cmd_calibrate, cmd_static, cmd_experiment, cmd_search, cmd_try, cmd_report)
 
 
 def main(argv=None):
@@ -272,7 +275,9 @@ def main(argv=None):
     p = sub.add_parser("site", help="rebuild the results site in results/site/")
     p.set_defaults(run=cmd_site)
 
-    p = sub.add_parser("all", help="calibrate, analyse, experiment, search and report")
+    p = sub.add_parser(
+        "all", help="calibrate, analyse, experiment, search, re-try stored proposals and report"
+    )
     p.set_defaults(run=cmd_all)
 
     args = parser.parse_args(argv)

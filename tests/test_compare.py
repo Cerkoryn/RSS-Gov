@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from rss_gov import proposals, search
 from rss_gov.experiment import Axis
@@ -50,6 +51,21 @@ def test_front_keeps_trade_offs_and_drops_what_is_beaten_on_every_axis():
         cube, names, axes, ["cheap"]
     )
     assert search.front_of(points, names, axes, []) == []  # none allowed means none, not all
+
+
+def test_of_two_identical_designs_the_front_keeps_the_one_simulated_first():
+    """Never the one whose name sorts first: results must not depend on names."""
+    rows = [
+        dict(scheme=name, scenario="central", seed=seed, participation=value, annual_cost_ada=1e6)
+        for name, value in (("unpaid", 0.25), ("zz_named", 0.30), ("g2_2", 0.30))
+        for seed in range(3)
+    ]
+    rows = [{**r, "annual_cost_ada": 0.0} if r["scheme"] == "unpaid" else r for r in rows]
+    names, cube = search.per_seed(pd.DataFrame(rows), [GAIN, COST], ["central"])
+    assert names == ["unpaid", "zz_named", "g2_2"]
+    points = search.scores(cube, names, [GAIN, COST])
+    assert "zz_named" in search.front_of(points, names, [GAIN, COST])
+    assert "g2_2" not in search.front_of(points, names, [GAIN, COST])
 
 
 def test_generated_names_are_told_apart_from_named_schemes():

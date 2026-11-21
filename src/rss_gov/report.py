@@ -10,7 +10,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 from rss_gov import mechanisms, proposals  # noqa: E402
-from rss_gov.proposals import GENERATED  # noqa: E402
+from rss_gov.experiment import BASELINE  # noqa: E402
 
 
 SURFACE, INK, MUTED, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e6e5e0"
@@ -207,7 +207,7 @@ def figure_scorecard(summary, axes, scenarios, path, names):
     plt.close(fig)
 
 
-def figure_front(front, path):
+def figure_front(front, path, named):
     """The trade-off no formula escapes: resisting splitting against spreading power."""
     fig, ax = plt.subplots(figsize=(9.6, 6.0))
     groups = (
@@ -227,8 +227,8 @@ def figure_front(front, path):
     ax.set_xlim(-3, max(front.split_gain.max() * 100 + 12, 60))
     # One label per cluster of points that sit on top of each other.
     fig.canvas.draw()
-    named = ~front.scheme.str.fullmatch(GENERATED) & ~front.scheme.str.fullmatch(r".*_\d+m\d*")
-    wanted = front[named | (front.best_of_its_kind & (front.tau67_diff > 2))]
+    familiar = front.scheme.isin(named) & ~front.scheme.str.fullmatch(r".*_\d+m\d*")
+    wanted = front[familiar | (front.best_of_its_kind & (front.tau67_diff > 2))]
     pixels = ax.transData.transform(wanted[["split_gain", "tau67_diff"]].values * [100, 1])
     clusters = []
     for name, (x, y) in sorted(zip(wanted.scheme, pixels), key=lambda item: -item[1][1]):
@@ -259,7 +259,7 @@ def figure_front(front, path):
     plt.close(fig)
 
 
-def _fee_tables(central, fees, axes, budget):
+def _fee_tables(central, fees, axes, budget, scenario):
     """Each named design paid from the budget beside the same rule paid by each fee."""
     levels = sorted({row["fee_ada"] for row in fees.values()}, reverse=True)
     designs = list(dict.fromkeys(row["preset"] for row in fees.values()))
@@ -276,7 +276,7 @@ def _fee_tables(central, fees, axes, budget):
         "### Paid from a budget or by a proposer fee",
         "",
         "Each named design with its budget, and the same rule with no budget, paid instead by "
-        "a proposer fee kept from every governance action that closes; `central` scenario, change "
+        f"a proposer fee kept from every governance action that closes; `{scenario}` scenario, change "
         "against unpaid. Simulated DReps react to the fee's average flow, so a fee differs "
         "from a budget by how much money it brings, how its cost varies with the number of "
         "actions, and the hard fork it needs. Median cost a year: "
@@ -532,7 +532,8 @@ def write(study):
     summary_path = out / "experiment_summary.csv"
     if summary_path.exists():
         summary = pd.read_csv(summary_path)
-        base = summary[(summary.scheme == "unpaid") & (summary.scenario == "central")].iloc[0]
+        middle = ranking[len(ranking) // 2]  # the central response
+        base = summary[(summary.scheme == BASELINE) & (summary.scenario == middle)].iloc[0]
         variations = {  # config rows that start from a named design and change a setting
             row["name"]: row
             for row in study.config["experiment"]["schemes"]
@@ -547,10 +548,10 @@ def write(study):
         names = [
             n
             for n in summary.scheme.unique()
-            if n != "unpaid" and n not in variations and n not in fees
+            if n != BASELINE and n not in variations and n not in fees
         ]
         by_scenario = {s: summary[summary.scenario == s].set_index("scheme") for s in ranking}
-        central = by_scenario["central"].loc[names].reset_index()
+        central = by_scenario[middle].loc[names].reset_index()
         text += [
             "## Scorecard: named schemes at the same budget",
             "",
@@ -561,7 +562,7 @@ def write(study):
                 for a in axes
                 if a.name not in ("annual_cost_ada", "split_gain")
             )
-            + ". Cells are the change against unpaid in the `central` scenario ± 95%; the marks "
+            + f". Cells are the change against unpaid in the `{middle}` scenario ± 95%; the marks "
             "use all of " + ", ".join(f"`{s}`" for s in ranking) + ".",
             "",
         ]
@@ -589,7 +590,7 @@ def write(study):
             ]
             for axis in [a for a in axes if a.name in ("participation", "tau67", "backing")]:
                 table = pd.DataFrame({"scheme": names})
-                for scenario in channels + ["central"]:
+                for scenario in channels + [middle]:
                     view = summary[summary.scenario == scenario].set_index("scheme")
                     table[scenario.replace("_only", " only")] = [
                         _value(axis, view.loc[n, f"{axis.name}_diff"]) for n in names
@@ -603,7 +604,7 @@ def write(study):
                 ]
 
         if variations:
-            steps = by_scenario["central"].loc[list(variations)]
+            steps = by_scenario[middle].loc[list(variations)]
             rules = {s.name: s.to_dict() for s in study.schemes(list(variations.values()))}
             table = pd.DataFrame({"scheme": steps.index})
             table["varies"] = [
@@ -626,7 +627,7 @@ def write(study):
             text += [
                 "### Variations of named designs",
                 "",
-                "Named designs with a setting changed, `central` scenario; compare each with its "
+                f"Named designs with a setting changed, `{middle}` scenario; compare each with its "
                 "named design in the scorecard. The response to a reward is assumed to grow with "
                 "its logarithm, so a bigger budget buys less than proportionally more.",
                 "",
@@ -635,7 +636,7 @@ def write(study):
             ]
 
         if fees:
-            text += _fee_tables(by_scenario["central"], fees, axes, study.budget)
+            text += _fee_tables(by_scenario[middle], fees, axes, study.budget, middle)
 
     if (out / "search_holdout_runs.parquet").exists():
         from rss_gov import search as search_module
@@ -693,7 +694,7 @@ def write(study):
                 note += "; the 10 that are hardest to game by splitting are shown"
             text += [title, "", note + ".", ""]
             text += _design_tables(part.head(10), axes, search["scenarios"])
-        named = front[~front.scheme.str.fullmatch(GENERATED)]
+        named = front[front.scheme.isin(search_module.named(study))]
         table = pd.DataFrame(
             {
                 "scheme": named.scheme.values,
@@ -710,7 +711,7 @@ def write(study):
             "`rss-gov report` regroups these tables without simulating anything.",
             "",
         ]
-        figure_front(front, figures / "front.png")
+        figure_front(front, figures / "front.png", search_module.named(study))
         text += ["![front](figures/front.png)", ""]
 
     text += [

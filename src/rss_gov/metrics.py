@@ -23,14 +23,6 @@ def effective_number(power):
     return float(1.0 / np.square(share).sum())
 
 
-def gini(values):
-    values = np.sort(np.asarray(values, float))
-    n, total = len(values), values.sum()
-    if n == 0 or total <= 0:
-        return np.nan
-    return float((2 * np.arange(1, n + 1) - n - 1).dot(values) / (n * total))
-
-
 def dominates(a, b):
     """All objectives are maximised."""
     return bool(np.all(a >= b) and np.any(a > b))

@@ -28,10 +28,10 @@
  "holdout": 1000000,
  "rerun": true,
  "accepted": true,
- "hypervolume_gain": 6.630656890528608e-05,
+ "hypervolume_gain": 2.4611519860474884e-06,
  "hypervolume_gain_ci": [
-  6.233200653765082e-05,
-  7.115946219894307e-05
+  1.0142467217949537e-06,
+  4.8951763447721035e-06
  ],
  "reason": "widens the front",
  "change_from_unpaid": {
@@ -44,6 +44,6 @@
  "pilot_testable": true,
  "hypothesis": "Half the budget buys most of the participation of the full one.",
  "author": "",
- "evaluated": "2026-11-21T15:38:46Z",
+ "evaluated": "2026-11-21T17:07:50Z",
  "calibration": "dd836a32862b79b8"
 }

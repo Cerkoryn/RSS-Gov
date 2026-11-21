@@ -28,12 +28,12 @@
  "holdout": 1000000,
  "rerun": true,
  "accepted": false,
- "hypervolume_gain": 0.0,
+ "hypervolume_gain": 9.525881307995143e-07,
  "hypervolume_gain_ci": [
-  0.0,
-  9.036872646636833e-07
+  7.632072957347233e-07,
+  3.948784968506486e-06
  ],
- "reason": "no clear gain over the front",
+ "reason": "matched or beaten by a design already on the front",
  "change_from_unpaid": {
   "participation": 0.02942575721285312,
   "tau67": 2.025740740740744,
@@ -44,6 +44,6 @@
  "pilot_testable": true,
  "hypothesis": "Trying to improve skin-in-the-game",
  "author": "Cerkoryn",
- "evaluated": "2026-11-21T15:38:35Z",
+ "evaluated": "2026-11-21T17:07:40Z",
  "calibration": "dd836a32862b79b8"
 }
