@@ -112,7 +112,7 @@ function setting(field, v) {
 function tag(field, v) {
   if (v === null || v === undefined || (field.kind === "bool" && !v)) return "no " + field.tag.replace("{}", "").trim();
   if (field.kind === "bool") return field.tag;
-  if (field.kind === "ada" && !v) return "no " + field.short.toLowerCase();
+  if ((field.kind === "ada" || field.name === "pledge_leverage") && !v) return "no " + field.short.toLowerCase();
   const g = (x) => String(+x.toPrecision(6));
   const shown = field.kind === "ada" ? (v >= 1e6 ? g(v / 1e6) + "M" : v >= 1e3 ? g(v / 1e3) + "k" : g(v))
     : field.kind === "share" ? g(Math.round(v * 10000) / 100) + "%"
@@ -125,7 +125,7 @@ function describe(s, always = false) {
   const who = [];
   if (s.activity_gate) who.push(`voted on at least ${pct(s.activity_gate)} of recent actions`);
   if (s.min_delegators) who.push(`have at least ${num(s.min_delegators, 0)} delegators`);
-  if (s.min_stake_ada) who.push(`hold at least ${ada(s.min_stake_ada)} ADA of voting power`);
+  if (s.min_power_ada) who.push(`hold at least ${ada(s.min_power_ada)} ADA of voting power`);
   if (s.min_share) who.push(`hold at least ${pct(s.min_share, 1)} of all DRep voting power`);
   let first = "Pays DReps for their votes";
   if (who.length) first = `Pays DReps that ${who.join(" and ")}`;
@@ -149,8 +149,8 @@ function describe(s, always = false) {
   if (s.cap_ada !== null && s.cap_ada !== undefined && Number.isFinite(s.cap_ada)) out.push(`Voting power above ${ada(s.cap_ada)} ADA earns nothing extra.`);
   if (s.rationale_bonus) out.push(`Votes with a published rationale count ${num(1 + s.rationale_bonus, 2).replace(/\.?0+$/, "")}× as much.`);
   if (s.pledge_leverage) {
-    out.push(`Pay counts at most ${num(s.pledge_leverage, 0)}× the DRep's own ADA.`);
-    if (s.hard_cap) out.push("Voting power itself is limited the same way, which needs a hard fork.");
+    out.push(`Pledge soft cap: pay counts at most ${num(s.pledge_leverage, 0)}× the DRep's pledge.`);
+    if (s.hard_cap) out.push("Pledge hard cap: voting power itself is limited the same way, which needs a hard fork.");
   }
   if (s.delegator_share) {
     out.push(s.delegator_mode === "flat"
@@ -158,7 +158,7 @@ function describe(s, always = false) {
       : `${pct(s.delegator_share)} of the budget goes to delegators, each sharing in their DRep's award.`);
   }
   if (s.budget_ada && (always || s.fee_ada || !D.meta || s.budget_ada !== D.meta.budget)) out.push(`Budget: ${ada(s.budget_ada)} ADA over the programme.`);
-  if (s.fee_ada) out.push(`${s.budget_ada ? "On top of that, each" : "Paid by fees alone: each"} governance action that closes adds ${ada(s.fee_ada)} ADA, part of its proposer's deposit kept as a fee.`);
+  if (s.fee_ada) out.push(`${s.budget_ada ? "On top of that, each" : "Paid by fees alone: each"} governance action that closes adds a ${ada(s.fee_ada)} ADA proposer fee, kept from its deposit instead of returned.`);
   return out.join(" ");
 }
 
