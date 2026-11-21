@@ -79,7 +79,6 @@ function tickLabel(v, step) {
   const d = step ? Math.max(0, Math.ceil(-Math.log10(step) - 1e-9)) : 0;
   return num(v, Math.min(d, 3));
 }
-function betterWord(axis) { return AX[axis].better === "higher" ? "higher is better" : "lower is better"; }
 
 // ---------- words for designs ----------
 // Names the search gives its own designs (proposals.GENERATED); the first number is the round.
