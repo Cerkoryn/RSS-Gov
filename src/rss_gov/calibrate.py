@@ -224,8 +224,11 @@ def build_world(data, epoch, params):
             first = first.sort_values(["delegated_epoch", "balance"], ascending=[True, False])
             first = first.drop_duplicates("drep_id")
             pledge[first.drep_id.map(code).values] = first.balance.values
+    holdings = pledge.copy()
     if data.own is not None:
-        pledge = data.own.reindex(ids).fillna(0.0).values
+        holdings = data.own.reindex(ids).fillna(0.0).values
+        pledge = data.pledged.reindex(ids).fillna(0.0).values
+    pledge = np.minimum(pledge, power.values[held])  # own stake behind the votes is in the power
     alone = [d for d in wanted if d not in covered and wanted[d] > 0]
     stake = np.concatenate([stake, [wanted[d] for d in alone]])
     count = np.concatenate([count, np.ones(len(alone))])
@@ -262,6 +265,10 @@ def build_world(data, epoch, params):
     )
     moves = churn(data, epoch)
     entrants = moves["entered"] if moves["entered"].any() else held
+    # A new DRep's own stake is drawn from what recent arrivals (or everyone) have voting for
+    # them, in ADA: large arrivals are mostly delegated to, not self-funded.
+    arrived = moves["entered"][held]
+    entrant_own = pledge[arrived] if arrived.any() else pledge
     return model.World(
         epoch=epoch,
         ids=ids,
@@ -269,6 +276,7 @@ def build_world(data, epoch, params):
         q=q_all[held],
         last_active=last_active,
         pledge=pledge,
+        holdings=holdings,
         acct_stake=stake,
         acct_count=count,
         acct_target=target,
@@ -278,6 +286,7 @@ def build_world(data, epoch, params):
         entrant_stake=moves["entry_stake"] if len(moves["entry_stake"]) else np.array([1000.0]),
         entrant_p=p_all[entrants],
         entrant_q=q_all[entrants],
+        entrant_own=entrant_own,
         exit_stake=moves["exit_stake"] if len(moves["exit_stake"]) else np.array([1000.0]),
     )
 

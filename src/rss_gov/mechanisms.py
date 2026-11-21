@@ -301,6 +301,21 @@ def vote_value(s, r, pot):
     return np.zeros(len(r.stake)) + award / max(r.actions, 1e-9)
 
 
+def own_stake_gain(s, r, pot, extra):
+    """Each DRep's gain in award per round from adding `extra` own stake.
+
+    Others are held as they are.
+    """
+    if pot <= 0:
+        return np.zeros(len(r.stake))
+    now = _parts(s, r)
+    more = _parts(s, replace(r, pledge=r.pledge + extra))
+    reps = pot * (1 - s.delegator_share)
+    alone = [w_now.sum() - w_now + w_more for (_, w_more), (_, w_now) in zip(more, now)]
+    before = _awards(s, now, [w.sum() for _, w in now], reps, r.actions)
+    return np.zeros(len(r.stake)) + _awards(s, more, alone, reps, r.actions) - before
+
+
 def replace_activity(r, activity):
     return replace(r, activity=activity)
 
@@ -343,6 +358,10 @@ PRESETS = {
         delegator_mode="flat",
     ),
     "delegator_count_sqrt": dict(alpha=0.5, basis="delegators", max_award_share=0.05),
+    # Simple designs that pay for own stake behind the votes (METHODS.md, "Named designs").
+    "own_stake_skip20": dict(alpha=1.0, k_exclude=20, pledge_leverage=1.0),
+    "own_stake_skip10": dict(alpha=1.0, k_exclude=10, pledge_leverage=2.0),
+    "own_stake_capped": dict(alpha=1.0, cap_ada=5_000_000, pledge_leverage=1.0),
 }
 
 

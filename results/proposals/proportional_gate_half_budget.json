@@ -2,6 +2,7 @@
  "scheme": {
   "name": "proportional_gate_half_budget",
   "budget_ada": 2500000,
+  "fee_ada": 0.0,
   "alpha": 1.0,
   "cap_ada": null,
   "k_exclude": 0,
@@ -23,23 +24,26 @@
   "hard_cap": false
  },
  "rule": "linear, gate 50%; 2.5M ADA",
- "accepted": false,
- "hypervolume_gain": 3.047890277454307e-05,
+ "source": "cli",
+ "holdout": 1000000,
+ "rerun": true,
+ "accepted": true,
+ "hypervolume_gain": 5.8025178992081317e-05,
  "hypervolume_gain_ci": [
-  2.8163976893406854e-05,
-  3.313300648016444e-05
+  5.415555008795782e-05,
+  6.234202731031247e-05
  ],
- "reason": "matched or beaten by a design already on the front",
+ "reason": "widens the front",
  "change_from_unpaid": {
   "participation": 0.039769907975147456,
   "tau67": -2.1362962962962975,
-  "backing": -7.971174381613162e-05,
+  "backing": -6.243143886965324e-05,
   "annual_cost_ada": 5069577.817472224,
   "split_gain": 1.3877787807814457e-17
  },
  "pilot_testable": true,
  "hypothesis": "Half the budget buys most of the participation of the full one.",
  "author": "",
- "evaluated": "2026-11-16T23:42:59Z",
+ "evaluated": "2026-11-21T14:34:20Z",
  "calibration": "78b9eabc24094a75"
 }

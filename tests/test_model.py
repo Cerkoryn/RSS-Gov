@@ -145,3 +145,39 @@ def test_pass_through_yield_dilutes_as_stake_arrives(params):
     assert after.sum() > 300_000  # the yield pulled abstaining accounts in
     assert after[0] > 20 * stake[0]  # the high-yield DRep grew a lot ...
     assert after[0] < 0.5 * after.sum()  # ... but stopped attracting once its yield fell
+
+
+def test_own_stake_is_added_only_where_it_pays(world, params):
+    """Under a reward cap, a DRep adds own stake only for a return; under equal pay, never."""
+
+    def backing(scheme, hurdle=0.0):
+        scenario = model.Scenario("s", pledge_response=0.5, pledge_min_return=hurdle)
+        return model.run(world, params, scheme, scenario, epochs=12, seed=3)["backing"]
+
+    base = run(world, params, "unpaid")["backing"]
+    soft = mechanisms.Scheme(name="soft", budget_ada=200_000.0, pledge_leverage=5)
+    assert backing(soft) > base
+    assert backing(soft, hurdle=1e9) == base
+    equal = mechanisms.Scheme(name="eq", alpha=0.0, budget_ada=200_000.0, pledge_leverage=5)
+    assert backing(equal) == base
+    capped = mechanisms.Scheme(name="capped", budget_ada=200_000.0, pledge_leverage=5, cap_ada=1.0)
+    assert backing(capped) < backing(soft)
+
+
+def test_own_stake_added_is_limited_by_wealth_and_votes_with_the_drep(world, params):
+    soft = mechanisms.Scheme(name="soft", budget_ada=200_000.0, pledge_leverage=5)
+
+    def out(multiple):
+        scenario = model.Scenario("s", pledge_response=0.5, pledge_wealth_multiple=multiple)
+        return model.run(world, params, soft, scenario, epochs=12, seed=3)
+
+    base, poor, free = run(world, params, "unpaid"), out(1.0), out(0.0)
+    assert base["backing"] < poor["backing"] < free["backing"]
+    assert free["drep_power"] > poor["drep_power"] > base["drep_power"]
+
+
+def test_own_stake_added_counts_in_the_stake_participation_is_measured_against(world, params):
+    soft = mechanisms.Scheme(name="soft", budget_ada=200_000.0, pledge_leverage=1)
+    scenario = model.Scenario("s", pledge_response=0.99)
+    _, actions = model.run(world, params, soft, scenario, epochs=12, seed=3, trace=True)
+    assert all(a["participation"] <= a["turnout"] + 1e-12 for a in actions)

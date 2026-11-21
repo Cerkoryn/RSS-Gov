@@ -2,135 +2,124 @@
   "history": [
     {
       "generation": 0,
-      "evaluated": 49,
-      "front": 18,
-      "hypervolume": 0.009479915078643845
+      "evaluated": 52,
+      "front": 20,
+      "hypervolume": 0.013669386159595674
     },
     {
       "generation": 1,
-      "evaluated": 65,
-      "front": 21,
-      "hypervolume": 0.010509799883711663
+      "evaluated": 67,
+      "front": 22,
+      "hypervolume": 0.013694491514631922
     },
     {
       "generation": 2,
-      "evaluated": 82,
-      "front": 23,
-      "hypervolume": 0.011856970596874367
+      "evaluated": 86,
+      "front": 22,
+      "hypervolume": 0.013919491070585302
     },
     {
       "generation": 3,
-      "evaluated": 98,
-      "front": 29,
-      "hypervolume": 0.012361759180566482
+      "evaluated": 106,
+      "front": 24,
+      "hypervolume": 0.014058177191010922
     },
     {
       "generation": 4,
-      "evaluated": 115,
-      "front": 33,
-      "hypervolume": 0.012783169628304118
+      "evaluated": 122,
+      "front": 24,
+      "hypervolume": 0.014322976152036372
     },
     {
       "generation": 5,
-      "evaluated": 133,
-      "front": 40,
-      "hypervolume": 0.012929829983113695
+      "evaluated": 140,
+      "front": 26,
+      "hypervolume": 0.014682605427511297
     },
     {
       "generation": 6,
-      "evaluated": 150,
-      "front": 40,
-      "hypervolume": 0.013564406201842337
+      "evaluated": 158,
+      "front": 30,
+      "hypervolume": 0.014843994607438953
     },
     {
       "generation": 7,
-      "evaluated": 171,
-      "front": 41,
-      "hypervolume": 0.0140533797256758
+      "evaluated": 179,
+      "front": 34,
+      "hypervolume": 0.01523456855089952
     },
     {
       "generation": 8,
-      "evaluated": 188,
-      "front": 44,
-      "hypervolume": 0.014370004759089556
+      "evaluated": 195,
+      "front": 38,
+      "hypervolume": 0.01583653710344858
     },
     {
       "generation": 9,
-      "evaluated": 204,
-      "front": 43,
-      "hypervolume": 0.01440485568182931
+      "evaluated": 213,
+      "front": 39,
+      "hypervolume": 0.016237846258435627
     },
     {
       "generation": 10,
-      "evaluated": 223,
-      "front": 46,
-      "hypervolume": 0.014463246517729327
+      "evaluated": 233,
+      "front": 37,
+      "hypervolume": 0.01622576378787117
     }
   ],
   "front": [
     "capped_1m",
     "capped_2m5",
-    "equal",
-    "g0_10",
-    "g1_3",
-    "g1_8",
-    "g2_14",
-    "g2_20",
-    "g4_10",
-    "g4_17",
-    "g5_22",
-    "g6_12",
-    "g6_19",
-    "g6_23",
-    "g7_14",
-    "g7_21",
-    "g7_22",
+    "g0_14",
+    "g10_0",
+    "g10_1",
+    "g10_19",
+    "g10_23",
+    "g10_5",
+    "g10_7",
+    "g4_20",
+    "g5_0",
+    "g5_11",
+    "g6_3",
+    "g7_2",
     "g7_5",
-    "g8_1",
-    "g9_10",
-    "g9_2",
-    "g9_23",
-    "issue_3",
-    "pledge_hard_cap"
+    "g8_18",
+    "g8_5",
+    "own_stake_capped",
+    "own_stake_skip20",
+    "pledge_hard_cap",
+    "pledge_soft",
+    "proportional",
+    "proportional_gate_half_budget"
   ],
   "shortlist": [
-    "g0_10",
-    "g4_17",
-    "g6_23",
-    "g7_5",
-    "g9_2",
+    "g0_14",
+    "g10_7",
     "capped_1m",
     "capped_2m5",
-    "equal",
-    "g1_8",
-    "g2_20",
-    "g5_22",
-    "g6_12",
-    "g7_14",
-    "g7_22",
-    "g9_10",
-    "issue_3",
-    "g8_1",
+    "g10_19",
+    "g10_5",
+    "g5_0",
+    "g6_3",
+    "g8_18",
+    "g5_11",
+    "own_stake_capped",
+    "own_stake_skip20",
     "top_100_gated"
   ],
   "pilot_shortlist": [
-    "g0_10",
-    "g4_17",
-    "g6_23",
-    "g7_5",
-    "g9_2",
+    "g0_14",
+    "g10_7",
     "capped_1m",
     "capped_2m5",
-    "equal",
-    "g1_8",
-    "g2_20",
-    "g5_22",
-    "g6_12",
-    "g7_14",
-    "g7_22",
-    "g9_10",
-    "issue_3",
-    "g8_1",
+    "g10_19",
+    "g10_5",
+    "g5_0",
+    "g6_3",
+    "g8_18",
+    "g5_11",
+    "own_stake_capped",
+    "own_stake_skip20",
     "top_100_gated"
   ],
   "axes": [
@@ -148,20 +137,20 @@
   "baseline": {
     "participation": 0.2522078948995727,
     "tau67": 19.368333333333336,
-    "backing": 0.009690051063820782,
+    "backing": 0.007214992828362553,
     "annual_cost_ada": 0.0,
     "split_gain": 0.0
   },
-  "hypervolume": 0.015304524153514507,
+  "hypervolume": 0.017027813901656363,
   "hypervolume_ci": [
-    0.014733646353695083,
-    0.01588123668027894
+    0.016703878578663834,
+    0.017372920395954453
   ],
   "hypervolume_unpaid": 0.004545454545454546,
-  "search_gain": 0.004500368390664483,
+  "search_gain": 0.0032821769840328495,
   "search_gain_ci": [
-    0.004396449262345223,
-    0.004686251581053402
+    0.003190125485817227,
+    0.003392950184112215
   ],
   "holdout_seeds": 100
 }

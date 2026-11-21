@@ -41,6 +41,8 @@ So RSS-Gov does three things:
 - It runs every rule many times from the same starting point with the same luck, and
   reports each result as a difference from paying nothing, with its uncertainty.
 
+*How a simulation works*, below, explains each step in plain terms, with diagrams.
+
 **What comes out.** No rule wins on every count. Paying in proportion to voting power
 draws more votes but, if awards help DReps attract delegation, concentrates power. Paying
 everyone the same invites fake DReps. Caps and "skip the largest" invite large DReps to
@@ -78,6 +80,181 @@ separates three kinds of evidence and never mixes them:
 
 Tier A results are facts about a formula. Tier B results are conditional forecasts. Only
 tier C can turn them into findings.
+
+## How a simulation works
+
+This section explains in plain terms what happens inside one simulated programme. The
+sections after it give the formulas and where each number comes from.
+
+### One run
+
+A run is one possible six months of Cardano governance (36 epochs of five days) under one
+reward rule. It starts from the chain as it is today: every DRep with voting power, its
+voting record and own stake, and the accounts delegating to it. Large accounts are copied
+one by one and small ones as weighted samples, so that a few tens of thousands of rows
+stand for every delegating account. The run then plays the epochs forward one at a time,
+in six steps:
+
+<!--FIGURE:epoch-->
+
+*The legend shows which parts copy how governance behaved without rewards, which part is
+the rule under test, and which parts are the assumed reactions to money. With every
+reaction switched off, a paid run is identical to an unpaid one.*
+
+### How DReps behave
+
+**Without rewards**, everything a DRep does copies its own history:
+
+- **Voting.** Each DRep has its own chance of voting on an action, learned from its record.
+  Recent votes count more than old ones, and a DRep with a short record is pulled toward
+  the typical rate of DReps of its size. Each action is a real past action picked at
+  random, and it keeps the attention it drew: on a busy action every DRep is more likely
+  to vote. Whether a DRep votes is then a weighted coin toss. Votes split into Yes, No and
+  Abstain in the proportions the real action got; the model does not try to predict what
+  DReps think of a proposal.
+- **Vote rate.** Rules pay by a DRep's *vote rate*: the share of the actions closed in the
+  last 12 epochs that it voted on. A DRep that stops voting earns nothing within 12 epochs.
+- **Coming and going.** New DReps register at the historical rate. Each starts with a
+  delegation, voting habits and own stake drawn from those of real recent newcomers.
+  DReps retire at the historical rate; the one that retires is the one closest in size to
+  a DRep that really retired. Its delegators are left undelegated until they choose again.
+
+**With rewards**, a DRep can react in the ways below, each only when its response strength
+is above zero. Every reaction is worked out afresh each epoch from what the rule pays at
+that moment; none builds up on its own.
+
+- **Voting more** (`drep_response`). A DRep looks at what one more vote would earn it: its
+  award if it voted on every action, divided by the number of actions. The higher that is
+  next to the effort of a vote, put at 50 ADA, the more its chance of voting rises. For
+  example, at the central strength a DRep that votes on half of the actions votes on
+  about 59% when a vote pays 50 ADA, and about 76% when it pays 450 ADA. Doubling the pay
+  does not double the effect. A DRep the rule would not pay, because it is too small or
+  among the largest that are skipped, sees no gain and does not change.
+- **Writing rationales** (the same strength). The same reaction, for rules that pay extra for a rationale, with
+  the effort of a rationale put at 100 ADA.
+- **Registering** (the same strength). If a newcomer of typical size would be paid well next to the effort of
+  voting on everything, more people register, up to eight times the historical rate.
+- **Buying reach** (`reinvest_response`). A DRep can spend its award on promotion, tools or
+  staff, which makes it more visible to delegators who are choosing. At the central
+  strength, an award equal to the cost of voting on everything makes it 15% more likely to
+  be chosen. Under a rule that pays by voting power this helps the largest DReps most,
+  which is how a rule can concentrate power.
+- **Adding own stake** (`pledge_response`), under rules that count own stake: see below.
+
+### How delegators behave
+
+**Without rewards**:
+
+- **Balances drift.** Each account grows or shrinks a little every epoch, at the pace and
+  with the ups and downs seen on chain. Accounts with always-abstain have their own pace.
+- **Most accounts never move.** In each epoch an account re-delegates with a small
+  probability, learned from how long today's delegations have lasted. Accounts of 100,000
+  ADA or more have their own rate.
+- **Where movers go.** A mover chooses always-abstain, no-confidence or a DRep, in the
+  proportions recent movers chose them. Among DReps it favours large ones and active ones,
+  with strengths fitted to history so that the spread of voting power keeps to its real
+  path. Because movers favour DReps that vote, a DRep that votes more because it is paid
+  also gains delegation. That link is fitted, not assumed.
+
+**With rewards** (`delegator_response`), only when a rule pays delegators, they chase
+yield in two ways. An account earning less than a typical paying DRep offers becomes more
+likely to move: at the central strength, twice as likely when the gap is one point a year,
+and never more than ten times. And a mover favours DReps that pay more: at the central
+strength one point of yield a year makes a DRep about 2.7 times as likely to be chosen. When
+a DRep shares a fixed award with its delegators, each newcomer lowers the yield for the
+next, so movers are taken in small batches and the yields are updated in between.
+
+Delegators do not react to what a DRep itself is paid, except through the reach the DRep
+buys with it.
+
+### Own stake ("pledge")
+
+The ledger has no idea of a DRep's own ADA, so the simulation uses what can be traced on
+chain: the accounts that paid for the DRep's registration and that it names in its
+metadata. Of the ADA in those accounts:
+
+- the part **delegated to the DRep itself** is its *own stake*. It is behind the DRep's
+  votes and is part of its voting power like any other delegated ADA;
+- the whole balance, wherever it is delegated, is the DRep's *holdings*: a measure of
+  what it could afford, used only to limit top-ups;
+- ADA that **others** delegate to the DRep is voting power and is never counted as own
+  stake.
+
+New DReps get the own stake of a real recent newcomer, no more than their voting power,
+and their holdings are taken to be that own stake.
+
+A rule can use own stake in two ways, set by a *leverage* L:
+
+- **Softly**, for pay. Only up to L times its own stake counts toward the DRep's reward.
+  With L = 2, a DRep with 10M ADA of voting power and 1M of own stake is paid as if it had
+  2M. It still votes with all 10M.
+- **As a hard cap** on voting power itself: that DRep would vote with 2M. This needs a
+  change to the ledger.
+
+### Topping up own stake
+
+Under such a rule a DRep may add own ADA, when `pledge_response` is above zero. It decides
+once an epoch:
+
+<!--FIGURE:top-up-->
+
+1. **What is missing.** The own stake it needs so that all of its voting power counts, or
+   under a stake cap all of the capped amount, minus what it has. If nothing is missing,
+   it adds nothing.
+2. **This epoch's step.** A small share of the gap, sized so that if nothing else changed
+   the DRep would close `pledge_response` of it over the programme: a quarter at the
+   central strength.
+3. **What it can afford.** Its own stake can grow to at most `pledge_wealth_multiple` times
+   its holdings. Surveys of crypto owners find crypto is on average about a fifth of their
+   financial wealth, more than half of it for about a fifth of owners, and under 15% for
+   most; hence 5 times at the central strength, 2 at low and 7 at high. A DRep with no
+   linked accounts adds nothing: nothing is known about what it owns.
+4. **Whether it pays.** The extra reward a year the step would bring, with everyone else as
+   they are, must be at least `pledge_min_return` of the ADA added: 5% at the central
+   strength. Under a rule that pays everyone the same, own stake earns nothing and nobody
+   adds any. Under a hard cap the test is skipped: the DRep adds stake to keep its voting
+   power, whatever it earns.
+
+ADA a DRep adds counts as its own stake from then on and joins its voting power, so it
+votes. The model treats it as new ADA brought into governance, not taken from another
+DRep, and it leaves with the DRep if the DRep retires.
+
+### How the five measures are taken
+
+Four of the five measures come out of each run. The fifth, Sybil risk, is exact and needs
+no simulation.
+
+1. **Participation.** On every action that closes during the run: the voting power of the
+   DReps who voted on it (Yes, No or Abstain alike), divided by all delegated ADA: to DReps
+   (including own stake they added), to always-abstain or to no-confidence, or left behind
+   by a DRep that retired. It is averaged over all the actions in the run. Because
+   always-abstain is in the denominator, moving stake from it to a DRep that votes raises
+   participation, while a DRep that already votes always cannot.
+2. **Decentralisation.** At the end of each epoch, DReps are lined up from the largest
+   down, and the measure is how many it takes to pass two thirds of all DRep voting power
+   (after any hard cap). It is averaged over the second half of the programme, when
+   rewards have had time to move delegation.
+3. **Skin in the game.** At the end of each epoch: for each DRep, the part of its voting
+   power covered by its own stake, including any top-ups; summed over DReps and divided
+   by all DRep voting power. A DRep with more own stake than voting power does not make up
+   for another's shortfall. It is averaged over the second half of the programme.
+4. **Cost.** All ADA paid out during the run, to DReps and to delegators, plus 0.3 ADA for
+   each payment, turned into ADA a year. Each recipient gets one payment for the whole
+   programme, and totals under 5 ADA are not sent. Money a rule does not pay out is not a
+   cost.
+5. **Sybil risk.** The largest share of the budget someone could gain by splitting one
+   identity into several DReps, computed from the rule and today's chain without a
+   simulation: see [Tier A](#tier-a-static-analysis-staticpy).
+
+### From runs to results
+
+Each rule is run many times. Run number 1 of every rule, and of paying nothing, sees the
+same luck: the same actions closing in the same epochs, the same would-be newcomers, the
+same coin tosses for who moves and who votes. Any difference between a rule's run and the
+unpaid run with the same luck is therefore mostly the rule's doing. A result is the average
+of those differences over all runs, with a 95% interval, and it is computed three times:
+with weak, central and strong reactions. A result that holds at all three is one the
+assumptions do not decide.
 
 ## The axes
 
@@ -133,8 +310,10 @@ of at least 100,000 ADA hold about 90% of delegated stake.
 **A DRep's own stake** is not a ledger concept. Two clues are on chain and both are
 downloaded: the stake account that funded the DRep's registration transaction, and the
 payment address the DRep declares in its metadata. The current balance of those accounts,
-each counted once, is used as the DRep's own stake. For 828 of the 848 DReps with voting
-power the linked accounts hold a balance. This is a proxy with errors in both directions: a DRep can hold stake in
+each counted once, is what the DRep is known to hold. Only the part delegated to the DRep
+itself counts as its own stake: own ADA delegated elsewhere is not behind its votes, and
+delegated voting power is never counted as its own. This is a proxy with errors in both
+directions: a DRep can hold stake in
 accounts never linked to it, a registration can be paid for by someone else, and a
 declared address proves nothing about control. It is good enough to show the order of
 magnitude (most large DReps vote with thousands of times their linked stake) and not good
@@ -216,7 +395,9 @@ not start from these.
 
 Besides the generic shapes (`proportional`, `equal`, `sqrt`, `capped`, gates, floors,
 rationale bonus, delegator and own-stake designs), the named designs come from published
-proposals. Each is the closest point in the family, not an exact copy.
+proposals. Each is the closest point in the family, not an exact copy. The `own_stake_*`
+designs were found by hand: they have only two settings each, so they are easy to explain
+and to implement.
 
 | Name | Rule | Source |
 |---|---|---|
@@ -230,6 +411,9 @@ proposals. Each is the closest point in the family, not an exact copy.
 | `top_100_gated` | the 100 largest with a 70% vote rate, equal pay | Optimism's top-100 participation rewards ([DAOstar survey](https://forum.scroll.io/t/delegate-incentive-programs-daostar-research/470)) |
 | `delegators_first` | 90% to delegators of DReps voting 70%, flat; DReps by voting power, at most 10% of their part each | ENS-style split (same forum post) |
 | `delegator_count_sqrt` | square root of the number of delegators, at most 5% each | the same forum post, experiment 4 |
+| `own_stake_skip20` | by voting power, counting no more than the DRep's own stake, the 20 largest paid nothing | this project: simple own-stake designs |
+| `own_stake_skip10` | the same, counting up to twice the own stake, the 10 largest paid nothing | this project |
+| `own_stake_capped` | by voting power, counting no more than the own stake or 5M ADA | this project |
 
 ### What the family cannot express
 
@@ -276,23 +460,21 @@ reward an insider's split, which is the less obvious half of the problem.
 
 ## Tier B: the model (`model.py`)
 
-A run is one possible future of the programme (default 36 epochs). State: every DRep with
-voting power, and about 64,000 account rows that stand for the 270,000 delegating
-accounts. Each epoch:
+A run follows the six steps in [How a simulation works](#how-a-simulation-works).
+State: every DRep with voting power, and about 64,000 account rows that stand for the
+270,000 delegating accounts. Details not given there:
 
-1. Account balances drift and fluctuate.
-2. DReps register and retire at historical rates, with historical sizes.
-3. The reward round is computed from what the chain shows. A fee per action adds to the
-   pot as actions close.
-4. Accounts re-delegate with a small probability. A mover picks always-abstain,
-   no-confidence, or a DRep with weight `(stake + floor)^theta × exp(beta × vote rate)`.
-5. Governance actions closing this epoch are voted on. Each action is a whole historical
-   action resampled (its threshold, the support it had among voters, its abstention share
-   and the attention it drew), so the links between those stay as observed. A DRep votes
-   with its own fitted probability, shifted by the action's attention.
-6. Ratification follows the ledger rule for DReps: yes power over active power, with
-   non-voters counted as no, abstain votes and inactive DReps removed, and no-confidence
-   stake counted as no. On history this rule alone reproduces 119 of 120 outcomes.
+- The reward round uses what the chain shows at the start of the epoch, before that
+  epoch's moves and votes. Money a round does not pay out carries over to the next.
+- A mover picks always-abstain, no-confidence, or a DRep with weight
+  `(stake + floor)^theta × exp(beta × vote rate)`, times the reactions in the table below.
+- Each action is a whole historical action resampled (its threshold, the support it had
+  among voters, its abstention share and the attention it drew), so the links between
+  those stay as observed. A DRep votes with its own fitted probability, shifted on the
+  log-odds scale by the action's attention.
+- Ratification follows the ledger rule for DReps: yes power over active power, with
+  non-voters counted as no, abstain votes and inactive DReps removed, and no-confidence
+  stake counted as no. On history this rule alone reproduces 119 of 120 outcomes.
 
 SPOs and the Constitutional Committee are not modelled. The scope is DReps and their
 delegators.
@@ -348,7 +530,7 @@ on. With every channel at zero, paying changes nothing (the tests check this).
 | `drep_response` | A DRep's log-odds of voting rise by `response × log(1 + reward for one more vote / vote cost)`. The same strength scales rationale publishing and new registrations. | Participation |
 | `delegator_response` | A mover's log-weight for a DRep rises by `response` per point of annual yield; accounts earning less than a typical paying DRep offers become more likely to move. Yield falls as stake arrives. | Mobilising idle stake; where it goes |
 | `reinvest_response` | A DRep's pull on movers is multiplied by `(1 + award / upkeep)^response`: awards pay for reach. Under a stake-proportional rule this adds about `response` to the exponent with which movers already favour large DReps. | Concentration under proportional pay |
-| `pledge_response` | Under a rule that ties rewards or voting power to own stake, a DRep closes this share of its missing own stake over the programme. | Skin in the game |
+| `pledge_response` | Under a rule that ties rewards or voting power to own stake, a DRep closes this share of its missing own stake over the programme. Under a reward cap, only the own stake that would count for rewards is missing (no more than the stake cap allows), and a DRep adds each part only while the extra award it brings is at least `pledge_min_return` a year on that ADA. Under a hard cap a DRep adds it to keep its voting power, whatever it earns. Either way its own stake grows to at most `pledge_wealth_multiple` times the ADA in its linked accounts, a bound on what it could buy, and the ADA it adds joins its voting power. | Skin in the game |
 
 `low`, `central` and `high` move all four together. `voting_only`, `yield_only`,
 `reinvest_only` and `pledge_only` switch on one channel at its central value; the report

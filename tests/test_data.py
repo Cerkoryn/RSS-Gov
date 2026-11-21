@@ -85,7 +85,7 @@ def test_world_matches_observed_totals(pull, monkeypatch):
     assert np.allclose(stake, data.power.loc[570].values)
     assert world.acct_stake[world.acct_target == model.ABSTAIN].sum() == 5e6
     assert world.acct_stake[world.acct_target == model.NO_CONFIDENCE].sum() == 1e5
-    assert world.pledge[0] == 0.6e6  # the earliest delegator stands in for own stake
+    assert world.pledge[0] == world.holdings[0] == 0.6e6  # the earliest delegator stands in
     assert world.actions.shape[1] == 4
 
     study = experiment.Study(
@@ -117,10 +117,13 @@ def test_linked_accounts_replace_the_stand_in_for_own_stake(pull, monkeypatch):
         dict(drep_id="drep0", stake_address="x", source="declared", balance=int(1e9)),
         dict(drep_id="drep1", stake_address="y", source="funder", balance=-5),
     ]
-    pd.DataFrame(rows).assign(delegated_drep=None).to_parquet(pull / "tables" / "drep_own.parquet")
+    delegated = ["drep0", "drep0", "drep_always_abstain", None]
+    links = pd.DataFrame(rows).assign(delegated_drep=delegated)
+    links.to_parquet(pull / "tables" / "drep_own.parquet")
     data = dataset.load(pull)
     world = calibrate.build_world(data, 570, make_params())
-    assert world.pledge[:3].tolist() == [8000.0, 0.0, 0.0]  # an account counts once
+    assert world.holdings[:3].tolist() == [8000.0, 0.0, 0.0]  # an account counts once
+    assert world.pledge[:3].tolist() == [7000.0, 0.0, 0.0]  # only what votes with the DRep
 
 
 def test_an_incumbent_above_a_cap_gains_by_splitting():

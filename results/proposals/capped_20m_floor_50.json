@@ -2,6 +2,7 @@
  "scheme": {
   "name": "capped_20m_floor_50",
   "budget_ada": 5000000.0,
+  "fee_ada": 0.0,
   "alpha": 1.0,
   "cap_ada": 20000000,
   "k_exclude": 0,
@@ -23,23 +24,26 @@
   "hard_cap": false
  },
  "rule": "linear, cap 20M, min 50 delegators; 5M ADA",
+ "source": "cli",
+ "holdout": 1000000,
+ "rerun": true,
  "accepted": false,
  "hypervolume_gain": 0.0,
  "hypervolume_gain_ci": [
   0.0,
-  0.0
+  4.320921650254723e-08
  ],
  "reason": "no clear gain over the front",
  "change_from_unpaid": {
   "participation": 0.039534571265481044,
   "tau67": -0.9372222222222248,
-  "backing": -9.150889421564307e-05,
+  "backing": -5.7488045428428884e-05,
   "annual_cost_ada": 10138942.620944448,
   "split_gain": 0.3418529681052403
  },
  "pilot_testable": true,
  "hypothesis": "A cap invites the largest DReps to split; a floor of 50 delegators per DRep makes each extra identity costly without giving up the participation the cap buys.",
  "author": "",
- "evaluated": "2026-11-16T23:42:44Z",
+ "evaluated": "2026-11-21T14:33:57Z",
  "calibration": "78b9eabc24094a75"
 }

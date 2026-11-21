@@ -219,3 +219,13 @@ def test_delegator_basis_weighs_by_delegator_count():
     assert "invites fake ones" in " ".join(
         m.preset("delegator_count_sqrt", 1).feasibility()["notes"]
     )
+
+
+def test_own_stake_gain_counts_only_while_own_stake_limits_the_reward():
+    r = make_round()
+    scheme = m.Scheme(budget_ada=1, pledge_leverage=1)
+    gain = m.own_stake_gain(scheme, r, 1000.0, np.full(len(r.stake), 1e5))
+    limited = r.pledge < r.stake
+    assert (gain[limited & (r.activity > 0)] > 0).all() and (gain[~limited] <= 0).all()
+    equal = m.Scheme(budget_ada=1, alpha=0.0, pledge_leverage=1)
+    assert not m.own_stake_gain(equal, r, 1000.0, 1e5).any()

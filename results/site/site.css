@@ -369,6 +369,20 @@ pre.yaml { background: var(--page); box-shadow: inset 0 0 0 1px var(--ring); bor
 .prose a.headerlink { color: var(--muted); text-decoration: none; margin-left: 6px; font-weight: 400; opacity: 0; }
 .prose h2:hover a.headerlink, .prose h3:hover a.headerlink { opacity: 1; }
 .prose strong { font-weight: 660; }
+.prose .diagram { margin: 18px 0 6px; overflow-x: auto; }
+.prose .diagram + p > em:only-child { color: var(--ink-2); font-size: 14px; }
+.diagram svg { width: 100%; min-width: 620px; height: auto; }
+.diagram .box { fill: var(--surface); stroke: var(--ring-2); stroke-width: 1; }
+.diagram .box.rule { fill: var(--accent-bg); }
+.diagram .box.yes { fill: var(--good-bg-2); }
+.diagram .hist { fill: var(--neutral); }
+.diagram .pay { fill: var(--c1); }
+.diagram .react { fill: var(--c2); }
+.diagram .line { stroke: var(--ink-2); stroke-width: 1.5; fill: none; }
+.diagram .head { fill: var(--ink-2); }
+.diagram text { font-size: 12px; fill: var(--ink-2); }
+.diagram text.t { font-size: 13px; font-weight: 650; fill: var(--ink); }
+.diagram text.n { fill: var(--muted); }
 
 /* ---------- the lead chart ---------- */
 :root { --front-fill: rgba(42,120,214,0.08); }

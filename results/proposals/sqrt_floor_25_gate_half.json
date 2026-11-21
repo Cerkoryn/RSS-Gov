@@ -2,6 +2,7 @@
  "scheme": {
   "name": "sqrt_floor_25_gate_half",
   "budget_ada": 2500000.0,
+  "fee_ada": 0.0,
   "alpha": 0.5,
   "cap_ada": null,
   "k_exclude": 0,
@@ -23,23 +24,26 @@
   "hard_cap": false
  },
  "rule": "stake^0.5, min 25 delegators, gate 50%; 2.5M ADA",
+ "source": "web",
+ "holdout": 1000000,
+ "rerun": true,
  "accepted": false,
- "hypervolume_gain": 1.0012562291357788e-05,
+ "hypervolume_gain": 3.744184562892716e-06,
  "hypervolume_gain_ci": [
-  9.164063992759272e-06,
-  1.0893478331341172e-05
+  3.31738012721702e-06,
+  4.278453959062362e-06
  ],
  "reason": "matched or beaten by a design already on the front",
  "change_from_unpaid": {
   "participation": 0.03869751839247437,
   "tau67": -1.357037037037042,
-  "backing": -7.90254457983218e-05,
+  "backing": -5.041788195635395e-05,
   "annual_cost_ada": 5069518.792916669,
   "split_gain": 0.17079887128044383
  },
  "pilot_testable": true,
  "hypothesis": "Square-root pay spreads money beyond the largest DReps; a floor of 25 delegators and a 50% vote gate should make extra identities costly. Test of the submission queue.",
  "author": "RSS-Gov example",
- "evaluated": "2026-11-16T23:43:15Z",
+ "evaluated": "2026-11-21T14:34:30Z",
  "calibration": "78b9eabc24094a75"
 }

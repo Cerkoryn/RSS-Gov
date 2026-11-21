@@ -53,17 +53,26 @@ assumptions:
 #                      about this much to the exponent with which movers favour large DReps.
 #   pledge_response    Share of the missing own stake a DRep adds over the programme when a
 #                      rule ties rewards or voting power to own stake.
+#   pledge_min_return  Under a reward cap, a DRep adds own stake only while the extra award
+#                      is at least this yearly return on the ADA added (a hurdle, not data).
+#   pledge_wealth_multiple  A DRep's own stake grows to at most this multiple of the ADA in its
+#                      linked accounts: how much more it could buy. Crypto is on average about
+#                      a fifth of its owners' financial wealth (5x), more than half for about a
+#                      fifth of owners (2x), under 15% for most (7x): Cleveland Fed WP 26-16.
 # low / central / high move all channels together; the *_only rows isolate one channel at
 # its central value and are used to attribute effects, not to rank schemes.
 scenarios:
   no_response: {}
-  low: {drep_response: 0.25, delegator_response: 0.5, reinvest_response: 0.1, pledge_response: 0.1}
-  central: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2, pledge_response: 0.25}
-  high: {drep_response: 1.0, delegator_response: 2.0, reinvest_response: 0.4, pledge_response: 0.5}
+  low: {drep_response: 0.25, delegator_response: 0.5, reinvest_response: 0.1, pledge_response: 0.1,
+        pledge_min_return: 0.10, pledge_wealth_multiple: 2}
+  central: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2, pledge_response: 0.25,
+            pledge_min_return: 0.05, pledge_wealth_multiple: 5}
+  high: {drep_response: 1.0, delegator_response: 2.0, reinvest_response: 0.4, pledge_response: 0.5,
+         pledge_min_return: 0.02, pledge_wealth_multiple: 7}
   voting_only: {drep_response: 0.5}
   yield_only: {delegator_response: 1.0}
   reinvest_only: {reinvest_response: 0.2}
-  pledge_only: {pledge_response: 0.25}
+  pledge_only: {pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 5}
 ranking_scenarios: [low, central, high]   # a scheme's score is its mean over these
 
 # The axes schemes are compared on: one per objective family. Nothing is folded into a
@@ -139,6 +148,10 @@ experiment:
     - top_100_gated
     - delegators_first
     - delegator_count_sqrt
+    # Simple designs with two settings that pay for the own stake behind the votes.
+    - own_stake_skip20
+    - own_stake_skip10
+    - own_stake_capped
     # The same rule at other budgets: what more or less money buys.
     - {name: capped_1m, preset: capped, budget_ada: 1000000}
     - {name: capped_2m5, preset: capped, budget_ada: 2500000}

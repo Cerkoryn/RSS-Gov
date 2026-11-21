@@ -36,6 +36,9 @@ PAGES = [
     "checks.js",
 ]
 ASSET = re.compile(r'(src|href)="([\w.-]+\.(?:js|css))"')
+# A diagram in METHODS.md: invisible where the file is read as plain markdown (GitHub), drawn
+# inline on the site from web/figures/<name>.svg so that it follows the site's theme.
+FIGURE = re.compile(r"<!--FIGURE:([a-z0-9-]+)-->")
 BASELINE = experiment.BASELINE
 # Per axis: plain name, the question it answers, what a change is measured in, unit, decimals.
 DISPLAY = dict(
@@ -68,6 +71,60 @@ FACTS = [
     "delegator_claimants", "delegator_dust_share", "fee_share",
 ]  # fmt: skip
 EXACT = ("annual_cost_ada", "split_gain")
+
+# Where each named design's idea comes from: the sources cited in METHODS.md ("Named designs").
+_EKPN = ("ExcludeKPayN paper", "https://github.com/Cerkoryn/ExcludeKPayN/blob/main/paper.md")
+_IO = (
+    "IO Research: Reward Schemes for DReps in Voltaire",
+    "https://docs.google.com/document/d/1_uadn9Ord3mAYQGWHQySR73CQciVk2YNc5rt8npJ6Aw",
+)
+_THRESHOLD = ("Birmpas et al., FC 2025: Threshold(k)", "https://arxiv.org/abs/2406.10525")
+_CIP1117 = (
+    "CIP PR #1117: Compensatory Ledger Mechanism",
+    "https://github.com/cardano-foundation/CIPs/pull/1117",
+)
+_FORUM = (
+    "Cardano forum: what Cardano can learn from DAO incentive models",
+    "https://forum.cardano.org/t/lessons-in-decentralized-governance-what-cardano-can-learn-from-dao-incentive-models/154264",
+)
+_DAOSTAR = (
+    "DAOstar: delegate incentive programs (Optimism's top 100)",
+    "https://forum.scroll.io/t/delegate-incentive-programs-daostar-research/470",
+)
+_PLEDGE = (
+    "Brünjes et al.: Reward Sharing Schemes for Stake Pools (pledge)",
+    "https://arxiv.org/abs/1807.11218",
+)
+_OWN = ("How it works: named designs", "methods.html#named-designs")
+_FEE = ("How it works: paying from a fee per action", "methods.html#paying-from-a-fee-per-action")
+REFERENCES = {
+    "middle_out": [_EKPN],
+    "exclude_k_pay_n": [_EKPN],
+    "top_m_equal": [_IO],
+    "top_m_proportional": [_IO],
+    "threshold_k": [_THRESHOLD, _IO],
+    "threshold_k_proportional": [_THRESHOLD, _IO],
+    "equal_plus_stake": [_CIP1117],
+    "top_haircut": [_FORUM],
+    "top_100_gated": [_DAOSTAR],
+    "delegators_first": [_FORUM],
+    "delegator_count_sqrt": [_FORUM],
+    "pledge_soft": [_PLEDGE],
+    "pledge_hard_cap": [_PLEDGE],
+    "own_stake_skip20": [_OWN, _PLEDGE],
+    "own_stake_skip10": [_OWN, _PLEDGE],
+    "own_stake_capped": [_OWN, _PLEDGE],
+}
+
+
+def references(name, scheme, preset=None):
+    """Links for a design: its own sources, else those of the named design it varies."""
+    refs = list(REFERENCES.get(name) or REFERENCES.get(preset, []))
+    if scheme.fee_ada:
+        refs += [_CIP1117, _FEE]
+    return [dict(title=t, url=u) for t, u in dict.fromkeys(refs)]
+
+
 CHECKS = dict(
     report.LABELS,
     dreps="DReps with voting power",
@@ -286,6 +343,7 @@ def build(study):
     guard = config["guardrails"]
     rows = mechanisms.experiment_rows(config)
     schemes = {s.name: s for s in study.schemes(rows) if s.name != BASELINE}
+    preset_of = {r["name"]: r["preset"] for r in rows if isinstance(r, dict) and "preset" in r}
     named = set(schemes)
     summary = pd.read_csv(out / "experiment_summary.csv")
     base = summary[(summary.scheme == BASELINE) & (summary.scenario == ranking[0])].iloc[0]
@@ -356,6 +414,7 @@ def build(study):
             results=results,
             facts=facts.loc[name, FACTS].to_dict(),
             scheme={k: v for k, v in scheme.to_dict().items() if k != "name"},
+            refs=references(name, scheme, preset_of.get(name)),
         )
         if name in community:
             _, entry, _ = community[name]
@@ -472,6 +531,12 @@ def methods(path="METHODS.md"):
     )
     body = md.convert(text).replace("<table>", '<div class="tablewrap"><table>')
     body = body.replace("</table>", "</table></div>")
+    body = FIGURE.sub(
+        lambda m: (
+            f'<figure class="diagram">{(WEB / "figures" / f"{m[1]}.svg").read_text()}</figure>'
+        ),
+        body,
+    )
     return md.toc, body
 
 

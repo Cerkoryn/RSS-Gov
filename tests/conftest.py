@@ -58,6 +58,7 @@ def make_world(n=60, accounts_each=8, seed=0):
         q=np.full(n, 0.4),
         last_active=np.full(n, 100.0),
         pledge=drep_stake * 0.05,
+        holdings=drep_stake * 0.08,
         acct_stake=stake,
         acct_count=np.ones(len(stake)),
         acct_target=target.astype(int),
@@ -67,6 +68,7 @@ def make_world(n=60, accounts_each=8, seed=0):
         entrant_stake=np.array([1000.0, 50_000.0]),
         entrant_p=np.array([0.1, 0.5]),
         entrant_q=np.array([0.3, 0.3]),
+        entrant_own=np.array([500.0, 20_000.0]),
         exit_stake=np.array([500.0, 5000.0]),
     )
 

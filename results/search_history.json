@@ -1,68 +1,68 @@
 [
  {
   "generation": 0,
-  "evaluated": 49,
-  "front": 18,
-  "hypervolume": 0.009479915078643845
+  "evaluated": 52,
+  "front": 20,
+  "hypervolume": 0.013669386159595674
  },
  {
   "generation": 1,
-  "evaluated": 65,
-  "front": 21,
-  "hypervolume": 0.010509799883711663
+  "evaluated": 67,
+  "front": 22,
+  "hypervolume": 0.013694491514631922
  },
  {
   "generation": 2,
-  "evaluated": 82,
-  "front": 23,
-  "hypervolume": 0.011856970596874367
+  "evaluated": 86,
+  "front": 22,
+  "hypervolume": 0.013919491070585302
  },
  {
   "generation": 3,
-  "evaluated": 98,
-  "front": 29,
-  "hypervolume": 0.012361759180566482
+  "evaluated": 106,
+  "front": 24,
+  "hypervolume": 0.014058177191010922
  },
  {
   "generation": 4,
-  "evaluated": 115,
-  "front": 33,
-  "hypervolume": 0.012783169628304118
+  "evaluated": 122,
+  "front": 24,
+  "hypervolume": 0.014322976152036372
  },
  {
   "generation": 5,
-  "evaluated": 133,
-  "front": 40,
-  "hypervolume": 0.012929829983113695
+  "evaluated": 140,
+  "front": 26,
+  "hypervolume": 0.014682605427511297
  },
  {
   "generation": 6,
-  "evaluated": 150,
-  "front": 40,
-  "hypervolume": 0.013564406201842337
+  "evaluated": 158,
+  "front": 30,
+  "hypervolume": 0.014843994607438953
  },
  {
   "generation": 7,
-  "evaluated": 171,
-  "front": 41,
-  "hypervolume": 0.0140533797256758
+  "evaluated": 179,
+  "front": 34,
+  "hypervolume": 0.01523456855089952
  },
  {
   "generation": 8,
-  "evaluated": 188,
-  "front": 44,
-  "hypervolume": 0.014370004759089556
+  "evaluated": 195,
+  "front": 38,
+  "hypervolume": 0.01583653710344858
  },
  {
   "generation": 9,
-  "evaluated": 204,
-  "front": 43,
-  "hypervolume": 0.01440485568182931
+  "evaluated": 213,
+  "front": 39,
+  "hypervolume": 0.016237846258435627
  },
  {
   "generation": 10,
-  "evaluated": 223,
-  "front": 46,
-  "hypervolume": 0.014463246517729327
+  "evaluated": 233,
+  "front": 37,
+  "hypervolume": 0.01622576378787117
  }
 ]

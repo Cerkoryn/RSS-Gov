@@ -38,6 +38,7 @@ class Data:
     own: pd.Series | None  # ADA in accounts linked to each DRep (funder or declared), or None
     manifest: dict
     treasury: float | None = None  # ADA in the treasury at the latest recorded epoch
+    pledged: pd.Series | None = None  # the part of `own` delegated to the DRep itself
     cache: dict = field(default_factory=dict, repr=False, compare=False)  # derived, reusable
 
     def series(self):
@@ -160,11 +161,15 @@ def load(folder):
         delegators["amount"] = delegators["amount"].clip(lower=0) / 1e6
         delegators = delegators[delegators.amount > 0].reset_index(drop=True)
 
-    own = None
+    own = pledged = None
     if (tables / "drep_own.parquet").exists():
         links = read("drep_own").drop_duplicates(["drep_id", "stake_address"])
         # Koios reports a negative balance for the odd account; treat it as empty.
-        own = links.balance.clip(lower=0).groupby(links.drep_id).sum() / 1e6
+        balance = links.balance.clip(lower=0) / 1e6
+        own = balance.groupby(links.drep_id).sum()
+        # Only own ADA delegated to the DRep itself stands behind its votes.
+        mine = links.delegated_drep == links.drep_id
+        pledged = balance[mine].groupby(links.drep_id[mine]).sum().reindex(own.index).fillna(0.0)
 
     treasury = None
     if (tables / "totals.parquet").exists():
@@ -183,4 +188,5 @@ def load(folder):
         own=own,
         manifest=manifest,
         treasury=treasury,
+        pledged=pledged,
     )

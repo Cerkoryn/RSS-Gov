@@ -104,3 +104,35 @@ def test_the_browser_tags_settings_like_python():
     )
     out = json.loads(subprocess.run(["node", "-e", script], capture_output=True, check=True).stdout)
     assert out == [proposals.tag(k, v) for k, v in cases]
+
+
+def test_designs_link_to_where_their_idea_comes_from():
+    from rss_gov import mechanisms
+
+    named = mechanisms.preset("middle_out", 5e6)
+    assert website.references("middle_out", named)[0]["url"].endswith(
+        "ExcludeKPayN/blob/main/paper.md"
+    )
+    fee = mechanisms.from_config(dict(preset="capped", budget_ada=0, fee_ada=5e4), 5e6)
+    titles = [r["title"] for r in website.references("capped_fee_50k", fee, "capped")]
+    assert titles == [website._CIP1117[0], website._FEE[0]]
+    pledge = mechanisms.preset("pledge_soft", 5e6)
+    assert website.references("pledge_soft_1m", pledge, "pledge_soft") == website.references(
+        "pledge_soft", pledge
+    )
+    assert website.references("g1_2", named) == []
+    assert all(
+        r[1].startswith(("https://", "methods.html#"))
+        for v in website.REFERENCES.values()
+        for r in v
+    )
+
+
+def test_every_diagram_in_the_methods_page_exists(tmp_path):
+    source = (website.WEB.parents[2] / "METHODS.md").read_text()
+    names = website.FIGURE.findall(source)
+    assert names and all((website.WEB / "figures" / f"{n}.svg").exists() for n in names)
+    page = tmp_path / "METHODS.md"
+    page.write_text(f"# M\n\nText.\n\n<!--FIGURE:{names[0]}-->\n\n*Caption.*\n")
+    body = website.methods(page)[1]
+    assert '<figure class="diagram"><svg' in body and "<!--FIGURE" not in body

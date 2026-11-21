@@ -76,6 +76,12 @@ class Scenario:
     # DReps add own stake when a rule rewards it: the share of the missing own stake
     # that a DRep closes over the programme.
     pledge_response: float = 0.0
+    # ...but under a reward cap only while the extra award it brings is at least this
+    # yearly return on the ADA added,
+    pledge_min_return: float = 0.0
+    # ...and only until its own stake is this multiple of the ADA in its linked accounts:
+    # how much more it could buy (0: no limit).
+    pledge_wealth_multiple: float = 0.0
 
 
 @dataclass
@@ -87,7 +93,8 @@ class World:
     p: np.ndarray  # base probability of voting on an action
     q: np.ndarray  # probability that a vote carries a rationale
     last_active: np.ndarray  # epoch of the last vote or certificate
-    pledge: np.ndarray  # the DRep's own stake as far as chain data shows it, ADA
+    pledge: np.ndarray  # own stake behind the DRep's votes: linked ADA delegated to itself
+    holdings: np.ndarray  # ADA in the DRep's linked accounts, wherever delegated
     acct_stake: np.ndarray  # ADA represented by each account row (balance x weight)
     acct_count: np.ndarray  # accounts represented by each row
     acct_target: np.ndarray  # DRep slot, or NONE / ABSTAIN / NO_CONFIDENCE
@@ -99,6 +106,7 @@ class World:
     entrant_stake: np.ndarray  # pool: first-epoch power of new DReps
     entrant_p: np.ndarray  # pool: vote propensity of recently registered DReps
     entrant_q: np.ndarray
+    entrant_own: np.ndarray  # pool: own stake of new DReps, ADA
     exit_stake: np.ndarray  # pool: power of DReps in their last epoch
 
     @property
@@ -129,6 +137,7 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
     pick = r_entry.integers(0, len(world.entrant_p), n_new)
     n_exits = r_entry.poisson(params.exit_rate, epochs)
     exit_stake = r_entry.choice(world.exit_stake, max(1, int(n_exits.sum())))
+    new_own = np.minimum(new_stake, r_entry.choice(world.entrant_own, n_new))
 
     n0, a0 = len(world.p), len(world.acct_stake)
     D, A = n0 + n_new, a0 + n_new
@@ -137,7 +146,9 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
     base_p = logit(np.concatenate([world.p, world.entrant_p[pick]]))
     base_q = logit(np.concatenate([world.q, world.entrant_q[pick]]))
     last_active = np.concatenate([world.last_active, np.zeros(n_new)])
-    pledge = np.concatenate([world.pledge, new_stake])
+    pledge = np.concatenate([world.pledge, new_own])
+    holdings = np.concatenate([world.holdings, new_own])
+    added = np.zeros(D)  # own ADA added during the programme; it votes with the DRep
     acct_stake = np.concatenate([world.acct_stake, np.zeros(n_new)])
     acct_count = np.concatenate([world.acct_count, np.zeros(n_new)])
     target = np.concatenate([world.acct_target, np.full(n_new, NONE)])
@@ -176,14 +187,14 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
                 target[account] = slot
                 entrants += 1
             candidate_i += 1
-        stake = _by_drep(target, acct_stake, D)
+        stake = _by_drep(target, acct_stake, D) + added
         for _ in range(n_exits[t]):
             live = np.flatnonzero(registered)
             gap = np.abs(np.log1p(stake[live]) - np.log1p(exit_stake[exit_i]))
             gone = live[np.argmin(gap)]
             registered[gone] = False
             target[target == gone] = NONE
-            stake[gone] = 0.0
+            stake[gone] = added[gone] = 0.0
             exit_i += 1
         live = np.flatnonzero(registered)
 
@@ -229,10 +240,21 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
         if seen > 0 and scenario.reinvest_response > 0:
             reach[live] = np.power(1 + award / upkeep, scenario.reinvest_response)
         if seen > 0 and scheme.pledge_leverage > 0 and top_up > 0:
-            # DReps whose counted stake is limited by their own stake add some: paid DReps
-            # under a reward cap, every DRep when voting power itself is capped.
-            missing = np.maximum(stake[live] / scheme.pledge_leverage - pledge[live], 0)
-            pledge[live] += top_up * missing * ((award > 0) | scheme.hard_cap)
+            # DReps whose voting power is capped by their own stake add some of what is
+            # missing. Under a reward cap, only what counts for rewards is missing, and a
+            # DRep adds it only while the extra award pays the minimum return on it. Either
+            # way it adds no more than it could buy, and the ADA added votes with it.
+            wanted = stake[live] if scheme.hard_cap else np.minimum(stake[live], scheme.cap_ada)
+            step = top_up * np.maximum(wanted / scheme.pledge_leverage - pledge[live], 0)
+            if scenario.pledge_wealth_multiple > 0:
+                room = scenario.pledge_wealth_multiple * holdings[live] - pledge[live]
+                step = np.minimum(step, np.maximum(room, 0))
+            gain = mechanisms.own_stake_gain(scheme, rnd, seen, step) * EPOCHS_PER_YEAR
+            pays = (gain > 0) & (gain >= scenario.pledge_min_return * step)
+            step = step * (pays | scheme.hard_cap)
+            pledge[live] += step
+            added[live] += step
+            stake[live] += step
         if seen > 0 and scenario.drep_response > 0:
             value = mechanisms.vote_value(scheme, rnd, seen)
             shift[live] = scenario.drep_response * np.log1p(value / params.vote_cost_ada)
@@ -241,7 +263,9 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
                 shift_rationale[live] = scenario.drep_response * np.log1p(
                     extra / params.rationale_cost_ada
                 )
-            newcomer = _newcomer_award(scheme, rnd, seen, float(np.median(world.entrant_stake)))
+            newcomer = _newcomer_award(
+                scheme, rnd, seen, float(np.median(world.entrant_stake)), world.entrant_own
+            )
             entry_multiplier = min(
                 ENTRY_CAP, 1 + scenario.drep_response * np.log1p(newcomer / upkeep)
             )
@@ -263,8 +287,9 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
             yield_pp,
             reach,
         )
-        stake = _by_drep(target, acct_stake, D)
+        stake = _by_drep(target, acct_stake, D) + added
         power = np.where(registered, mechanisms.voting_power(scheme, stake, pledge), 0.0)
+        everything = acct_stake.sum() + added.sum()  # all delegated ADA, own top-ups included
 
         # 6. Actions closing this epoch are voted on.
         eligible = registered.astype(float)
@@ -288,7 +313,7 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
                 dict(
                     epoch=epoch,
                     turnout=power[votes].sum() / max(power.sum(), 1e-9),
-                    participation=power[votes].sum() / acct_stake.sum(),
+                    participation=power[votes].sum() / everything,
                     turnout_active=power[votes].sum() / max(power[active].sum(), 1e-9),
                     ballots=int(votes.sum()),
                     rationales=int(with_rationale.sum()),
@@ -306,7 +331,6 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
 
         # 7. Where things stand at the end of the epoch.
         live_power = power[registered]
-        everything = acct_stake.sum()
         series.append(
             dict(
                 epoch=epoch,
@@ -397,14 +421,14 @@ def _activity(window, activity, rationale_share):
     return np.minimum(activity, 1.0), rationale_share
 
 
-def _newcomer_award(scheme, rnd, pot, stake):
+def _newcomer_award(scheme, rnd, pot, stake, own):
     """Per-epoch award of one extra, fully active DRep of typical new-DRep size."""
     plus = mechanisms.Round(
         stake=np.append(rnd.stake, stake),
         activity=np.append(rnd.activity, 1.0),
         rationale=np.append(rnd.rationale, 0.0),
         delegators=np.append(rnd.delegators, 1.0),
-        pledge=np.append(rnd.pledge, stake),
+        pledge=np.append(rnd.pledge, min(stake, float(np.median(own)))),
         actions=rnd.actions,
     )
     return float(mechanisms.allocate(scheme, plus, pot)[0][-1])
