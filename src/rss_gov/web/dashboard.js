@@ -1046,17 +1046,19 @@ function partsOf(fam) {
 function why(part, first, fam, names) {
   const S = D.search.scores, P = S[part.name], base = D.search.hypervolume_unpaid;
   if (part.adds / base >= 0.05) {
-    return { text: first && part.adds >= 0.5 * fam.adds ? "Does most of this group's work" : "Reaches ground the designs above do not" };
+    return first && part.adds >= 0.5 * fam.adds
+      ? { text: "does most of this family's work", long: "Does most of this family's work." }
+      : { text: "reaches new ground", long: "Reaches trade-offs the designs above it do not." };
   }
   const others = names.filter((n) => n !== part.name && S[n]);
   const worst = (m) => Math.max(...S[m].map((v, d) => P[d] - v)); // its largest shortfall
   const nearest = (list) => list.reduce((a, b) => (worst(a) <= worst(b) ? a : b));
   const outdone = others.filter((m) => worst(m) <= 0 && S[m].some((v, d) => v > P[d]));
-  if (outdone.length) return { text: "Outdone on every measure by", by: nearest(outdone) };
+  if (outdone.length) { const by = pretty(nearest(outdone)); return { text: "outdone by " + by, long: `Outdone on every measure by ${by}.` }; }
   const matched = others.filter((m) => S[m].every((v, d) => v >= P[d] - STEP[d]));
-  if (matched.length) return { text: "About as good on every measure as", by: nearest(matched) };
-  if (part.adds / base >= 0.005) return { text: "Adds a little the designs above do not" };
-  return { text: "Each of its strengths is matched by some design above" };
+  if (matched.length) { const by = pretty(nearest(matched)); return { text: "about as good as " + by, long: `About as good on every measure as ${by}, within a meaningful difference.` }; }
+  if (part.adds / base >= 0.005) return { text: "adds a little", long: "Adds a little the designs above it do not." };
+  return { text: "strengths matched above", long: "Each of its strengths is matched by some design above it." };
 }
 // Which search round first tried a design: generated names carry it, named designs start in round 0.
 const roundOf = (name) => { const m = GENERATED.exec(name); return m ? +m[1] : 0; };
@@ -1206,7 +1208,8 @@ function contributions(shown) {
   h("h3", {}, row, families.length ? `What makes up the ${num(total / base, 1)}×` : "Nothing to rank");
   info(row, [
     "The designs switched on above the chart, in families. A family is every design that answers the same to three questions: does it leave out the largest DReps, does it tie pay to pledge, does it pay delegators.",
-    "Families are ranked by how much coverage each adds on top of the families above it, so the bars add up to the total. Near-identical designs sit in the same family, so they never take credit from each other.",
+    "A family's number is what all its designs add together, on top of the families above it, so the numbers add up to the total. It is not any one design's score: the total comes from many designs, each covering different trade-offs. Open a family to see how its number splits between its designs.",
+    "Near-identical designs sit in the same family, so they never take credit from each other.",
     "Open a family to see its designs. Each shows its five measures and why it adds what it does: a design near the bottom does something others already do, or is outdone by one of them. It is not necessarily a bad design.",
   ]);
   if (state.round !== null) {
@@ -1224,6 +1227,9 @@ function contributions(shown) {
   const open = state.open ?? new Set(families.filter((f) => f.adds / base >= 0.005).slice(0, 1).map((f) => f.key));
   const max = Math.max(...families.map((f) => f.adds), 1e-12);
   const list = h("ol", { className: "fam-list" }, host);
+  const hd = h("li", { className: "fam-row fam-head", "aria-hidden": "true" }, list);
+  h("span", {}, hd); h("span", {}, hd);
+  h("span", { className: "val" }, hd, "adds to the total");
   const start = h("li", {}, list);
   const sr = h("div", { className: "fam-row start" }, start);
   h("span", {}, sr);
@@ -1261,14 +1267,13 @@ function contributions(shown) {
       const reason = why(part, j === 0, fam, names);
       const item = h("li", { className: state.round !== null && !inRound(part.name) ? "dim" : "" }, sub);
       const r = h("button", { className: "member-row", type: "button" }, item);
-      r.title = describe(s.scheme, true);
+      r.title = [pretty(part.name), fam.key !== "none" ? familyDetail(s.scheme) : "", reason.long, "", describe(s.scheme, true)].filter((x, k) => x || k === 3).join("\n");
       const nmr = h("span", { className: "nm" }, r);
       const dot = h("span", { className: "dot" }, nmr);
       dot.style.background = KIND[s.kind].color;
       nmr.appendChild(document.createTextNode(pretty(part.name)));
       if (!s.pilot) h("span", { className: "tag" }, nmr, "Needs another hard fork");
-      if (fam.key !== "none") h("span", { className: "how" }, nmr, familyDetail(s.scheme));
-      h("span", { className: "why" }, nmr, reason.text + (reason.by ? " " + pretty(reason.by) : ""));
+      h("span", { className: "why" }, nmr, " — " + reason.text);
       for (const a of D.axes) {
         const v = val(s, a.name);
         if (a.exact) h("span", { className: "m flat" }, r, a.name === "annual_cost_ada" ? ada(v) : pct(v));

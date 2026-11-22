@@ -426,8 +426,10 @@ button.fam-row:hover { background: var(--wash); }
 .fam-row[aria-expanded="true"] .chev { transform: rotate(90deg); }
 .fam-row .nm { font-weight: 650; line-height: 1.45; }
 .fam-row .count { font-weight: 450; color: var(--muted); font-size: 12.5px; margin-left: 8px; white-space: nowrap; }
-.member-row .how { display: block; font-weight: 450; color: var(--ink-2); font-size: 12.5px; line-height: 1.4; }
-.fam-row .why, .member-row .why { display: block; font-weight: 400; color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+.fam-row .why { display: block; font-weight: 400; color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+.member-row .why { font-weight: 400; color: var(--muted); font-size: 12.5px; }
+.fam-head { padding-top: 0; padding-bottom: 0; font-size: 11.5px; color: var(--muted); }
+.fam-head .val { grid-column: 3 / 5; font-weight: 500; font-size: 11.5px; }
 .fam-row .bar { height: 8px; border-radius: 4px; background: var(--wash); overflow: hidden; }
 .fam-row .bar span { display: block; height: 100%; border-radius: 4px; background: var(--c2); }
 .fam-row .val, .member-row .val, .member-head .val { font-variant-numeric: tabular-nums; font-weight: 650; text-align: right; font-size: 13px; }
@@ -435,9 +437,9 @@ ol.fam-members { list-style: none; margin: 0 0 10px 17px; padding: 0 0 0 12px; b
 .member-head, .member-row { display: grid; grid-template-columns: minmax(0, 1fr) repeat(5, 42px) 52px; gap: 6px; align-items: center; }
 .member-head { font-size: 11.5px; color: var(--muted); padding: 2px 8px 0; }
 .member-head .val { font-weight: 500; font-size: 11.5px; }
-.member-row { width: 100%; border: 0; background: none; padding: 7px 8px; border-radius: 8px; text-align: left; font-size: 13px; color: var(--ink); cursor: pointer; }
+.member-row { width: 100%; border: 0; background: none; padding: 5px 8px; border-radius: 8px; text-align: left; font-size: 13px; color: var(--ink); cursor: pointer; }
 .member-row:hover { background: var(--wash); }
-.member-row .nm { line-height: 1.45; font-weight: 560; }
+.member-row .nm { line-height: 1.45; font-weight: 560; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .member-row .nm .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; }
 .member-row .tag { display: inline-block; margin-left: 8px; font-size: 11px; padding: 1px 7px; border-radius: 99px; background: var(--wash); color: var(--ink-2); white-space: nowrap; font-weight: 400; }
 .member-head .m, .member-row .m { text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; }
@@ -447,7 +449,7 @@ ol.fam-members { list-style: none; margin: 0 0 10px 17px; padding: 0 0 0 12px; b
 @media (max-width: 600px) {
   .fam-row { grid-template-columns: 14px minmax(0, 1fr) 48px; }
   .fam-row .bar { grid-column: 2 / 4; grid-row: 2; }
-  .fam-row.start .small { display: none; }
+  .fam-row.start .small, .fam-head { display: none; }
   .member-head { display: none; }
   .member-row { grid-template-columns: minmax(0, 1fr) 48px; }
   .member-row .m { display: none; }
