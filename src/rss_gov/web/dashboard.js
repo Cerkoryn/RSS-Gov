@@ -5,7 +5,9 @@ const state = {
   show: { named: true, search: false, proposed: hasKind("proposed") },
   pilot: false, view: "table", selected: null,
   chart: { named: true, search: true, proposed: true, fork: false },
-  x: "tau67", y: "participation", lead: D.search && D.search.hypervolume_unpaid ? "combined" : "pair", round: null,
+  x: "tau67", y: "participation", round: null,
+  lead: D.ranking ? "ranking" : D.search && D.search.hypervolume_unpaid ? "combined" : "pair",
+  rank: { mult: [1, 1, 1], loss: D.ranking ? D.ranking.sybil_loss : 1, all: false }, // the Ranking tab's values
   features: new Set(), open: null, // family questions switched on; families opened in the coverage list
   heat: "participation", focusRow: null,
   cmp: { sort: null, dir: 1, page: 0, per: 25, sig: "" },
@@ -344,6 +346,15 @@ function detail() {
   const g = givesUp(s.breaks);
   if (g === "") h("span", { className: "badge good" }, badges, "✓ Inside every guardrail");
   else if (g) h("span", { className: "badge bad" }, badges, g.charAt(0).toUpperCase() + g.slice(1));
+  if (NET && NET.designs[s.name]) {
+    const rows = netRows(), i = rows.findIndex((r) => r.name === s.name);
+    if (i >= 0) {
+      const r = rows[i];
+      h("p", { className: "small", style: "margin:10px 0 0" }, h("div", {}, host),
+        `Ranks ${i + 1} of ${rows.length} by net benefit: ${money(r.score)} ADA a year (±${ada(r.ci)}), ` +
+        `${SCEN_SHORT.low.toLowerCase()} ${money(r.by[0])}, ${SCEN_SHORT.central.toLowerCase()} ${money(r.by[1])}, ${SCEN_SHORT.high.toLowerCase()} ${money(r.by[2])}, at the values in the Ranking tab.`);
+    }
+  }
   if (s.proposal) {
     const p = s.proposal;
     const box = h("div", { style: "margin-top:16px" }, host);
@@ -697,6 +708,7 @@ function scatterControls() {
     b.dataset.lead = key;
     b.addEventListener("click", () => { state.lead = key; lead(); });
   };
+  if (D.ranking) tab("ranking", "Ranking");
   if (D.search && D.search.hypervolume_unpaid) tab("combined", "Combined trade-offs");
   tab("pair", "Comparison");
   // two measures, any pair; picking the one already on the other axis swaps them
@@ -927,16 +939,211 @@ function frontierList(front) {
     }
   }
 }
+// ---------- ranking: net benefit in ADA a year, at values anyone can change ----------
+const NET = D.ranking;
+const GAIN_TEXT = { participation: "1 point more participation", tau67: "1 more DRep holding two thirds of the power", backing: "1 point more of the power backed by pledge" };
+const money = (v) => (v > 0.5 ? "+" : v < -0.5 ? "−" : "") + ada(Math.abs(v));
+const netValue = () => NET.value.map((v, i) => v * state.rank.mult[i]);
+const netCache = { key: null, rows: null };
+// The designs switched on above the chart, ranked; paying nothing is the row named null.
+function netRows() {
+  const shown = chartVisible().filter((s) => NET.designs[s.name]);
+  const value = netValue();
+  const key = shown.map((s) => s.name).join("|") + "#" + value.join(",") + "#" + state.rank.loss;
+  if (netCache.key !== key) {
+    const designs = Object.fromEntries(shown.map((s) => [s.name, NET.designs[s.name]]));
+    netCache.key = key;
+    netCache.rows = Ranking.table(designs, value, state.rank.loss, NET.shake);
+  }
+  return netCache.rows;
+}
+// What a design's gains are worth, and what it costs, a year: net benefit = k × gains − cost.
+function netParts(r) {
+  if (r.name === null) return { gains: 0, cost: 0 };
+  const d = NET.designs[r.name];
+  const cost = (d.m.reduce((t, row) => t + row[3], 0) / d.m.length) * (1 + state.rank.loss * d.s);
+  return { gains: r.score + cost, cost };
+}
+function ranking() {
+  rankSide();
+  netResults();
+}
+function netResults() {
+  const rows = netRows();
+  rankList(rows);
+  rankChart(rows);
+  rankFirm(rows);
+}
+function rankSide() {
+  const side = $("#rank-side");
+  side.textContent = "";
+  const row = h("div", { className: "title-row" }, side);
+  h("h3", {}, row, "What an improvement is worth");
+  info(row, [
+    "Net benefit is what a design's gains are worth, minus what it costs, in ADA a year. These values say what each gain is worth: they are a judgement, not a measurement.",
+    "The starting values give the whole range of each measure in this study the same worth as the whole range of cost, 25M ADA a year, so no measure counts for more than another to begin with.",
+    "Cost counts as itself. The ADA one actor could take by posing as many DReps counts as lost on top of the cost, as many times as the last slider says.",
+    "Gains are averaged over a weak, a medium and a strong reaction to rewards, each counting the same.",
+  ]);
+  h("p", { className: "small", style: "margin:4px 0 10px" }, side, "In ADA a year. Move them to match your own view; the ranking follows.");
+  const slider = (label, shown, value, max, onChange) => {
+    const box = h("label", { className: "rank-slider" }, side);
+    h("span", { className: "what" }, box, label);
+    const out = h("output", {}, box, shown(value));
+    const input = h("input", { type: "range", min: 0, max, step: max / 80, value }, box);
+    input.addEventListener("input", () => { out.textContent = shown(+input.value); onChange(+input.value); netResults(); });
+  };
+  const worth = (v) => (v >= 1e6 ? num(v / 1e6, 2) + "M" : ada(v)) + " ADA";
+  NET.gains.forEach((a, i) => slider(GAIN_TEXT[a], (m) => worth(NET.value[i] * m / AX[a].factor), state.rank.mult[i], 4, (m) => { state.rank.mult[i] = m; }));
+  slider("Each ADA one actor could take by splitting counts as", (m) => `${num(m, 1)} ADA lost`, state.rank.loss, 4, (m) => { state.rank.loss = m; });
+  const reset = h("button", { className: "ghost small-btn", type: "button" }, side, "Back to the starting values");
+  reset.addEventListener("click", () => { state.rank.mult = [1, 1, 1]; state.rank.loss = NET.sybil_loss; ranking(); });
+  h("div", { id: "rank-firm" }, side);
+}
+// How much the order depends on the values and on the reaction.
+function rankFirm(rows) {
+  const host = $("#rank-firm");
+  host.textContent = "";
+  const designs = rows.filter((r) => r.name !== null);
+  if (!designs.length) return;
+  h("h3", { style: "margin-top:18px" }, host, "How firm is the order?");
+  const ul = h("ul", { className: "firm" }, host);
+  const firsts = rows.filter((r) => r.first >= 0.01).sort((p, q) => q.first - p.first).slice(0, 3);
+  const li = h("li", {}, ul, `If every value were up to ${pct(NET.shake)} higher or lower, the design that comes first:`);
+  const ol = h("ol", { className: "firsts" }, li);
+  for (const r of firsts) {
+    const it = h("li", {}, ol);
+    h("span", { className: "nm" }, it, r.name === null ? "Paying nothing" : pretty(r.name));
+    h("b", {}, it, pct(r.first));
+  }
+  const least = designs.reduce((a, b) => (b.behind < a.behind ? b : a));
+  h("li", {}, ul, `Least regret: ${pretty(least.name)}. Whatever the reaction to rewards, it falls at most ${ada(least.behind)} ADA a year behind the best design for that reaction.`);
+  const at = rows.findIndex((r) => r.name === null);
+  h("li", {}, ul, at === 0 ? "Paying nothing ranks first: at these values no design is worth its cost."
+    : `Paying nothing ranks ${at + 1} of ${rows.length}. ${at + 1 < rows.length ? "The designs below it cost more than their gains are worth at these values." : "Every design is worth its cost at these values."}`);
+}
+function rankList(rows) {
+  const host = $("#rank-list");
+  host.textContent = "";
+  const head = h("div", { className: "contrib-head" }, host);
+  const tr = h("div", { className: "title-row" }, head);
+  h("h3", {}, tr, "Ranked by net benefit");
+  info(tr, [
+    "Each design's gains, at the values on the right, minus its cost and what splitting could take, in ADA a year. Paying nothing scores 0, so a design below it is not worth its cost at these values.",
+    "Weak, medium and strong: the same under each reaction to rewards. The ranking uses their average; ± is the 95% interval over the same simulated runs for every design.",
+    "Only the designs switched on above the chart are ranked. A red ▼ before a name marks a design that is worse than paying nothing on that measure under some reaction: it crosses the guardrail.",
+  ]);
+  if (rows.length <= 1) { h("p", { className: "empty" }, host, "No design matches the switches above the chart."); return; }
+  const TOP = 12;
+  const onScreen = rows.filter((r, i) => state.rank.all || i < TOP || r.name === null);
+  const lo = Math.min(0, ...onScreen.map((r) => r.score - r.ci)), hi = Math.max(0, ...onScreen.map((r) => r.score + r.ci));
+  const x = (v) => ((v - lo) / (hi - lo || 1)) * 100;
+  const list = h("ol", { className: "rank-list" }, host);
+  const hr = h("li", { className: "rank-row rank-head", "aria-hidden": "true" }, list);
+  for (const t of ["", "", "Weak", "Medium", "Strong", "", "a year"]) h("span", {}, hr, t);
+  let hidden = 0;
+  rows.forEach((r, i) => {
+    if (!state.rank.all && i >= TOP && r.name !== null) { hidden++; return; }
+    const s = r.name === null ? null : D.schemes.find((q) => q.name === r.name);
+    const li = h("li", {}, list);
+    const b = h(s ? "button" : "div", { className: "rank-row" + (s ? "" : " zero"), type: "button" }, li);
+    h("span", { className: "rank" }, b, String(i + 1));
+    const nm = h("span", { className: "nm" }, b);
+    if (s) { const dot = h("span", { className: "dot" }, nm); dot.style.background = KIND[s.kind].color; }
+    // the guardrail mark goes first, where a long name cannot push it out of sight
+    if (s && s.breaks) h("span", { className: "flag", title: `Worse ${s.breaks} than paying nothing under some reaction`, "aria-label": `Worse ${s.breaks} than paying nothing` }, nm, "▼ " + s.breaks);
+    nm.appendChild(document.createTextNode(s ? pretty(s.name) : "Paying nothing"));
+    if (s && !s.pilot) h("span", { className: "tag" }, nm, "Needs another hard fork");
+    for (const v of r.by) h("span", { className: "sc" + (v < 0 ? " neg" : "") }, b, s ? money(v) : "0");
+    const bar = h("span", { className: "nbar" }, b);
+    h("span", { className: "zero-line", style: `left:${x(0)}%` }, bar);
+    if (s) {
+      h("span", { className: "fill" + (r.score < 0 ? " neg" : ""), style: `left:${x(Math.min(0, r.score))}%;width:${x(Math.max(0, r.score)) - x(Math.min(0, r.score))}%` }, bar);
+      h("span", { className: "ci", style: `left:${x(r.score - r.ci)}%;width:${x(r.score + r.ci) - x(r.score - r.ci)}%` }, bar);
+    }
+    h("span", { className: "val" }, b, s ? `${money(r.score)} ±${ada(r.ci)}` : "0");
+    if (s) {
+      const w = r.worthFrom;
+      b.title = [
+        `${pretty(s.name)}: ${money(r.score)} ADA a year (95% ${money(r.score - r.ci)} to ${money(r.score + r.ci)}).`,
+        `Falls at most ${ada(r.behind)} ADA a year behind the best design under any one reaction.`,
+        w === Infinity ? "Its gains would not cover its cost at any values." : `Worth its cost once gains are worth ${num(w, 2)}× the values set.`,
+        `First in ${pct(r.first)} of draws when every value moves by up to ${pct(NET.shake)}.`,
+      ].join("\n");
+      b.addEventListener("click", () => openDesign(s.name));
+    }
+  });
+  if (hidden || state.rank.all) {
+    const more = h("button", { className: "ghost small-btn", type: "button", style: "margin-top:8px" }, host, state.rank.all ? `Show the top ${TOP}` : `Show all ${rows.length}`);
+    more.addEventListener("click", () => { state.rank.all = !state.rank.all; rankList(netRows()); });
+  }
+}
+// Net benefit of the leading designs if every gain were worth k times the values set.
+function rankChart(rows) {
+  const host = $("#rank-chart");
+  host.textContent = "";
+  const top = rows.filter((r) => r.name !== null).slice(0, 5);
+  if (!top.length) return;
+  const K = 3;
+  const lines = top.map((r) => ({ r, s: D.schemes.find((q) => q.name === r.name), rank: rows.indexOf(r) + 1, ...netParts(r) }));
+  const at = (l, k) => k * l.gains - l.cost;
+  const W = host.clientWidth, H = Math.max(260, Math.min(360, W * 0.45));
+  const m = { l: 52, r: 40, t: 30, b: 46 };
+  const ys = lines.flatMap((l) => [at(l, 0), at(l, K)]);
+  const yt = ticks(Math.min(0, ...ys), Math.max(0, ...ys), 5);
+  const x = scale(0, K, m.l, W - m.r), y = scale(yt[0], yt[yt.length - 1], H - m.b, m.t);
+  const svg = el("svg", { width: W, height: H, role: "img", "aria-label": "Net benefit of the leading designs as every value is scaled" }, host);
+  for (const v of yt) {
+    el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v === 0 ? "base" : "grid" }, svg);
+    text(svg, m.l - 6, y(v) + 4, v ? money(v) : "0", { "text-anchor": "end" });
+  }
+  for (let k = 0; k <= K; k += 0.5) {
+    el("line", { x1: x(k), x2: x(k), y1: m.t, y2: H - m.b, class: "grid" }, svg);
+    text(svg, x(k), H - m.b + 16, num(k, k % 1 ? 1 : 0) + "×", { "text-anchor": "middle" });
+  }
+  text(svg, (m.l + W - m.r) / 2, H - 8, "Every value set on the right, times", { "text-anchor": "middle", class: "ink2" });
+  text(svg, 0, 12, "Net benefit, ADA a year  ↑ better", { class: "ink2" });
+  const halo = (t) => { t.setAttribute("paint-order", "stroke"); t.setAttribute("stroke", "var(--surface)"); t.setAttribute("stroke-width", 3); return t; };
+  el("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), stroke: "var(--ink-2)", "stroke-width": 1.5, "stroke-dasharray": "4 3" }, svg);
+  halo(text(svg, W - m.r - 4, y(0) + 15, "paying nothing", { "text-anchor": "end", "font-size": 11.5, class: "ink2" }));
+  el("line", { x1: x(1), x2: x(1), y1: m.t, y2: H - m.b, stroke: "var(--ink)", "stroke-width": 1, "stroke-dasharray": "2 3" }, svg);
+  halo(text(svg, x(1) + 5, m.t + 10, "values set", { "font-size": 11.5, class: "ink2" }));
+  // lines drawn worst first, so the leader sits on top; rank numbers at the right end, kept apart
+  const ends = [];
+  for (const l of [...lines].reverse()) {
+    el("line", { x1: x(0), x2: x(K), y1: y(at(l, 0)), y2: y(at(l, K)), stroke: KIND[l.s.kind].color, "stroke-width": l.rank === 1 ? 3 : 2 }, svg);
+    ends.push({ l, py: y(at(l, K)) });
+  }
+  ends.sort((a, b) => a.py - b.py);
+  for (let i = 1; i < ends.length; i++) ends[i].py = Math.max(ends[i].py, ends[i - 1].py + 19);
+  for (const e of ends) {
+    el("circle", { cx: W - m.r + 14, cy: e.py, r: 9, fill: KIND[e.l.s.kind].color }, svg);
+    text(svg, W - m.r + 14, e.py + 4, String(e.l.rank), { "text-anchor": "middle", style: "fill:#fff;font-size:11px;font-weight:700" });
+  }
+  const cross = el("line", { y1: m.t, y2: H - m.b, stroke: "var(--ink-2)", "stroke-width": 1, visibility: "hidden", "pointer-events": "none" }, svg);
+  const layer = el("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, class: "hit" }, svg);
+  layer.addEventListener("pointermove", (e) => {
+    const b = svg.getBoundingClientRect(), k = Math.max(0, Math.min(K, ((e.clientX - b.left - m.l) / (W - m.l - m.r)) * K));
+    cross.setAttribute("x1", x(k)); cross.setAttribute("x2", x(k)); cross.setAttribute("visibility", "visible");
+    const list = [...lines.map((l) => ({ key: KIND[l.s.kind].color, v: at(l, k), label: `${l.rank}. ${pretty(l.s.name)}` })), { key: "var(--surface)", v: 0, label: "Paying nothing" }].sort((p, q) => q.v - p.v);
+    showTip(e, [{ value: `Gains worth ${num(k, 2)}× the values set` }, ...list.map((q) => ({ key: q.key, value: money(q.v), label: q.label }))]);
+  });
+  layer.addEventListener("pointerleave", () => { hideTip(); cross.setAttribute("visibility", "hidden"); });
+  const note = h("p", { className: "small", style: "margin:4px 0 0" }, host, "");
+  const flip = lines[0].gains > 0 ? lines[0].cost / lines[0].gains : Infinity;
+  note.textContent = `The ${lines.length} leading designs, if every gain were worth more or less than the values set. ` +
+    (flip === Infinity ? `${pretty(lines[0].s.name)} never covers its cost.` : `${pretty(lines[0].s.name)} covers its cost once gains are worth ${num(flip, 2)}× the values set.`);
+}
+
 // ---------- combined trade-offs: the hypervolume, as a multiple of what paying nothing covers ----------
 function lead() {
-  const combined = state.lead === "combined";
+  const pair = state.lead === "pair";
   for (const b of $("#presets").children) b.setAttribute("aria-pressed", b.dataset.lead === state.lead);
   for (const s of $("#axis-pick").querySelectorAll("select")) s.value = state[s.dataset.axis];
-  $("#pair").hidden = combined;
-  $("#combined").hidden = !combined;
-  $("#axis-pick").hidden = combined;
-  $("#best-scenario").hidden = combined;
-  if (combined) coverage(); else scatter();
+  for (const id of ["pair", "combined", "ranking"]) $("#" + id).hidden = state.lead !== id;
+  $("#axis-pick").hidden = !pair;
+  $("#best-scenario").hidden = !pair;
+  ({ pair: scatter, combined: coverage, ranking })[state.lead]();
 }
 // Exact hypervolume above the origin, every score maximised (the same recursion as metrics.py).
 function hvol(points) {

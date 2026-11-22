@@ -4,8 +4,10 @@ Research tool for governance reward designs on Cardano. Every way of paying
 DReps and their delegators trades something off: proportional pay feeds concentration,
 equal pay invites fake DReps, paying delegators spreads money thin, and ignoring a DRep's
 pledge (the ADA it owns itself) rewards power with nothing at risk. RSS-Gov measures each payment rule on all
-of those dimensions at once, says how sure it is, and shortlists the rules that are not
-beaten across the board, so that the trade-offs of any reward design are in plain view.
+of those dimensions at once, says how sure it is, shortlists the rules that are not
+beaten across the board, and ranks them by net benefit (what their gains are worth, at
+stated values anyone can change, minus what they cost), so that the trade-offs of any
+reward design are in plain view.
 
 It replaces the earlier simulator (archived next to this folder as `OLD_RSS-Gov`). The
 design goal is that every number can be traced to chain data, to a stated assumption, or
@@ -91,8 +93,9 @@ show. Things to keep in mind:
 3. **Noise is measured.** Schemes are compared on the same seeds, and effects come with
    95% intervals. Finalists of the search are re-run on seeds the search never saw.
 4. **Measurement and judgement are separate.** The axes are measured. The lines a design
-   must not cross are `guardrails` in `config.yaml`; moving one re-labels the shortlist
-   without re-running anything.
+   must not cross are `guardrails` in `config.yaml`, and what a gain is worth for the
+   ranking is under `ranking`; changing either re-labels or re-ranks the designs without
+   re-running anything.
 
 ## Scope and limits
 

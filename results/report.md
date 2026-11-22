@@ -639,6 +639,36 @@ The guardrails are judgement calls in `config.yaml`. Moving one and running `rss
 
 ![front](figures/front.png)
 
+## Ranking by net benefit
+
+One score per design: what its gains are worth at the values in `config.yaml` (`ranking`), minus its cost and what one actor could take by splitting into many DReps, in ADA a year, averaged over `low`, `central`, `high`. The values are judgements, not measurements: 1M ADA a year for 1 point of participation, 1.25M for 1 more DRep holding two thirds of the power, 4.5M for 1 point of pledge backing; ADA lost to splitting counts 1× on top of the cost. Paying nothing scores 0. Every design is scored on the same holdout seeds; ± is the 95% interval.
+
+*Behind the best*: the most it falls short of the best design in any one scenario. *Pays off from*: the share of these values at which its gains cover its cost. *First*: how often it ranks first when every value moves by up to 50% either way. *Gives up*: the guardrail it crosses.
+
+Designs that need only CIP-159 (61 finalists):
+
+| rank | scheme | rule | net benefit | low | central | high | behind the best | pays off from | first, values ±50% | gives up |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | skip_top20_delegators_min_pledge | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 2x; 5M ADA | +7.0M ± 0.3M | -1.6M | +3.6M | +19.0M | 2.2M | 0.59× | 66% |  |
+| 2 | g5_22 | linear, skip top 20, min pledge 10k, 80% to delegators (passthrough), pledge soft cap 1x; 10M ADA | +5.1M ± 0.3M | -8.1M | +2.3M | +21.2M | 8.2M | 0.80× | 14% |  |
+| 3 | g2_22 | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 2x; 10M ADA | +4.8M ± 0.3M | -5.4M | +0.8M | +18.8M | 5.5M | 0.81× | 4% |  |
+| 4 | g5_16 | linear, skip top 20, min pledge 10k, pledge soft cap 1x; 2.5M ADA | +4.3M ± 0.2M | -3.9M | +0.5M | +16.2M | 5.0M | 0.55× | 6% |  |
+| 5 | g6_5 | power^0.5, skip top 20, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 2x; 10M ADA | +2.8M ± 0.3M | -6.4M | +0.0M | +14.7M | 6.5M | 0.89× | 0% |  |
+| 6 | g1_20 | linear, top 20 at 50%, min pledge 10k, pledge soft cap 1x; 5M ADA | +2.4M ± 0.2M | -8.9M | -4.0M | +20.0M | 8.9M | 0.81× | 10% | decentralisation |
+| 7 | g7_12 | power^0.75, skip top 20, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 2x; 1M ADA | +2.2M ± 0.2M | -0.5M | +1.1M | +6.0M | 15.3M | 0.49× | 0% |  |
+| 8 | g5_6 | linear, cap 5M, 50% to delegators (passthrough), not via top 10, pledge soft cap 1x; 5M ADA | +1.8M ± 0.3M | -6.5M | -1.4M | +13.4M | 7.8M | 0.85× | 0% |  |
+| 9 | g1_12 | power^0.75, cap 200M, award cap 2%, skip top 20, min 1M, min 10 delegators, min pledge 10k, gate 25%, 80% to delegators (flat), pledge soft cap 100x; 2.5M ADA | +1.6M ± 0.3M | -2.9M | +1.8M | +5.8M | 15.4M | 0.81× | 0% |  |
+| 10 | g8_6 | power^0.75, cap 200M, award cap 2%, skip top 20, min 1M, min 5 delegators, min pledge 10k, gate 25%, 80% to delegators (passthrough), pledge soft cap 100x; 2.5M ADA | +1.4M ± 0.3M | -3.7M | +0.7M | +7.3M | 13.9M | 0.83× | 0% |  |
+| 11 | pledge_backed_delegators_half | linear, cap 5M, 50% to delegators (passthrough), pledge soft cap 1x; 5M ADA | +1.1M ± 0.2M | -6.7M | -2.0M | +11.9M | 9.3M | 0.90× | 0% |  |
+| 12 | skip_top20_delegators | linear, skip top 20, gate 70%, 80% to delegators (flat), pledge soft cap 2x; 5M ADA | +1.1M ± 0.3M | -8.7M | -1.7M | +13.6M | 8.8M | 0.93× | 0% |  |
+| 13 | g10_7 | linear, cap 5M, min 10k, 50% to delegators (passthrough), not via top 10, pledge soft cap 1x; 1M ADA | +1.0M ± 0.2M | -1.3M | +0.2M | +4.3M | 16.9M | 0.67× | 0% |  |
+| 14 | pledge_soft_cap_skip20 | linear, skip top 20, pledge soft cap 1x; 5M ADA | +0.7M ± 0.2M | -8.8M | -3.3M | +14.1M | 8.9M | 0.94× | 0% |  |
+| 15 | pledge_soft_cap_skip20_min_pledge | linear, skip top 20, min pledge 10k, pledge soft cap 1x; 5M ADA | +0.5M ± 0.2M | -8.9M | -3.5M | +13.9M | 9.0M | 0.95× | 0% |  |
+| 20 | paying nothing |  | +0.0M ± 0.0M | +0.0M | +0.0M | +0.0M | 21.2M |  | 0% |  |
+
+- Smallest shortfall in any scenario: `skip_top20_delegators_min_pledge`, never more than 2.2M ADA a year behind the best.
+- Best design that needs another hard fork: `pledge_hard_cap`, -25.6M ADA a year.
+
 ## How to read this
 
 - The unpaid world is fitted to chain history and tested on held-out epochs. How people react to money is **assumed**: four response channels, each at low, central and high strength. A result that holds only in `high` is a hope, not a finding.

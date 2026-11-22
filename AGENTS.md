@@ -48,8 +48,8 @@ proposer fee kept from each governance action. Read `METHODS.md` before changing
   keep it true. Each response channel must be off unless its scenario value is non-zero.
 - Rewards are for explicit votes only. No formula may pay a DRep, or its delegators,
   for a round in which its recent vote rate is zero.
-- Schemes are compared on every axis in `config.yaml`. Do not add a combined score, and
-  do not turn an axis into a hidden pass/fail filter: limits belong under `guardrails`.
+- Schemes are compared on every axis in `config.yaml`. Do not turn an axis into a hidden
+  pass/fail filter: limits belong under `guardrails`.
 - A change to `model.py` or `calibrate.py` needs `rss-gov calibrate` rerun and its
   validation table reported, pass or fail. Do not loosen a tolerance to make it pass.
 - Report effects as paired differences with intervals. One seed is not a result.

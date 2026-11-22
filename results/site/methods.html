@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How RSS-Gov works</title>
 <meta name="description" content="How RSS-Gov compares reward schemes for Cardano governance: data, model, assumptions, validation and how to read the results.">
-<link rel="stylesheet" href="site.css?v=9430cda38a">
+<link rel="stylesheet" href="site.css?v=0c0383bcb7">
 </head>
 <body>
 <nav class="site" aria-label="Site">
@@ -53,6 +53,7 @@
 </li>
 <li><a href="#comparing-schemes-fairly-experimentpy">Comparing schemes fairly (experiment.py)</a></li>
 <li><a href="#search-and-hypervolume-searchpy">Search and hypervolume (search.py)</a></li>
+<li><a href="#ranking-by-net-benefit-rankingpy">Ranking by net benefit (ranking.py)</a></li>
 <li><a href="#proposed-designs-community-and-agents">Proposed designs: community and agents</a></li>
 <li><a href="#tier-c-measuring-real-reactions">Tier C: measuring real reactions</a></li>
 </ul>
@@ -68,8 +69,9 @@ is a plain-language summary; the rest is the detail behind it.</p>
 part in governance: from Cardano's treasury, or by a <em>proposer fee</em>: part of each governance action's deposit
 kept instead of returned. There
 are many ways to do that, and each one buys something
-and risks something. RSS-Gov does not pick a winner. It measures what each way of paying
-does, on five things that matter, so that the choice between them can be made in the open.</p>
+and risks something. RSS-Gov measures what each way of paying does, on five things that
+matter, and ranks the designs by one score whose judgements are stated and can be changed
+by anyone, so that the choice between them can be made in the open.</p>
 <p><strong>The five things measured.</strong> For every reward rule:</p>
 <ol>
 <li><em>Participation</em>: how much of all delegated ADA ends up casting a vote.</li>
@@ -107,7 +109,9 @@ split themselves. Paying delegators moves delegation toward the DReps they are p
 through, which spreads power or concentrates it depending on which DReps those are. Tying
 pay to pledge shows how little pledge stands behind today's votes. The results
 page shows these trade-offs side by side, and which designs are not beaten on all five at
-once.</p>
+once. It also ranks the designs by <em>net benefit</em>: what their gains are worth, minus what
+they cost, in ADA a year. What a gain is worth is a judgement, so the page shows the values
+it uses and lets anyone change them.</p>
 <p><strong>What would settle it.</strong> Only a real programme can measure how strongly people react. The
 last section describes how a programme could be set up to measure it.</p>
 <p><strong>How to take part.</strong> Anyone can propose a reward rule on the "Propose a scheme" page; it
@@ -940,12 +944,14 @@ already give DReps that vote more.</p>
    resistance is worse than unpaid in any scenario. Those two are exact trade-offs every
    paid rule makes to some degree, so they are weighed on the front instead. Changing a
    guardrail re-labels designs without re-running anything.</li>
-<li><strong>No single score.</strong> A design is <em>shortlisted</em> when no other acceptable design is at
-   least as good on every axis and meaningfully better on one. Designs outside a
+<li><strong>The shortlist, and one score beside it.</strong> A design is <em>shortlisted</em> when no other
+   acceptable design is at least as good on every axis and meaningfully better on one. Designs outside a
    guardrail are not discarded: they are grouped by exactly which downside they accept,
    and the unbeaten ones in each group are reported (<code>best_of_its_kind</code>). If nothing is
    inside every guardrail, those groups are the result. What remains is a choice between
-   trade-offs, which is a governance decision, not a modelling one.</li>
+   trade-offs, which is a governance decision, not a modelling one. To help make it, every
+   design is also ranked by its net benefit (see <em>Ranking by net benefit</em>), a score that
+   adds stated judgements to the measurements and is always shown with them.</li>
 </ol>
 <p>Hard-fork-only designs go through the same comparison and get their own shortlist. They
 cannot be tried without a ledger change, so for them tiers A and B are all the evidence
@@ -965,7 +971,7 @@ resampling seeds. The report also gives what the search adds over the named sche
 that interval includes zero, the search found nothing the named schemes did not offer.</p>
 <p>Hypervolume depends on the chosen scales and rewards coverage of every corner, including
 corners nobody wants (a very cheap programme that does nothing much). It tracks search
-progress. It does not rank designs: read the shortlist.</p>
+progress. It does not rank designs: net benefit, below, does.</p>
 <p>The site splits the coverage into families: the designs that answer the same to three
 questions (does it leave out the largest DReps or their delegators, does it tie pay to
 pledge, does it pay delegators). Families are taken in the order that adds the most
@@ -974,6 +980,60 @@ family, designs are taken the same way. A design near the bottom adds little bec
 designs above it already reach what it reaches, which the site names when one design
 matches it on every axis. The order says what each adds given the ones above it, not how
 good a design is on its own. The same three questions filter the designs on every chart.</p>
+<h2 id="ranking-by-net-benefit-rankingpy">Ranking by net benefit (<code>ranking.py</code>)<a class="headerlink" href="#ranking-by-net-benefit-rankingpy" title="Permanent link">#</a></h2>
+<p>Only one design can be tried at a time, so designs are also put in order by one score: their
+<em>net benefit</em>, in ADA a year.</p>
+<pre><code>net benefit = Σ value of a unit × change, over participation, decentralisation
+              and skin in the game
+              − cost × (1 + sybil_loss × split gain)
+</code></pre>
+<ul>
+<li>The changes are differences from unpaid, as everywhere else. Each unit of participation,
+  decentralisation and skin in the game is worth a stated number of ADA a year, set under
+  <code>ranking</code> in <code>config.yaml</code>.</li>
+<li>Cost counts as itself. The share of the budget one actor could take by posing as many DReps
+  (<code>split_gain</code>) is counted as lost on top of the cost, <code>sybil_loss</code> ADA per ADA taken.</li>
+<li>Paying nothing scores 0, so a design with a negative score is not worth its cost at those
+  values.</li>
+<li>The score is the mean over <code>low</code>, <code>central</code> and <code>high</code>, each counting the same, like the
+  search's scores.</li>
+</ul>
+<p>What a gain is worth is a judgement, not a measurement. The starting values give each
+axis's whole <code>scale</code> range the same worth as the whole cost range, 25M ADA a year: 1M ADA
+a year for one point of participation, 1.25M for one more DRep among those holding two
+thirds of the power, 4.5M for one point of voting power backed by pledge. That makes no
+axis count for more than another to begin with. It is not a claim about what Cardano
+should pay, and the results page lets anyone set their own values and see the order change.</p>
+<p>Values are stated in each axis's own units against ADA, rather than as abstract importance
+weights, for three reasons. Cost is already in ADA, so the score reads as "worth its cost
+or not". Paying nothing is exactly zero. And weights given on importance scales are
+known to be applied without enough regard to the range of each measure
+(<a href="https://doi.org/10.1006/obhd.1995.1048">Fischer 1995</a>); a price per unit has no range to
+forget. The same form, <em>net monetary benefit</em>, is used in health economics to choose one
+treatment among several (<a href="https://doi.org/10.1177/0272989X98018002S09">Stinnett and Mullahy 1998</a>).</p>
+<p>The guardrail stays as it is: a design that is worse than paying nothing on
+participation, decentralisation or skin in the game under some reaction is ranked like
+any other, and marked. No other penalty is added.</p>
+<p>Every design is scored on the same holdout seeds, so differences are paired and the 95%
+interval comes from the spread across seeds. Three checks show how firm the order is:</p>
+<ul>
+<li><em>Behind the best</em> (regret): in each scenario, how far a design falls short of the best
+  design for that scenario; the largest of those. A design with little regret is a safe
+  choice whichever reaction turns out to be right
+  (<a href="https://doi.org/10.1080/01621459.1951.10500768">Savage's minimax regret</a>). Ranking by
+  the worst scenario alone is not used: it favours paying nothing whenever the weakest
+  reaction makes every paid design a net cost.</li>
+<li><em>Shaken values</em>: every value, and <code>sybil_loss</code>, is moved at random by up to 50% either
+  way, 2,000 times, and the share of draws in which each design ranks first is reported, in
+  the spirit of stochastic multicriteria acceptability analysis
+  (<a href="https://doi.org/10.1287/opre.49.3.444.11220">Lahdelma and Salminen 2001</a>).</li>
+<li><em>Scaled values</em>: every gain's value is multiplied by the same factor. A design's net
+  benefit is then a straight line in that factor; where it crosses zero is the share of the
+  stated values at which the design <em>pays off</em>, and the results page draws the lines of the
+  leading designs so that one can see where the leader changes.</li>
+</ul>
+<p>The search still maximises hypervolume. That keeps every kind of trade-off on the table,
+so the ranking stays meaningful when someone changes the values.</p>
 <h2 id="proposed-designs-community-and-agents">Proposed designs: community and agents<a class="headerlink" href="#proposed-designs-community-and-agents" title="Permanent link">#</a></h2>
 <p>Every design is a point in one family, so every setting of every design can be changed.
 The site lists the settings each design was simulated with, and gives a design that
@@ -1066,7 +1126,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=26b19be9fb"></script>
+<script src="data.js?v=bd6c752308"></script>
 <script src="common.js?v=9c15bd357b"></script>
 </body>
 </html>

@@ -30,7 +30,7 @@
   <section class="block" id="best" aria-labelledby="best-title">
     <div class="section-head title-row">
       <h2 id="best-title">The best trade-offs found so far</h2>
-      <button class="info" type="button" aria-label="About this chart" data-info="The switches above the chart pick which designs count, in every tab. “Only designs that…” keeps the designs that do every one of the things switched on.||Each dot is one reward design, simulated over six months and placed by how much it changes two measures compared with paying nothing. In the Comparison tab you pick the two measures; each one keeps the same scale whichever axis it is on and whatever the reaction strength.||The line joins the designs that no other design beats on both measures at once: the best trade-offs on offer. Anything inside the shaded area is beaten by something on the line.||Designs that need another hard fork are left out at first. Switch them on above the chart.||The line only looks at the two measures shown. Check the other three in the table further down."></button>
+      <button class="info" type="button" aria-label="About this chart" data-info="Ranking puts every design in order of its net benefit: what its gains are worth, minus its cost, in ADA a year. What a gain is worth is a judgement; set it yourself on the right of that tab.||The switches above the chart pick which designs count, in every tab. “Only designs that…” keeps the designs that do every one of the things switched on.||Each dot is one reward design, simulated over six months and placed by how much it changes two measures compared with paying nothing. In the Comparison tab you pick the two measures; each one keeps the same scale whichever axis it is on and whatever the reaction strength.||The line joins the designs that no other design beats on both measures at once: the best trade-offs on offer. Anything inside the shaded area is beaten by something on the line.||Designs that need another hard fork are left out at first. Switch them on above the chart.||The line only looks at the two measures shown. Check the other three in the table further down."></button>
     </div>
     <div class="card">
       <div class="card-head">
@@ -53,6 +53,13 @@
         <aside class="side">
           <div id="frontier-list"></div>
         </aside>
+      </div>
+      <div class="lead-grid" id="ranking" hidden>
+        <div>
+          <div id="rank-chart"></div>
+          <div id="rank-list"></div>
+        </div>
+        <aside class="side"><div class="coverage" id="rank-side"></div></aside>
       </div>
       <div class="lead-grid" id="combined" hidden>
         <div>
@@ -153,6 +160,7 @@
 <div id="tip" role="tooltip"></div>
 <script src="data.js"></script>
 <script src="common.js"></script>
+<script src="ranking.js"></script>
 <script src="dashboard.js"></script>
 </body>
 </html>

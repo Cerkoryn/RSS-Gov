@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from rss_gov import mechanisms, proposals  # noqa: E402
+from rss_gov import mechanisms, proposals, ranking  # noqa: E402
 from rss_gov.experiment import BASELINE  # noqa: E402
 
 
@@ -349,6 +349,76 @@ def _design_tables(part, axes, scenarios):
                 _value(axis, v) for v in part[f"{axis.name}_diff_{scenario}"]
             ]
     return [_table(table), "", "By response scenario:", "", _table(by_scenario), ""]
+
+
+def _ranking(study, out, front):
+    """The finalists ranked by net benefit at the values in config.yaml."""
+    scenarios = study.ranking_scenarios
+    value, loss = ranking.values(study.config)
+    runs = pd.read_parquet(out / "search_holdout_runs.parquet")
+    info = front.set_index("scheme")
+    designs = ranking.inputs(runs, scenarios)
+    fork = {n for n in designs if not info.pilot_testable.get(n, True)}
+    # designs that need another hard fork are ranked apart, as on the site's default view
+    pilot = ranking.table(
+        {n: d for n, d in designs.items() if n not in fork}, value, loss, scenarios
+    )
+    money = lambda v: f"{v / 1e6:+.1f}M"  # noqa: E731
+    rows = pd.concat([pilot.head(15), pilot[pilot.scheme == BASELINE]]).drop_duplicates("scheme")
+    shown = pd.DataFrame(
+        {
+            "rank": rows.index + 1,
+            "scheme": ["paying nothing" if n == BASELINE else n for n in rows.scheme],
+            "rule": [info.rule.get(n, "") for n in rows.scheme],
+            "net benefit": [f"{money(v)} ± {h / 1e6:.1f}M" for v, h in zip(rows.score, rows.ci)],
+            **{s: [money(v) for v in rows[s]] for s in scenarios},
+            "behind the best": [f"{v / 1e6:.1f}M" for v in rows.behind],
+            "pays off from": [
+                "" if np.isnan(v) else "never" if np.isinf(v) else f"{v:.2f}×"
+                for v in rows.worth_from
+            ],
+            f"first, values ±{ranking.SHAKE:.0%}": [f"{v:.0%}" for v in rows.first],
+            "gives up": [info.breaks.get(n, "") or "" for n in rows.scheme],
+        }
+    )
+    worth = study.config["ranking"]["value"]
+    text = [
+        "## Ranking by net benefit",
+        "",
+        "One score per design: what its gains are worth at the values in `config.yaml` "
+        "(`ranking`), minus its cost and what one actor could take by splitting into many "
+        "DReps, in ADA a year, averaged over "
+        + ", ".join(f"`{s}`" for s in scenarios)
+        + ". The values are judgements, not measurements: "
+        f"{worth['participation']['ada'] / 1e6:g}M ADA a year for 1 point of participation, "
+        f"{worth['tau67']['ada'] / 1e6:g}M for 1 more DRep holding two thirds of the power, "
+        f"{worth['backing']['ada'] / 1e6:g}M for 1 point of pledge backing; ADA lost to "
+        f"splitting counts {loss:g}× on top of the cost. Paying nothing scores 0. Every design "
+        "is scored on the same holdout seeds; ± is the 95% interval.",
+        "",
+        "*Behind the best*: the most it falls short of the best design in any one scenario. "
+        "*Pays off from*: the share of these values at which its gains cover its cost. "
+        f"*First*: how often it ranks first when every value moves by up to "
+        f"{ranking.SHAKE:.0%} either way. *Gives up*: the guardrail it crosses.",
+        "",
+        f"Designs that need only CIP-159 ({len(pilot) - 1} finalists):",
+        "",
+        _table(shown),
+        "",
+    ]
+    least = pilot.loc[pilot.behind.idxmin()]
+    text.append(
+        f"- Smallest shortfall in any scenario: `{least.scheme}`, never more than "
+        f"{least.behind / 1e6:.1f}M ADA a year behind the best."
+    )
+    if fork:
+        others = ranking.table({n: designs[n] for n in fork}, value, loss, scenarios)
+        best = others[others.scheme != BASELINE].iloc[0]
+        text.append(
+            f"- Best design that needs another hard fork: `{best.scheme}`, "
+            f"{money(best.score)} ADA a year."
+        )
+    return [*text, ""]
 
 
 RECENT_EPOCHS = 12  # window for today's observed participation
@@ -715,6 +785,7 @@ def write(study):
         ]
         figure_front(front, figures / "front.png", search_module.named(study))
         text += ["![front](figures/front.png)", ""]
+        text += _ranking(study, out, front)
 
     text += [
         "## How to read this",

@@ -82,11 +82,12 @@ scenarios:
                 untraced_wealth_share: 0.001}
 ranking_scenarios: [low, central, high]   # a scheme's score is its mean over these
 
-# The axes schemes are compared on: one per objective family. Nothing is folded into a
-# single score. `meaningful` is the smallest difference worth acting on: smaller
+# The axes schemes are compared on: one per objective family. Every axis is reported on
+# its own; `ranking` below also folds them into one score, with values that are stated
+# judgements. `meaningful` is the smallest difference worth acting on: smaller
 # differences count as "same" even when they are statistically detectable. `scale` is
-# [worst, best] as a difference from unpaid; it only sets the units of the hypervolume
-# used to track search progress.
+# [worst, best] as a difference from unpaid; it sets the units of the hypervolume used
+# to track search progress.
 axes:
   participation:
     family: Participation
@@ -127,6 +128,20 @@ sybil:
 # Cost and Sybil risk have no limit: like every axis, they are traded off on the front.
 guardrails:
   no_axis_worse_than_unpaid: true # cost and Sybil risk excepted: they are exact trade-offs
+
+# One score to rank designs by: net benefit in ADA a year, averaged over
+# `ranking_scenarios`. What an improvement is worth is a judgement, not a measurement: these
+# are starting values, and the site lets anyone change them. They give each axis's whole
+# `scale` range the worth of the whole cost range (25M ADA a year), so no axis counts for
+# more than another to begin with. Cost counts as itself. The ADA one actor could take by
+# splitting into many DReps (`split_gain` of the yearly cost) counts as lost on top of the
+# cost, `sybil_loss` ADA per ADA. Paying nothing scores 0.
+ranking:
+  value:                                     # ADA a year that `per` more of an axis is worth
+    participation: {per: 0.01, ada: 1000000} #   1 point more of delegated ADA voting
+    tau67: {per: 1, ada: 1250000}            #   1 more DRep needed to hold 2/3 of the power
+    backing: {per: 0.01, ada: 4500000}       #   1 point more of the power backed by pledge
+  sybil_loss: 1.0
 
 experiment:
   seeds: 100

@@ -9,8 +9,9 @@ is a plain-language summary; the rest is the detail behind it.
 part in governance: from Cardano's treasury, or by a *proposer fee*: part of each governance action's deposit
 kept instead of returned. There
 are many ways to do that, and each one buys something
-and risks something. RSS-Gov does not pick a winner. It measures what each way of paying
-does, on five things that matter, so that the choice between them can be made in the open.
+and risks something. RSS-Gov measures what each way of paying does, on five things that
+matter, and ranks the designs by one score whose judgements are stated and can be changed
+by anyone, so that the choice between them can be made in the open.
 
 **The five things measured.** For every reward rule:
 
@@ -51,7 +52,9 @@ split themselves. Paying delegators moves delegation toward the DReps they are p
 through, which spreads power or concentrates it depending on which DReps those are. Tying
 pay to pledge shows how little pledge stands behind today's votes. The results
 page shows these trade-offs side by side, and which designs are not beaten on all five at
-once.
+once. It also ranks the designs by *net benefit*: what their gains are worth, minus what
+they cost, in ADA a year. What a gain is worth is a judgement, so the page shows the values
+it uses and lets anyone change them.
 
 **What would settle it.** Only a real programme can measure how strongly people react. The
 last section describes how a programme could be set up to measure it.
@@ -629,12 +632,14 @@ already give DReps that vote more.
    resistance is worse than unpaid in any scenario. Those two are exact trade-offs every
    paid rule makes to some degree, so they are weighed on the front instead. Changing a
    guardrail re-labels designs without re-running anything.
-6. **No single score.** A design is *shortlisted* when no other acceptable design is at
-   least as good on every axis and meaningfully better on one. Designs outside a
+6. **The shortlist, and one score beside it.** A design is *shortlisted* when no other
+   acceptable design is at least as good on every axis and meaningfully better on one. Designs outside a
    guardrail are not discarded: they are grouped by exactly which downside they accept,
    and the unbeaten ones in each group are reported (`best_of_its_kind`). If nothing is
    inside every guardrail, those groups are the result. What remains is a choice between
-   trade-offs, which is a governance decision, not a modelling one.
+   trade-offs, which is a governance decision, not a modelling one. To help make it, every
+   design is also ranked by its net benefit (see *Ranking by net benefit*), a score that
+   adds stated judgements to the measurements and is always shown with them.
 
 Hard-fork-only designs go through the same comparison and get their own shortlist. They
 cannot be tried without a ledger change, so for them tiers A and B are all the evidence
@@ -660,7 +665,7 @@ that interval includes zero, the search found nothing the named schemes did not 
 
 Hypervolume depends on the chosen scales and rewards coverage of every corner, including
 corners nobody wants (a very cheap programme that does nothing much). It tracks search
-progress. It does not rank designs: read the shortlist.
+progress. It does not rank designs: net benefit, below, does.
 
 The site splits the coverage into families: the designs that answer the same to three
 questions (does it leave out the largest DReps or their delegators, does it tie pay to
@@ -670,6 +675,65 @@ family, designs are taken the same way. A design near the bottom adds little bec
 designs above it already reach what it reaches, which the site names when one design
 matches it on every axis. The order says what each adds given the ones above it, not how
 good a design is on its own. The same three questions filter the designs on every chart.
+
+## Ranking by net benefit (`ranking.py`)
+
+Only one design can be tried at a time, so designs are also put in order by one score: their
+*net benefit*, in ADA a year.
+
+    net benefit = Σ value of a unit × change, over participation, decentralisation
+                  and skin in the game
+                  − cost × (1 + sybil_loss × split gain)
+
+- The changes are differences from unpaid, as everywhere else. Each unit of participation,
+  decentralisation and skin in the game is worth a stated number of ADA a year, set under
+  `ranking` in `config.yaml`.
+- Cost counts as itself. The share of the budget one actor could take by posing as many DReps
+  (`split_gain`) is counted as lost on top of the cost, `sybil_loss` ADA per ADA taken.
+- Paying nothing scores 0, so a design with a negative score is not worth its cost at those
+  values.
+- The score is the mean over `low`, `central` and `high`, each counting the same, like the
+  search's scores.
+
+What a gain is worth is a judgement, not a measurement. The starting values give each
+axis's whole `scale` range the same worth as the whole cost range, 25M ADA a year: 1M ADA
+a year for one point of participation, 1.25M for one more DRep among those holding two
+thirds of the power, 4.5M for one point of voting power backed by pledge. That makes no
+axis count for more than another to begin with. It is not a claim about what Cardano
+should pay, and the results page lets anyone set their own values and see the order change.
+
+Values are stated in each axis's own units against ADA, rather than as abstract importance
+weights, for three reasons. Cost is already in ADA, so the score reads as "worth its cost
+or not". Paying nothing is exactly zero. And weights given on importance scales are
+known to be applied without enough regard to the range of each measure
+([Fischer 1995](https://doi.org/10.1006/obhd.1995.1048)); a price per unit has no range to
+forget. The same form, *net monetary benefit*, is used in health economics to choose one
+treatment among several ([Stinnett and Mullahy 1998](https://doi.org/10.1177/0272989X98018002S09)).
+
+The guardrail stays as it is: a design that is worse than paying nothing on
+participation, decentralisation or skin in the game under some reaction is ranked like
+any other, and marked. No other penalty is added.
+
+Every design is scored on the same holdout seeds, so differences are paired and the 95%
+interval comes from the spread across seeds. Three checks show how firm the order is:
+
+- *Behind the best* (regret): in each scenario, how far a design falls short of the best
+  design for that scenario; the largest of those. A design with little regret is a safe
+  choice whichever reaction turns out to be right
+  ([Savage's minimax regret](https://doi.org/10.1080/01621459.1951.10500768)). Ranking by
+  the worst scenario alone is not used: it favours paying nothing whenever the weakest
+  reaction makes every paid design a net cost.
+- *Shaken values*: every value, and `sybil_loss`, is moved at random by up to 50% either
+  way, 2,000 times, and the share of draws in which each design ranks first is reported, in
+  the spirit of stochastic multicriteria acceptability analysis
+  ([Lahdelma and Salminen 2001](https://doi.org/10.1287/opre.49.3.444.11220)).
+- *Scaled values*: every gain's value is multiplied by the same factor. A design's net
+  benefit is then a straight line in that factor; where it crosses zero is the share of the
+  stated values at which the design *pays off*, and the results page draws the lines of the
+  leading designs so that one can see where the leader changes.
+
+The search still maximises hypervolume. That keeps every kind of trade-off on the table,
+so the ranking stays meaningful when someone changes the values.
 
 ## Proposed designs: community and agents
 

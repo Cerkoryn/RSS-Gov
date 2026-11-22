@@ -24,6 +24,7 @@ import pandas as pd
 import yaml
 
 from rss_gov import experiment, mechanisms, model, proposals, report, search, static
+from rss_gov import ranking as scoring
 
 WEB = Path(__file__).with_name("web")
 PAGES = [
@@ -34,6 +35,7 @@ PAGES = [
     "dashboard.js",
     "propose.js",
     "checks.js",
+    "ranking.js",
 ]
 ASSET = re.compile(r'(src|href)="([\w.-]+\.(?:js|css))"')
 # A diagram in METHODS.md: invisible where the file is read as plain markdown (GitHub), drawn
@@ -455,8 +457,22 @@ def build(study):
             series = {k: table[f"{name}_{k}"] / scale for k in ("observed", "mean", "low", "high")}
             bands["panels"].append(dict(label=label, **series))
 
-    search_note = None
+    search_note = net = None
     if found is not None:
+        value, loss = scoring.values(config)
+        everyone = pd.concat([holdout, *[runs for _, _, runs in community.values()]])
+        inputs = scoring.inputs(everyone, ranking)
+        upper = np.triu_indices(len(ranking) * len(scoring.COLUMNS))
+        net = dict(
+            gains=list(scoring.GAINS),
+            value=value,  # ADA a year per unit of each gain, in the axis's own units
+            sybil_loss=loss,
+            shake=scoring.SHAKE,
+            designs={
+                n: dict(m=d["mean"].tolist(), c=d["cov"][upper].tolist(), s=d["split"])
+                for n, d in inputs.items()
+            },
+        )
         search_note = dict(
             evaluated=found["history"][-1]["evaluated"],
             generations=len(found["history"]) - 1,
@@ -511,6 +527,7 @@ def build(study):
             checks=checks,
             bands=bands,
             search=search_note,
+            ranking=net,
             form=dict(
                 fields=proposals.FIELDS,
                 meta=proposals.META,
