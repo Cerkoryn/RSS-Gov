@@ -29,6 +29,7 @@ const val = (s, axis, scen = state.scenario) => (res(s, scen, axis) || [null])[0
 function sortValue(s, key) {
   if (key === "name") return pretty(s.name).toLowerCase();
   if (key === "breaks") return s.breaks === null || s.breaks === undefined ? null : s.breaks ? s.breaks.split(", ").length : 0;
+  if (key === "net") { const r = netOf(s.name); return r ? -r.score : null; }
   const v = val(s, key);
   return v === null || v === undefined ? null : AX[key].better === "higher" ? -v : v;
 }
@@ -198,6 +199,7 @@ function controls() {
   const by = h("select", { id: "sort-by" }, sort);
   h("option", { value: "" }, by, "Default order");
   h("option", { value: "name" }, by, "Design name");
+  if (D.ranking) h("option", { value: "net" }, by, "Ranking (net benefit)");
   for (const a of D.axes) h("option", { value: a.name }, by, a.short);
   h("option", { value: "breaks" }, by, "Gives up");
   by.addEventListener("change", () => setSort(by.value, 1));
@@ -274,8 +276,9 @@ function compareTable() {
   if (!all.length) { h("p", { className: "empty" }, host, "Nothing to show: switch on a group of designs above."); return; }
   const table = h("table", { className: "compare" }, host);
   const head = h("tr", {}, h("thead", {}, table));
-  const sortable = (th, key, label) => sortHeading(th, label, key, v, setSort, key === "name" || key === "breaks" || AX[key].better !== "higher");
+  const sortable = (th, key, label) => sortHeading(th, label, key, v, setSort, key === "name" || key === "breaks" || (AX[key] && AX[key].better !== "higher"));
   sortable(h("th", {}, head), "name", "Design");
+  if (D.ranking) sortable(h("th", { className: "num", title: "What the design's gains are worth, minus its cost, in ADA a year, at the weights in the Ranking tab, averaged over the three reactions. Paying nothing is 0." }, head), "net", "Net benefit");
   for (const a of D.axes) sortable(h("th", { className: "num", title: `${a.question}. ${a.better === "higher" ? "More" : "Less"} is better.` }, head), a.name, a.short);
   sortable(h("th", {}, head), "breaks", "Gives up");
   const body = h("tbody", {}, table);
@@ -290,6 +293,13 @@ function compareTable() {
     h("span", { className: "kind", style: `background:${KIND[s.kind].color}` }, n);
     n.appendChild(document.createTextNode(pretty(s.name)));
     if (!s.pilot) h("span", { className: "tag" }, td, "Needs another hard fork");
+    if (D.ranking) {
+      const c = h("td", { className: "num" }, tr);
+      c.dataset.label = "Net benefit";
+      const r = netOf(s.name);
+      h("span", { className: "cell net" + (r && r.score < 0 ? " neg" : "") }, c, r ? `${money(r.score)}/yr` : "–");
+      if (r) c.title = `Ranks ${r.rank} of ${r.of} by net benefit, among all designs, at the weights in the Ranking tab.`;
+    }
     for (const a of D.axes) {
       const c = h("td", { className: "num" }, tr);
       c.dataset.label = a.short;
@@ -945,6 +955,19 @@ const money = (v) => (v > 0.5 ? "+" : v < -0.5 ? "−" : "") + ada(Math.abs(v));
 const netValue = () => NET.value.map((v, i) => v * weight(state.rank.pos[i]));
 const netLoss = () => NET.sybil_loss * weight(state.rank.pos[3]);
 const netCache = { key: null, rows: null };
+// Every design's net benefit and rank among all designs, at the current weights: for the
+// comparison table, which has filters of its own.
+const netAllCache = { key: null, by: null };
+function netOf(name) {
+  if (!NET) return null;
+  const value = netValue(), key = value.join(",") + "#" + netLoss();
+  if (netAllCache.key !== key) {
+    const rows = Ranking.table(NET.designs, value, netLoss(), NET.shake, 0).filter((r) => r.name !== null);
+    netAllCache.key = key;
+    netAllCache.by = Object.fromEntries(rows.map((r, i) => [r.name, { score: r.score, rank: i + 1, of: rows.length }]));
+  }
+  return netAllCache.by[name] || null;
+}
 // The designs switched on above the chart, ranked; paying nothing is the row named null.
 function netRows() {
   const shown = chartVisible().filter((s) => NET.designs[s.name]);
@@ -987,7 +1010,7 @@ function rankSide() {
   NET.gains.forEach((a, i) => weightSlider(side, AX[a].family, i));
   weightSlider(side, "Sybil risk", 3);
   const reset = h("button", { className: "ghost small-btn", type: "button" }, side, "Back to the middle");
-  reset.addEventListener("click", () => { state.rank.pos = [0, 0, 0, 0]; ranking(); });
+  reset.addEventListener("click", () => { state.rank.pos = [0, 0, 0, 0]; ranking(); compareTable(); });
 }
 // A weight slider: the middle is the starting weight, each step doubles or halves it,
 // and the far left leaves the measure out.
@@ -999,7 +1022,7 @@ function weightSlider(side, label, i) {
   h("span", { className: "what" }, box, label);
   const out = h("output", {}, box, weightText(state.rank.pos[i]));
   const input = h("input", { type: "range", min: LOW, max: HIGH, step: 0.25, value: state.rank.pos[i] }, box);
-  input.addEventListener("input", () => { state.rank.pos[i] = +input.value; out.textContent = weightText(+input.value); netResults(); });
+  input.addEventListener("input", () => { state.rank.pos[i] = +input.value; out.textContent = weightText(+input.value); netResults(); compareTable(); });
   const ends = h("span", { className: "ends", "aria-hidden": "true" }, box);
   h("span", {}, ends, "← less important");
   h("span", {}, ends, "more important →");
