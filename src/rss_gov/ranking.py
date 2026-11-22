@@ -75,10 +75,12 @@ def fill(study, log=print, processes=None):
     holdout = pd.read_parquet(out / "search_holdout_runs.parquet")
     designs = _designs(study, holdout)
     path = out / RUNS
-    kept = pd.read_parquet(path) if path.exists() else pd.DataFrame(columns=["scheme", "key"])
-    kept = kept[kept.key == kept.scheme.map({n: k for n, (_, k) in designs.items()})]
+    stored = pd.read_parquet(path) if path.exists() else pd.DataFrame(columns=["scheme", "key"])
+    kept = stored[stored.key == stored.scheme.map({n: k for n, (_, k) in designs.items()})]
     todo = [s for n, (s, _) in designs.items() if n not in set(kept.scheme)]
     log(f"{len(designs) - len(todo)} designs up to date, {len(todo)} to simulate")
+    if not todo and len(kept) == len(stored) and path.exists():
+        return  # nothing changed: leave the file as it is
     if todo:
         seeds = sorted(holdout.seed.unique())
         runs = experiment.evaluate(study, todo, study.ranking_scenarios, seeds, processes)

@@ -2,8 +2,9 @@
 #
 # A proposal arrives as an issue labelled `proposal` (the issue form adds the label, usually
 # from the site's "Submit on GitHub" button). The label starts this workflow: it checks the
-# rule, runs `rss-gov try` and `rss-gov site`, commits the result to main, has the site
-# republished and comments on the issue. Any proposal can be undone by reverting its commit.
+# rule, runs `rss-gov try`, `rss-gov rank` and `rss-gov site`, commits the result to main,
+# has the site republished and comments on the issue. Any proposal can be undone by
+# reverting its commit.
 #
 # Safeguards, because nobody reviews a proposal before it is published:
 # - The issue's text is untrusted. It is only ever read from a file and checked by
@@ -16,6 +17,8 @@
 #   with the issue number) to simulate it anyway.
 # - `rss-gov try` moves the front to fresh holdout seeds once enough new designs have been
 #   judged on them (search.tries_per_holdout), so a design accepted on luck drops out.
+#   `rss-gov rank` then simulates every other design on the new seeds too, so that all
+#   designs stay ranked on the same seeds; for any other proposal it has nothing to do.
 name: Simulate a proposal
 
 on:
@@ -117,6 +120,7 @@ jobs:
               || { cat "$RUNNER_TEMP/refused.txt" >&2; exit 1; }
             [[ $name =~ ^[a-z][a-z0-9_]*$ ]] || { echo "unexpected name: $name" >&2; exit 1; }
             uv run rss-gov try "results/proposals/$name.yaml" | tee "$RUNNER_TEMP/try.log"
+            uv run rss-gov rank
             uv run rss-gov site
             outside=$(git status --porcelain --untracked-files=all | awk '{print $NF}' | grep -v '^results/' || true)
             [[ -z $outside ]] || { echo "refusing to commit files outside results/: $outside" >&2; exit 1; }

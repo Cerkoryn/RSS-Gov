@@ -246,8 +246,10 @@ def test_rank_simulates_every_design_on_the_holdout_seeds_once(study):
     designs = website.build(study)["ranking"]["designs"]
     assert paid <= set(designs)
     # nothing to do a second time; other holdout seeds make every stored run stale
+    path = study.results / ranking.RUNS
+    before = path.stat().st_mtime_ns
     ranking.fill(study, said.append, processes=1)
-    assert said[-2].endswith(" 0 to simulate")
+    assert said[-1].endswith(" 0 to simulate") and path.stat().st_mtime_ns == before
     assert ranking.stored(study, holdout.assign(seed=holdout.seed + 1)).empty
 
 
