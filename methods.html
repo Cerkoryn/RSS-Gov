@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How RSS-Gov works</title>
 <meta name="description" content="How RSS-Gov compares reward schemes for Cardano governance: data, model, assumptions, validation and how to read the results.">
-<link rel="stylesheet" href="site.css?v=477a8ee6bc">
+<link rel="stylesheet" href="site.css?v=f8e91f2b67">
 </head>
 <body>
 <nav class="site" aria-label="Site">
@@ -966,6 +966,14 @@ that interval includes zero, the search found nothing the named schemes did not 
 <p>Hypervolume depends on the chosen scales and rewards coverage of every corner, including
 corners nobody wants (a very cheap programme that does nothing much). It tracks search
 progress. It does not rank designs: read the shortlist.</p>
+<p>The site splits the coverage into families: the designs that answer the same to three
+questions (does it leave out the largest DReps or their delegators, does it tie pay to
+pledge, does it pay delegators). Families are taken in the order that adds the most
+coverage on top of the families already taken, so the parts add up to the total; inside a
+family, designs are taken the same way. A design near the bottom adds little because
+designs above it already reach what it reaches, which the site names when one design
+matches it on every axis. The order says what each adds given the ones above it, not how
+good a design is on its own. The same three questions filter the designs on every chart.</p>
 <h2 id="proposed-designs-community-and-agents">Proposed designs: community and agents<a class="headerlink" href="#proposed-designs-community-and-agents" title="Permanent link">#</a></h2>
 <p>Every design is a point in one family, so every setting of every design can be changed.
 The site lists the settings each design was simulated with, and gives a design that
@@ -1058,7 +1066,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=97293851cd"></script>
+<script src="data.js?v=2a8b4054d7"></script>
 <script src="common.js?v=9c15bd357b"></script>
 </body>
 </html>
