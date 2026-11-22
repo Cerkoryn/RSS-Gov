@@ -5,7 +5,8 @@ const state = {
   show: { named: true, search: false, proposed: hasKind("proposed") },
   pilot: false, view: "table", selected: null,
   chart: { named: true, search: true, proposed: true, fork: false },
-  x: "tau67", y: "participation", lead: D.search && D.search.hypervolume_unpaid ? "combined" : "pair", round: null, allParts: false,
+  x: "tau67", y: "participation", lead: D.search && D.search.hypervolume_unpaid ? "combined" : "pair", round: null,
+  features: new Set(), open: null, // family questions switched on; families opened in the coverage list
   heat: "participation", focusRow: null,
   cmp: { sort: null, dir: 1, page: 0, per: 25, sig: "" },
   heatv: { sort: null, dir: 1, page: 0, per: 25, sig: "" }, tab: "assumptions",
@@ -96,6 +97,7 @@ function openDesign(name) {
   if (state.pilot && !s.pilot) state.pilot = false;
   state.chart[s.kind] = true;
   if (!s.pilot) state.chart.fork = true;
+  if (!hasFeatures(s)) state.features.clear();
   state.focusRow = name;
   try { history.replaceState(null, "", "#design=" + encodeURIComponent(name)); } catch (e) { /* file: URLs */ }
   detail();
@@ -253,6 +255,7 @@ function syncControls() {
     dir.title = "Reverse to " + sortHint(v.sort, -v.dir);
   }
   for (const b of $("#best-legend").querySelectorAll("button[data-k]")) b.setAttribute("aria-pressed", !!state.chart[b.dataset.k]);
+  for (const b of $("#best-legend").querySelectorAll("button[data-f]")) b.setAttribute("aria-pressed", state.features.has(b.dataset.f));
   $("#view-table").hidden = state.view !== "table";
   $("#view-chart").hidden = state.view !== "chart";
 }
@@ -472,26 +475,71 @@ function kin(s, limit = 8) {
 // What sets a relative apart, in its own values: "pledge soft cap 10000×".
 const diffText = (q, diff) => diff.length > 2 ? pretty(q.name) : diff.map((f) => tag(f, q.scheme[f.name])).join(", ");
 
+// What a relative changes, from this design's value to its own: "Minimum pledge: 10K ADA → 0 ADA".
+function changeText(s, q, diff) {
+  if (diff.length > 3) return `${diff.length} settings differ`;
+  return diff.map((f) => `${f.short}: ${setting(f, s.scheme[f.name])} → ${setting(f, q.scheme[f.name])}`).join("; ");
+}
+// A change in one measure, compact: points, DReps or ADA a year; "same" within a meaningful difference.
+function deltaCell(tr, a, d) {
+  const td = h("td", { className: "num" }, tr);
+  if (d === null || d === undefined || Number.isNaN(d)) { td.textContent = "–"; return; }
+  const v = d * a.factor;
+  if (Math.abs(v) < a.threshold) { h("span", { className: "same" }, td, "same"); return; }
+  const better = (d > 0) === (a.better === "higher");
+  const shown = a.name === "annual_cost_ada" ? (d > 0 ? "+" : "−") + ada(Math.abs(d)) : (v > 0 ? "+" : "") + num(v, a.digits);
+  h("span", { className: better ? "up" : "down" }, td, (better ? "▲ " : "▼ ") + shown);
+}
+const KIN_HEAD = { participation: ["Particip.", "points"], tau67: ["Decentr.", "DReps"], backing: ["Skin", "points"], annual_cost_ada: ["Cost", "ADA a year"], split_gain: ["Sybil", "points of the budget"] };
 function relatives(s, host) {
-  const list = kin(s);
+  const list = kin(s, 12);
   if (!list.length) return;
-  h("h3", { style: "margin-top:22px" }, host, "Other runs of this design");
-  h("p", { className: "small", style: "margin:0" }, host, `The simulated designs closest to this one, whoever made them, with what each sets differently, ${SCEN[state.scenario].toLowerCase()}. Click one to open it. The trade-off chart shows them around this design.`);
-  const wrap = h("div", { className: "tablewrap" }, host);
-  const table = h("table", {}, wrap);
-  const head = h("tr", {}, h("thead", {}, table));
-  h("th", {}, head, "Design");
-  for (const a of D.axes) h("th", { className: "num" }, head, a.short);
-  const body = h("tbody", {}, table);
-  for (const { q, diff } of list) {
-    const tr = h("tr", { className: "pick" }, body);
-    tr.addEventListener("click", () => openDesign(q.name));
-    const td = h("td", { style: "min-width:210px" }, tr);
-    const nm = h("div", { style: "font-weight:560" }, td);
-    h("span", { className: "dot", style: `display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:${KIND[q.kind].color}` }, nm);
-    nm.appendChild(document.createTextNode(diffText(q, diff)));
-    if (diff.length <= 2) h("div", { className: "small" }, td, pretty(q.name));
-    for (const a of D.axes) { const v = res(q, state.scenario, a.name); h("td", { className: "num" }, tr, v ? fmt(a.name, v[0]) : "–"); }
+  const root = s.parent || s.name;
+  h("h3", { style: "margin-top:22px" }, host, "Similar designs");
+  h("p", { className: "small", style: "margin:0" }, host,
+    `Designs whose settings differ from this one in one or two places, and other versions of ${pretty(root)}, whoever made them. ` +
+    `Each row says what it changes and how its results differ from this design's, ${SCEN[state.scenario].toLowerCase()}; “same” is within a meaningful difference. Click one to open it.`);
+  const table = (rows, box, self) => {
+    const wrap = h("div", { className: "tablewrap" }, box);
+    const t = h("table", { className: "kin" }, wrap);
+    const head = h("tr", {}, h("thead", {}, t));
+    h("th", {}, head, "Change");
+    for (const a of D.axes) h("th", { className: "num", title: `${a.short}, in ${KIN_HEAD[a.name][1]}` }, head, KIN_HEAD[a.name][0]);
+    const body = h("tbody", {}, t);
+    if (self) {
+      const tr = h("tr", { className: "self" }, body);
+      const td = h("td", {}, tr);
+      h("div", { className: "change" }, td, "This design");
+      h("div", { className: "small" }, td, "against paying nothing");
+      for (const a of D.axes) {
+        const v = val(s, a.name);
+        h("td", { className: "num" }, tr, a.name === "annual_cost_ada" ? ada(v) : a.name === "split_gain" ? pct(v) : fmt(a.name, v).replace(a.unit, ""));
+      }
+    }
+    for (const { q, diff } of rows) {
+      const tr = h("tr", { className: "pick" }, body);
+      tr.tabIndex = 0;
+      tr.addEventListener("click", () => openDesign(q.name));
+      tr.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDesign(q.name); } });
+      const td = h("td", {}, tr);
+      const nm = h("div", { className: "change" }, td);
+      h("span", { className: "kdot", style: `background:${KIND[q.kind].color}` }, nm);
+      nm.appendChild(document.createTextNode(changeText(s, q, diff)));
+      h("div", { className: "small" }, td, pretty(q.name));
+      for (const a of D.axes) {
+        const mine = val(s, a.name), theirs = val(q, a.name);
+        deltaCell(tr, a, mine === null || theirs === null ? null : theirs - mine);
+      }
+    }
+  };
+  // the same rule paid the other way (budget or proposer fee) is folded away
+  const fee = ({ diff }) => diff.some((f) => f.name === "fee_ada");
+  table(list.filter((d) => !fee(d)), host, true);
+  const other = list.filter(fee);
+  if (other.length) {
+    const more = h("details", { className: "more" }, host);
+    h("summary", {}, more, `${s.scheme.fee_ada ? "Paid from a budget instead" : "Paid by a proposer fee instead"} (${other.length})`);
+    table(other, more, false);
   }
 }
 
@@ -684,6 +732,22 @@ function scatterControls() {
   if (hasKind("search")) toggle("search", "Found by search", KIND.search.color);
   if (hasKind("proposed")) toggle("proposed", "Community", KIND.proposed.color);
   if (D.schemes.some((s) => !s.pilot)) toggle("fork", "Needs another hard fork", "var(--ink-2)", true);
+  // the three family questions: keep only designs that answer yes to every one switched on
+  const feats = h("span", { className: "feature-toggles" }, legend);
+  h("span", { className: "label" }, feats, "Only designs that");
+  for (const f of FEATURES) {
+    const b = h("button", { className: "toggle", type: "button", title: f.help }, feats);
+    b.dataset.f = f.key;
+    b.style.setProperty("--kind", "var(--ink-2)");
+    h("span", { className: "dot check" }, b);
+    b.appendChild(document.createTextNode(f.ask));
+    b.addEventListener("click", () => {
+      if (state.features.has(f.key)) state.features.delete(f.key); else state.features.add(f.key);
+      state.open = null;
+      syncControls();
+      lead();
+    });
+  }
   const key = $("#pair-key");
   let span = h("span", {}, key);
   let svg = el("svg", { width: 20, height: 12 }, span);
@@ -696,7 +760,7 @@ function scatterControls() {
   span.appendChild(document.createTextNode("paying nothing"));
 }
 function chartVisible() {
-  return D.schemes.filter((s) => state.chart[s.kind] && (s.pilot || state.chart.fork));
+  return D.schemes.filter((s) => state.chart[s.kind] && (s.pilot || state.chart.fork) && hasFeatures(s));
 }
 // Designs no other shown design beats on both measures, ordered along the line.
 function frontier(pts, ax, ay) {
@@ -896,38 +960,126 @@ function hvol(points) {
   };
   return wfg(nondom(points.filter((p) => p.every((v) => v > 0))));
 }
-// The shown designs, each adding the most coverage it can on top of those already chosen.
-const rankCache = new Map();
-function ranked(names) {
-  const keyName = names.join("|");
-  if (rankCache.has(keyName)) return rankCache.get(keyName);
-  const S = D.search.scores, base = S[D.search.baseline];
-  const vol = (members) => hvol([base, ...members.map((n) => S[n])]);
+// ---------- families: three plain questions about a rule ----------
+// Each design belongs to one family, one per combination of answers. The same three
+// questions filter the designs in every chart ("Only designs that ...").
+const FEATURES = [
+  { key: "rank", short: "Leaves out the largest", ask: "leave out the largest DReps",
+    help: "Skips the largest DReps or pays them less, or does not pay their delegators.",
+    test: (r) => r.k_exclude > 0 || r.delegator_k_exclude > 0 },
+  { key: "pledge", short: "Ties pay to pledge", ask: "tie pay to pledge",
+    help: "A pledge soft cap, a pledge hard cap or a minimum pledge.",
+    test: (r) => r.pledge_leverage > 0 || r.min_pledge_ada > 0 },
+  { key: "delegators", short: "Pays delegators", ask: "pay delegators",
+    help: "Part of the budget goes to the DReps' delegators.",
+    test: (r) => r.delegator_share > 0 },
+];
+// How a design answers the three questions, in its own settings ("skip top 20 · 80% to delegators").
+function familyDetail(r) {
   const out = [];
-  let chosen = [], before = vol([]), rest = names.filter((n) => S[n]);
+  if (r.k_exclude > 0) out.push(r.top_weight ? `top ${r.k_exclude} paid ${pct(r.top_weight)}` : `skip top ${r.k_exclude}`);
+  if (r.delegator_k_exclude > 0) out.push(`delegators not via top ${r.delegator_k_exclude}`);
+  if (r.pledge_leverage > 0) out.push(`pledge ${r.hard_cap ? "hard" : "soft"} cap ${num(r.pledge_leverage, 0)}×`);
+  if (r.min_pledge_ada > 0) out.push(`pledge ≥${ada(r.min_pledge_ada)} ADA`);
+  if (r.delegator_share > 0) out.push(`${pct(r.delegator_share)} to delegators`);
+  return out.join(" · ");
+}
+const familyOf = (s) => FEATURES.filter((f) => f.test(s.scheme)).map((f) => f.key).join("+") || "none";
+const familyName = (key) => key === "none" ? "None of the three"
+  : key.split("+").map((k) => FEATURES.find((f) => f.key === k).short).join(" · ");
+const hasFeatures = (s) => FEATURES.every((f) => !state.features.has(f.key) || f.test(s.scheme));
+// The meaningful difference on each axis, in the 0..1 units of the coverage scores.
+const STEP = (D.axes || []).map((a) => a.threshold / a.factor / Math.abs(a.scale[1] - a.scale[0]));
+const SCHEME = Object.fromEntries((D.schemes || []).map((q) => [q.name, q]));
+const coverOf = (names) => { const S = D.search.scores; return hvol([S[D.search.baseline], ...names.map((n) => S[n])]); };
+
+// Families ranked by how much coverage each adds on top of the families above it, so the
+// bars add up to the total and near-identical designs never take credit from each other.
+const groupCache = new Map();
+function grouped(names) {
+  const keyName = names.join("|");
+  if (groupCache.has(keyName)) return groupCache.get(keyName);
+  const rest = new Map();
+  for (const n of names) {
+    const k = familyOf(SCHEME[n]);
+    if (!rest.has(k)) rest.set(k, []);
+    rest.get(k).push(n);
+  }
+  const families = [], chosen = [];
+  let before = coverOf([]);
+  while (rest.size) {
+    let best = null, bestSize = -1;
+    for (const [k, members] of rest) {
+      const size = coverOf([...chosen, ...members]);
+      // in a tie (nothing left to add), the larger family first
+      if (best === null || size > bestSize + 1e-12 || (size > bestSize - 1e-12 && members.length > rest.get(best).length)) { best = k; bestSize = size; }
+    }
+    families.push({ key: best, members: rest.get(best), above: [...chosen], adds: Math.max(bestSize - before, 0) });
+    chosen.push(...rest.get(best));
+    rest.delete(best);
+    before = Math.max(before, bestSize);
+  }
+  const result = { families, total: before };
+  groupCache.set(keyName, result);
+  return result;
+}
+// A family's designs, each adding what it can on top of the families above and the designs
+// before it; worked out only when the family is opened. They add up to the family's bar.
+function partsOf(fam) {
+  if (fam.parts) return fam.parts;
+  const parts = [], chosen = [...fam.above];
+  let before = coverOf(chosen), rest = [...fam.members];
   while (rest.length) {
     let best = null, bestSize = -1;
-    for (const n of rest) { const size = vol([...chosen, n]); if (size > bestSize) { bestSize = size; best = n; } }
-    if (bestSize - before < 1e-12) { for (const n of rest) out.push({ name: n, adds: 0 }); break; }
-    out.push({ name: best, adds: bestSize - before });
-    chosen.push(best); rest = rest.filter((n) => n !== best); before = bestSize;
+    for (const n of rest) { const size = coverOf([...chosen, n]); if (size > bestSize) { bestSize = size; best = n; } }
+    if (bestSize - before < 1e-12) { for (const n of rest) parts.push({ name: n, adds: 0 }); break; }
+    parts.push({ name: best, adds: bestSize - before });
+    chosen.push(best);
+    rest = rest.filter((n) => n !== best);
+    before = bestSize;
   }
-  const result = { parts: out, total: before };
-  rankCache.set(keyName, result);
-  return result;
+  fam.parts = parts;
+  return parts;
+}
+// Why a design adds what it does, in words: what it reaches, or which design already
+// covers it (better on every measure, or within a meaningful difference on every one).
+function why(part, first, fam, names) {
+  const S = D.search.scores, P = S[part.name], base = D.search.hypervolume_unpaid;
+  if (part.adds / base >= 0.05) {
+    return { text: first && part.adds >= 0.5 * fam.adds ? "Does most of this group's work" : "Reaches ground the designs above do not" };
+  }
+  const others = names.filter((n) => n !== part.name && S[n]);
+  const worst = (m) => Math.max(...S[m].map((v, d) => P[d] - v)); // its largest shortfall
+  const nearest = (list) => list.reduce((a, b) => (worst(a) <= worst(b) ? a : b));
+  const outdone = others.filter((m) => worst(m) <= 0 && S[m].some((v, d) => v > P[d]));
+  if (outdone.length) return { text: "Outdone on every measure by", by: nearest(outdone) };
+  const matched = others.filter((m) => S[m].every((v, d) => v >= P[d] - STEP[d]));
+  if (matched.length) return { text: "About as good on every measure as", by: nearest(matched) };
+  if (part.adds / base >= 0.005) return { text: "Adds a little the designs above do not" };
+  return { text: "Each of its strengths is matched by some design above" };
 }
 // Which search round first tried a design: generated names carry it, named designs start in round 0.
 const roundOf = (name) => { const m = GENERATED.exec(name); return m ? +m[1] : 0; };
 const fromRound = (s, round) => s.kind !== "proposed" && roundOf(s.name) === round;
+// The designs switched on differ from all of them: a group or a family question is off.
+const narrowed = () => state.features.size > 0 || ["named", "search", "proposed"].some((k) => hasKind(k) && !state.chart[k]);
 function coverage() {
   const s = D.search, side = $("#coverage"), host = $("#coverage-chart");
   side.textContent = ""; host.textContent = "";
   const base = s.hypervolume_unpaid;
-  const lead = s.hypervolume / base; // the final set, re-checked on fresh runs
-  const ci = s.hypervolume_ci?.map((v) => v / base);
-  const namedAlone = s.search_gain !== null && s.search_gain !== undefined ? (s.hypervolume - s.search_gain) / base : null;
-  const hist = (s.history || []).map((r, i) => ({ n: r.evaluated, round: r.generation ?? i, v: r.hypervolume / base }));
   const shown = chartVisible().filter((q) => s.scores && s.scores[q.name]);
+  const names = shown.map((q) => q.name);
+  const narrow = narrowed();
+  const all = s.hypervolume / base; // every design, re-checked on fresh runs
+  const lead = narrow ? grouped(names).total / base : all;
+  const ci = narrow ? null : s.hypervolume_ci?.map((v) => v / base);
+  const namedAlone = !narrow && s.search_gain !== null && s.search_gain !== undefined ? (s.hypervolume - s.search_gain) / base : null;
+  const searched = (s.history || []).map((r, i) => ({ n: r.evaluated, round: r.generation ?? i, v: r.hypervolume / base }));
+  // With fewer designs switched on, the line is redrawn for them alone: each round adds the
+  // designs it found, on their re-checked scores; community proposals join at the end.
+  const hist = narrow
+    ? searched.map((r) => ({ ...r, v: coverOf(shown.filter((q) => q.kind !== "proposed" && roundOf(q.name) <= r.round).map((q) => q.name)) / base }))
+    : searched;
   const LINE = "var(--c2)";
 
   const row = h("div", { className: "title-row" }, side);
@@ -936,11 +1088,12 @@ function coverage() {
     "How much ground the best designs cover on all five measures at once. It is the five-measure version of the shaded area in the other charts; researchers call it the hypervolume.",
     "Paying nothing on its own counts as 1×. Higher means a wider choice of good trade-offs. It does not mean any single design got better.",
     `Sybil risk counts like the other measures: a design that lets someone gain ${pct(AX.split_gain.scale[0])} of the budget or more by posing as several DReps covers nothing on it.`,
-    `The search scored designs on its own random runs, then re-checked the final set on ${num(s.holdout_seeds, 0)} fresh runs it never saw${ci ? ` (95% range ${num(ci[0], 1)}–${num(ci[1], 1)}×)` : ""}.`,
-  ].filter(Boolean));
+    `The search scored designs on its own random runs, then re-checked the final set on ${num(s.holdout_seeds, 0)} fresh runs it never saw${s.hypervolume_ci ? ` (95% range ${num(s.hypervolume_ci[0] / base, 1)}–${num(s.hypervolume_ci[1] / base, 1)}× for every design)` : ""}.`,
+    "Switch groups of designs off, or keep only designs that answer yes to the questions above the chart, and the line is drawn again for the designs left.",
+  ]);
   const big = h("div", { className: "cov-big" }, side);
   h("span", { className: "v" }, big, num(lead, 1) + "×");
-  h("span", { className: "small" }, big, "what paying nothing covers");
+  h("span", { className: "small" }, big, narrow ? "what paying nothing covers, with the designs switched on" : "what paying nothing covers");
   const keys = h("div", { className: "cov-keys" }, side);
   const key = (draw, label, value) => {
     const r = h("div", {}, keys);
@@ -951,7 +1104,8 @@ function coverage() {
   };
   key((g) => el("line", { x1: 1, x2: 21, y1: 6, y2: 6, stroke: "var(--ink-2)", "stroke-width": 1.5, "stroke-dasharray": "4 3" }, g), "Paying nothing", "1×");
   if (namedAlone) key((g) => el("line", { x1: 1, x2: 21, y1: 6, y2: 6, stroke: "var(--c1)", "stroke-width": 2, "stroke-dasharray": "1 3", "stroke-linecap": "round" }, g), "Named designs alone", num(namedAlone, 1) + "×");
-  key((g) => { el("line", { x1: 1, x2: 21, y1: 6, y2: 6, stroke: LINE, "stroke-width": 2 }, g); el("circle", { cx: 11, cy: 6, r: 3, fill: LINE }, g); }, "With the search's designs", num(lead, 1) + "×");
+  if (narrow) key((g) => el("line", { x1: 1, x2: 21, y1: 6, y2: 6, stroke: "var(--neutral)", "stroke-width": 2 }, g), "Every design", num(all, 1) + "×");
+  key((g) => { el("line", { x1: 1, x2: 21, y1: 6, y2: 6, stroke: LINE, "stroke-width": 2 }, g); el("circle", { cx: 11, cy: 6, r: 3, fill: LINE }, g); }, narrow ? "The designs switched on" : "With the search's designs", num(lead, 1) + "×");
   key((g) => el("path", { d: "M11,1 L16,6 L11,11 L6,6 Z", fill: "var(--surface)", stroke: "var(--ink)", "stroke-width": 1.5 }, g), `Re-checked on ${num(s.holdout_seeds, 0)} fresh runs`, "");
   h("p", { className: "small", style: "margin:12px 0 0" }, side, "Hover or click a round to see which designs it found.");
 
@@ -960,7 +1114,7 @@ function coverage() {
   const W = host.clientWidth, H = Math.max(300, Math.min(440, W * 0.55));
   const m = { l: 46, r: 26, t: 30, b: 46 };
   const svg = el("svg", { width: W, height: H, role: "img", "aria-label": "Trade-off coverage as the search tried more designs" }, host);
-  const top = Math.max(lead, ci ? ci[1] : 0, ...hist.map((r) => r.v)) * 1.1;
+  const top = Math.max(lead, all, ci ? ci[1] : 0, ...hist.map((r) => r.v), ...searched.map((r) => r.v)) * 1.1;
   const x = scale(hist[0].n, hist[hist.length - 1].n, m.l, W - m.r), y = scale(0, top, H - m.b, m.t);
   const xt = ticks(hist[0].n, hist[hist.length - 1].n, 5), yt = ticks(0, top, 5);
   for (const v of xt) if (v >= hist[0].n && v <= hist[hist.length - 1].n) {
@@ -981,7 +1135,12 @@ function coverage() {
   ref(1, "paying nothing", { stroke: "var(--ink-2)", "stroke-width": 1.5, "stroke-dasharray": "4 3" });
   if (namedAlone) ref(namedAlone, "named designs alone", { stroke: "var(--c1)", "stroke-width": 2, "stroke-dasharray": "1 4", "stroke-linecap": "round" });
   const fx = x(hist[hist.length - 1].n);
-  el("path", { d: hist.map((r, i) => `${i ? "L" : "M"}${x(r.n)},${y(r.v)}`).join(" "), fill: "none", stroke: LINE, "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
+  const path = (rows) => rows.map((r, i) => `${i ? "L" : "M"}${x(r.n)},${y(r.v)}`).join(" ");
+  if (narrow) {
+    el("path", { d: path(searched), fill: "none", stroke: "var(--neutral)", "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+    halo(text(svg, fx - 4, y(searched[searched.length - 1].v) - 8, "every design", { "text-anchor": "end", "font-size": 11.5, class: "ink2" }));
+  }
+  el("path", { d: path(hist), fill: "none", stroke: LINE, "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
   for (const r of hist) {
     const found = shown.some((q) => fromRound(q, r.round));
     if (state.round === r.round) el("circle", { cx: x(r.n), cy: y(r.v), r: 10, fill: "none", stroke: "var(--ink)", "stroke-width": 1.5 }, svg);
@@ -1034,19 +1193,21 @@ function coverage() {
     $("#contrib").scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
 }
-// The designs switched on, ranked by how much coverage each adds on top of the ones above it.
+// The designs switched on, in families ranked by how much coverage each adds on top of the
+// families above it; open a family to see its designs and why each adds what it does.
 function contributions(shown) {
   const host = $("#contrib");
   host.textContent = "";
   const base = D.search.hypervolume_unpaid;
-  const { parts, total } = ranked(shown.map((q) => q.name));
+  const names = shown.map((q) => q.name);
+  const { families, total } = grouped(names);
   const head = h("div", { className: "contrib-head" }, host);
   const row = h("div", { className: "title-row" }, head);
-  h("h3", {}, row, parts.length ? `What makes up the ${num(total / base, 1)}×` : "Nothing to rank");
+  h("h3", {}, row, families.length ? `What makes up the ${num(total / base, 1)}×` : "Nothing to rank");
   info(row, [
-    "The designs switched on above the chart, ranked by how much coverage each adds on top of the designs above it. The bars add up to the total.",
-    "A design high on the list reaches a corner of the five measures that nothing above it reaches. A design near the bottom does something the others already do; it is not necessarily worse.",
-    "Switch groups on or off to re-rank: for example, switch on “Needs another hard fork” to see what those designs add.",
+    "The designs switched on above the chart, in families. A family is every design that answers the same to three questions: does it leave out the largest DReps, does it tie pay to pledge, does it pay delegators.",
+    "Families are ranked by how much coverage each adds on top of the families above it, so the bars add up to the total. Near-identical designs sit in the same family, so they never take credit from each other.",
+    "Open a family to see its designs. Each shows its five measures and why it adds what it does: a design near the bottom does something others already do, or is outdone by one of them. It is not necessarily a bad design.",
   ]);
   if (state.round !== null) {
     const chip = h("button", { className: "toggle", type: "button", title: "Show every design" }, head);
@@ -1056,36 +1217,69 @@ function contributions(shown) {
     chip.appendChild(document.createTextNode((state.round ? `Found in round ${state.round}` : "In the starting set") + "  ✕"));
     chip.addEventListener("click", () => { state.round = null; coverage(); });
   }
-  if (!parts.length) { h("p", { className: "empty" }, host, "Switch on a group of designs above the chart."); return; }
-  const TOP = 8;
-  const max = Math.max(...parts.map((p) => p.adds), 1e-12);
-  const list = h("ol", { className: "contrib" }, host);
-  let rank = 0, hidden = 0;
-  for (const p of parts) {
-    rank++;
-    const s = D.schemes.find((q) => q.name === p.name);
-    const inRound = state.round !== null && s && fromRound(s, state.round);
-    if (rank > TOP && !state.allParts && !inRound) { hidden++; continue; }
-    const li = h("li", { className: state.round !== null && !inRound ? "dim" : "" }, list);
-    const b = h("button", { className: "contrib-row", type: "button" }, li);
-    h("span", { className: "rank" }, b, String(rank));
-    const nm = h("span", { className: "nm" }, b);
-    const dot = h("span", { className: "dot" }, nm);
-    dot.style.background = KIND[s.kind].color;
-    nm.appendChild(document.createTextNode(pretty(p.name)));
-    if (!s.pilot) h("span", { className: "tag" }, nm, "Needs another hard fork");
+  if (!families.length) { h("p", { className: "empty" }, host, "No design matches the switches above the chart."); return; }
+  const inRound = (n) => state.round !== null && fromRound(SCHEME[n], state.round);
+  // open: the families the reader opened; by default the first that adds anything, and any
+  // family holding designs from the highlighted round
+  const open = state.open ?? new Set(families.filter((f) => f.adds / base >= 0.005).slice(0, 1).map((f) => f.key));
+  const max = Math.max(...families.map((f) => f.adds), 1e-12);
+  const list = h("ol", { className: "fam-list" }, host);
+  const start = h("li", {}, list);
+  const sr = h("div", { className: "fam-row start" }, start);
+  h("span", {}, sr);
+  h("span", { className: "nm" }, sr, "Paying nothing");
+  h("span", { className: "small" }, sr, "where every design starts");
+  h("span", { className: "val" }, sr, "1×");
+  families.forEach((fam, i) => {
+    const any = fam.members.some(inRound);
+    const isOpen = open.has(fam.key) || any;
+    const li = h("li", { className: state.round !== null && !any ? "dim" : "" }, list);
+    const b = h("button", { className: "fam-row", type: "button" }, li);
+    b.setAttribute("aria-expanded", isOpen);
+    const chev = el("svg", { class: "chev", width: 12, height: 12, viewBox: "0 0 12 12", "aria-hidden": "true" }, b);
+    el("path", { d: "M4 2 L8 6 L4 10", fill: "none", stroke: "currentColor", "stroke-width": 1.8, "stroke-linecap": "round", "stroke-linejoin": "round" }, chev);
+    const nm = h("span", { className: "nm" }, b, familyName(fam.key));
+    h("span", { className: "count" }, nm, `${fam.members.length} design${fam.members.length === 1 ? "" : "s"}`);
+    if (fam.adds / base < 0.005 && i > 0) h("span", { className: "why" }, nm, "Covered by the families above");
     const bar = h("span", { className: "bar" }, b);
-    h("span", { style: `width:${(p.adds / max) * 100}%` }, bar);
-    h("span", { className: "val" }, b, p.adds / base < 0.005 ? "≈0" : "+" + num(p.adds / base, 2) + "×");
-    b.title = describe(s.scheme, true);
-    b.addEventListener("click", () => openDesign(p.name));
-  }
-  if (hidden || state.allParts) {
-    const more = h("button", { className: "ghost", type: "button", style: "margin-top:8px" }, host,
-      state.allParts ? "Show the top " + TOP : `Show all ${parts.length}`);
-    more.addEventListener("click", () => { state.allParts = !state.allParts; contributions(shown); });
-  }
+    h("span", { style: `width:${(fam.adds / max) * 100}%` }, bar);
+    h("span", { className: "val" }, b, fam.adds / base < 0.005 ? "≈0" : "+" + num(fam.adds / base, 2) + "×");
+    b.addEventListener("click", () => {
+      const next = new Set(open);
+      if (isOpen) next.delete(fam.key); else next.add(fam.key);
+      state.open = next;
+      contributions(shown);
+    });
+    if (!isOpen) return;
+    const sub = h("ol", { className: "fam-members" }, li);
+    const hr = h("li", { className: "member-head", "aria-hidden": "true" }, sub);
+    h("span", {}, hr, "");
+    for (const a of D.axes) h("span", { className: "m", title: a.short }, hr, MEASURE_SHORT[a.name]);
+    h("span", { className: "val" }, hr, "adds");
+    partsOf(fam).forEach((part, j) => {
+      const s = SCHEME[part.name];
+      const reason = why(part, j === 0, fam, names);
+      const item = h("li", { className: state.round !== null && !inRound(part.name) ? "dim" : "" }, sub);
+      const r = h("button", { className: "member-row", type: "button" }, item);
+      r.title = describe(s.scheme, true);
+      const nmr = h("span", { className: "nm" }, r);
+      const dot = h("span", { className: "dot" }, nmr);
+      dot.style.background = KIND[s.kind].color;
+      nmr.appendChild(document.createTextNode(pretty(part.name)));
+      if (!s.pilot) h("span", { className: "tag" }, nmr, "Needs another hard fork");
+      if (fam.key !== "none") h("span", { className: "how" }, nmr, familyDetail(s.scheme));
+      h("span", { className: "why" }, nmr, reason.text + (reason.by ? " " + pretty(reason.by) : ""));
+      for (const a of D.axes) {
+        const v = val(s, a.name);
+        if (a.exact) h("span", { className: "m flat" }, r, a.name === "annual_cost_ada" ? ada(v) : pct(v));
+        else { const t = tone(s, a.name); h("span", { className: "m " + t, title: `${a.short}: ${fmt(a.name, v)}` }, r, SYM[t]); }
+      }
+      h("span", { className: "val" }, r, part.adds / base < 0.005 ? "≈0" : "+" + num(part.adds / base, 2) + "×");
+      r.addEventListener("click", () => openDesign(part.name));
+    });
+  });
 }
+const MEASURE_SHORT = { participation: "Part.", tau67: "Dec.", backing: "Skin", annual_cost_ada: "Cost", split_gain: "Sybil" };
 
 // ---------- dig deeper: tabs ----------
 function setTab(tab) {

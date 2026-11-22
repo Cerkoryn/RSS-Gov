@@ -662,6 +662,15 @@ Hypervolume depends on the chosen scales and rewards coverage of every corner, i
 corners nobody wants (a very cheap programme that does nothing much). It tracks search
 progress. It does not rank designs: read the shortlist.
 
+The site splits the coverage into families: the designs that answer the same to three
+questions (does it leave out the largest DReps or their delegators, does it tie pay to
+pledge, does it pay delegators). Families are taken in the order that adds the most
+coverage on top of the families already taken, so the parts add up to the total; inside a
+family, designs are taken the same way. A design near the bottom adds little because
+designs above it already reach what it reaches, which the site names when one design
+matches it on every axis. The order says what each adds given the ones above it, not how
+good a design is on its own. The same three questions filter the designs on every chart.
+
 ## Proposed designs: community and agents
 
 Every design is a point in one family, so every setting of every design can be changed.
