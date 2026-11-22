@@ -645,7 +645,7 @@ One score per design: what its gains are worth at the values in `config.yaml` (`
 
 *Behind the best*: the most it falls short of the best design in any one scenario. *Pays off from*: the share of these values at which its gains cover its cost. *First*: how often it ranks first when every value moves by up to 50% either way. *Gives up*: the guardrail it crosses.
 
-Designs that need only CIP-159 (61 finalists):
+Designs that need only CIP-159 (61 designs: the experiment's and the search's finalists), the top 15:
 
 | rank | scheme | rule | net benefit | low | central | high | behind the best | pays off from | first, values ±50% | gives up |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -667,7 +667,7 @@ Designs that need only CIP-159 (61 finalists):
 | 20 | paying nothing |  | +0.0M ± 0.0M | +0.0M | +0.0M | +0.0M | 21.2M |  | 0% |  |
 
 - Smallest shortfall in any scenario: `skip_top20_delegators_min_pledge`, never more than 2.2M ADA a year behind the best.
-- Best design that needs another hard fork: `pledge_hard_cap`, -25.6M ADA a year.
+- Best design that needs another hard fork: `pledge_soft_cap_skip20_fee_50k`, +4.8M ADA a year.
 
 ## How to read this
 

@@ -6,19 +6,86 @@ itself, and the ADA one actor could take by splitting (`split_gain` of the yearl
 counts as lost on top of it. Paying nothing scores 0, so a negative score means a design
 is not worth its cost at those values. The score is the mean over the ranking scenarios.
 
-Every design is scored on the same seeds (the holdout), so intervals are paired. The site
-recomputes all of this in the browser when a visitor changes a value (web/ranking.js);
-tests/test_ranking.py keeps the two equal.
+Every design is scored on the same seeds (the holdout), so intervals are paired. The
+search's finalists and the proposals are simulated on them anyway; `fill` (`rss-gov rank`)
+simulates every other design on them too. The site recomputes all of this in the browser
+when a visitor changes a value (web/ranking.js); tests/test_ranking.py keeps the two equal.
 """
+
+import hashlib
+import json
 
 import numpy as np
 import pandas as pd
 
+from rss_gov import experiment, mechanisms
 from rss_gov.experiment import BASELINE
 
 GAINS = ("participation", "tau67", "backing")
 COLUMNS = (*GAINS, "annual_cost_ada")
 SHAKE = 0.5  # the robustness check moves every value by up to this share, either way
+
+
+RUNS = "ranking_runs.parquet"  # the designs `fill` simulated on the holdout seeds
+
+
+def _key(study, scheme, seeds):
+    """What a design's runs depend on: the calibration, the model settings, the rule, the seeds."""
+    config = study.config
+    blob = json.dumps(
+        [
+            (study.results / "calibration.json").read_text(),
+            config["scenarios"],
+            config["assumptions"],
+            config["programme"],
+            scheme.to_dict(),
+            [int(s) for s in seeds],
+        ],
+        sort_keys=True,
+        default=str,
+    )
+    return hashlib.sha256(blob.encode()).hexdigest()[:16]
+
+
+def _designs(study, holdout):
+    """The experiment's paid designs that the holdout does not already hold, with their keys."""
+    seeds = sorted(holdout.seed.unique())
+    taken = set(holdout.scheme.unique())
+    schemes = study.schemes(mechanisms.experiment_rows(study.config))
+    return {s.name: (s, _key(study, s, seeds)) for s in schemes if s.paid and s.name not in taken}
+
+
+def stored(study, holdout):
+    """The runs `fill` kept that still match the holdout seeds and the current model."""
+    path = study.results / RUNS
+    if not path.exists():
+        return holdout.iloc[:0]
+    keys = {n: k for n, (_, k) in _designs(study, holdout).items()}
+    runs = pd.read_parquet(path)
+    return runs[runs.key == runs.scheme.map(keys)].drop(columns="key")
+
+
+def fill(study, log=print, processes=None):
+    """Simulate every design the holdout lacks on its seeds, so all can be ranked together.
+
+    Runs that still match are kept; a new calibration, other holdout seeds or a changed
+    rule make a design's runs stale, and it is simulated again.
+    """
+    out = study.results
+    holdout = pd.read_parquet(out / "search_holdout_runs.parquet")
+    designs = _designs(study, holdout)
+    path = out / RUNS
+    kept = pd.read_parquet(path) if path.exists() else pd.DataFrame(columns=["scheme", "key"])
+    kept = kept[kept.key == kept.scheme.map({n: k for n, (_, k) in designs.items()})]
+    todo = [s for n, (s, _) in designs.items() if n not in set(kept.scheme)]
+    log(f"{len(designs) - len(todo)} designs up to date, {len(todo)} to simulate")
+    if todo:
+        seeds = sorted(holdout.seed.unique())
+        runs = experiment.evaluate(study, todo, study.ranking_scenarios, seeds, processes)
+        runs["key"] = runs.scheme.map({n: k for n, (_, k) in designs.items()})
+        kept = pd.concat([kept, runs], ignore_index=True) if len(kept) else runs
+    kept.to_parquet(path)
+    log(f"wrote {path}")
 
 
 def values(config):

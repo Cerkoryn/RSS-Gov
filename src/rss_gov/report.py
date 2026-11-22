@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from rss_gov import mechanisms, proposals, ranking  # noqa: E402
+from rss_gov import mechanisms, proposals, ranking, search  # noqa: E402
 from rss_gov.experiment import BASELINE  # noqa: E402
 
 
@@ -352,12 +352,31 @@ def _design_tables(part, axes, scenarios):
 
 
 def _ranking(study, out, front):
-    """The finalists ranked by net benefit at the values in config.yaml."""
+    """Every design on the holdout seeds ranked by net benefit at the values in config.yaml."""
     scenarios = study.ranking_scenarios
     value, loss = ranking.values(study.config)
-    runs = pd.read_parquet(out / "search_holdout_runs.parquet")
-    info = front.set_index("scheme")
+    holdout = pd.read_parquet(out / "search_holdout_runs.parquet")
+    runs = pd.concat([holdout, ranking.stored(study, holdout)], ignore_index=True)
     designs = ranking.inputs(runs, scenarios)
+    # the finalists were judged on the holdout; the rest of the experiment's designs on its seeds
+    info = front.set_index("scheme")[["rule", "pilot_testable", "breaks"]]
+    summary = pd.read_csv(out / "experiment_summary.csv").set_index(["scheme", "scenario"])
+    guard = study.config["guardrails"]
+    rows = {}
+    for scheme in study.schemes(mechanisms.experiment_rows(study.config)):
+        if scheme.name in designs and scheme.name not in info.index:
+            worst = {
+                a.name: min(
+                    int(summary.loc[(scheme.name, s), f"{a.name}_verdict"]) for s in scenarios
+                )
+                for a in study.axes
+            }
+            rows[scheme.name] = dict(
+                rule=scheme.label(),
+                pilot_testable=scheme.feasibility()["pilot_testable"],
+                breaks=search.breaks(worst, study.axes, guard),
+            )
+    info = pd.concat([info, pd.DataFrame.from_dict(rows, orient="index")])
     fork = {n for n in designs if not info.pilot_testable.get(n, True)}
     # designs that need another hard fork are ranked apart, as on the site's default view
     pilot = ranking.table(
@@ -401,7 +420,8 @@ def _ranking(study, out, front):
         f"*First*: how often it ranks first when every value moves by up to "
         f"{ranking.SHAKE:.0%} either way. *Gives up*: the guardrail it crosses.",
         "",
-        f"Designs that need only CIP-159 ({len(pilot) - 1} finalists):",
+        f"Designs that need only CIP-159 ({len(pilot) - 1} designs: the experiment's and the "
+        "search's finalists), the top 15:",
         "",
         _table(shown),
         "",

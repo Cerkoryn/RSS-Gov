@@ -164,6 +164,12 @@ def cmd_try(args):
     search.try_candidates(study, rows, _say, args.processes, args.source)
 
 
+def cmd_rank(args):
+    from rss_gov import ranking
+
+    ranking.fill(_study(args), _say, args.processes)
+
+
 def cmd_research(args):
     from rss_gov import research
 
@@ -211,7 +217,16 @@ def cmd_all(args):
         step(args)
 
 
-ALL = (cmd_data, cmd_calibrate, cmd_static, cmd_experiment, cmd_search, cmd_try, cmd_report)
+ALL = (
+    cmd_data,
+    cmd_calibrate,
+    cmd_static,
+    cmd_experiment,
+    cmd_search,
+    cmd_try,
+    cmd_rank,
+    cmd_report,
+)
 
 
 def main(argv=None):
@@ -276,7 +291,13 @@ def main(argv=None):
     p.set_defaults(run=cmd_site)
 
     p = sub.add_parser(
-        "all", help="calibrate, analyse, experiment, search, re-try stored proposals and report"
+        "rank", help="simulate every design on the holdout seeds, so all can be ranked together"
+    )
+    p.set_defaults(run=cmd_rank)
+
+    p = sub.add_parser(
+        "all",
+        help="calibrate, analyse, experiment, search, re-try stored proposals, rank and report",
     )
     p.set_defaults(run=cmd_all)
 

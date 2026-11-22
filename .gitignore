@@ -27,3 +27,4 @@ results/site/*.part
 # The runs a proposal is compared against, and each proposal's own runs: `rss-gov try`
 # and `rss-gov site` read them, including on GitHub's runners.
 !results/search_holdout_runs.parquet
+!results/ranking_runs.parquet

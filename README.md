@@ -41,6 +41,7 @@ on it. Every scheme pays only for explicit votes (Yes, No and Abstain count alik
 | Search the rule family; judge finalists on unseen seeds | `rss-gov search` | chain data + assumed response |
 | Test designs proposed by a person or an AI agent | `rss-gov try candidates.yaml` | same |
 | Let an AI agent propose and test designs (never run by `all`) | `rss-gov research --rounds N` | same |
+| Simulate every other design on the same unseen seeds, to rank all of them by net benefit | `rss-gov rank` | same |
 | Write `results/report.md` with figures, and the results site in `results/site/` | `rss-gov report` | |
 | Check and store a proposal (YAML or a GitHub issue) | `rss-gov submit` | |
 

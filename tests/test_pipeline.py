@@ -229,3 +229,27 @@ def test_rerunning_a_stored_proposal_does_not_use_up_the_holdout_seeds(study):
     assert [e["rerun"] for e in search.ledger(study.results)] == [False, True]
     study.config["search"]["tries_per_holdout"] = 2
     assert search.holdout_seeds(study)[0] == search.HOLDOUT_OFFSET
+
+
+def test_rank_simulates_every_design_on_the_holdout_seeds_once(study):
+    from rss_gov import ranking
+
+    said = []
+    ranking.fill(study, said.append, processes=1)
+    holdout = pd.read_parquet(study.results / "search_holdout_runs.parquet")
+    runs = ranking.stored(study, holdout)
+    paid = {s.name for s in study.schemes(mechanisms.experiment_rows(study.config)) if s.paid}
+    assert paid <= set(holdout.scheme) | set(runs.scheme)
+    assert set(runs.seed) == set(holdout.seed)
+    assert set(runs.scenario) == set(study.ranking_scenarios)
+    # the site ranks every one of them
+    designs = website.build(study)["ranking"]["designs"]
+    assert paid <= set(designs)
+    # nothing to do a second time; other holdout seeds make every stored run stale
+    ranking.fill(study, said.append, processes=1)
+    assert said[-2].endswith(" 0 to simulate")
+    assert ranking.stored(study, holdout.assign(seed=holdout.seed + 1)).empty
+
+
+def test_all_ranks_after_the_proposals_and_before_the_report():
+    assert cli.ALL.index(cli.cmd_try) < cli.ALL.index(cli.cmd_rank) < cli.ALL.index(cli.cmd_report)

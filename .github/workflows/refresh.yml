@@ -95,6 +95,10 @@ jobs:
         run: |
           uv run rss-gov try --stored | tee "$RUNNER_TEMP/proposals.log"
 
+      - name: Simulate every design on the holdout seeds, for the ranking
+        if: steps.tip.outputs.new == 'true'
+        run: uv run rss-gov rank
+
       - name: Write the report and the site
         if: steps.tip.outputs.new == 'true'
         run: uv run rss-gov report

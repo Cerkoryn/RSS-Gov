@@ -460,8 +460,8 @@ def build(study):
     search_note = net = None
     if found is not None:
         value, loss = scoring.values(config)
-        everyone = pd.concat([holdout, *[runs for _, _, runs in community.values()]])
-        inputs = scoring.inputs(everyone, ranking)
+        extra = [scoring.stored(study, holdout), *[runs for _, _, runs in community.values()]]
+        inputs = scoring.inputs(pd.concat([holdout, *extra]), ranking)
         upper = np.triu_indices(len(ranking) * len(scoring.COLUMNS))
         net = dict(
             gains=list(scoring.GAINS),

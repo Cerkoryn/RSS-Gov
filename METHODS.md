@@ -715,7 +715,10 @@ participation, decentralisation or skin in the game under some reaction is ranke
 any other, and marked. No other penalty is added.
 
 Every design is scored on the same holdout seeds, so differences are paired and the 95%
-interval comes from the spread across seeds. Three checks show how firm the order is:
+interval comes from the spread across seeds. The search's finalists and the proposals are
+simulated on them already; `rss-gov rank` simulates every other design in the experiment
+on them too, and simulates a design again when the calibration, the holdout seeds or its
+rule change. Three checks show how firm the order is:
 
 - *Behind the best* (regret): in each scenario, how far a design falls short of the best
   design for that scenario; the largest of those. A design with little regret is a safe
