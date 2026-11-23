@@ -401,14 +401,28 @@ the unspent ADA stays in the budget:
 - `max_award_share` limits any one DRep to that share of the DReps' pot. The excess is not
   handed to the others.
 
-A share of the pot can go to delegators, always through a DRep that voted: `passthrough`
-shares each DRep's own award with its delegators, `flat` pays one yield per ADA and per
-unit of the DRep's vote rate. Delegating to always-abstain or to a DRep that does not vote
-earns nothing. `delegator_k_exclude` pays nothing to the delegators of the K DReps with
-the most voting power, though those DReps can still be paid themselves; the delegators'
-part is shared among the delegators of the other paid DReps. Under pass-through, a pledge
-soft cap also lowers what a DRep's delegators get: each ADA they delegate earns in
-proportion to how much of the DRep's voting power its pledge covers.
+A share of the pot can go to delegators, always through a DRep that is paid and voted.
+Delegators are paid per ADA they delegate: a DRep's delegators always share its part in
+proportion to their ADA. Paying every delegating account the same would pay anyone who
+splits a wallet into many accounts, which costs only a refundable deposit. What differs
+is how the delegators' part is split across DReps (`delegator_mode`):
+
+- `passthrough` follows the DRep rule: each DRep's delegators share a part in proportion
+  to the DRep's own award. Under proportional pay every ADA then earns the same; under
+  equal pay, an ADA delegated to a small DRep earns far more than one delegated to a
+  large DRep.
+- `flat` pays one yield per ADA, times the DRep's vote rate, through every paid DRep,
+  whatever its size. A pledge soft cap then decides only whether a DRep's delegators are
+  paid at all, not how much: they are paid on every ADA they delegate.
+- `per_drep` sets the split across DReps independently of the DRep rule: each paid DRep's
+  delegators get a pot in proportion to its counted voting power (after any cap and
+  pledge soft cap) to the power `delegator_alpha`, times its vote rate. At 1 every counted
+  ADA earns the same; at 0 every DRep's delegators get the same pot; 0.5 is in between.
+
+Delegating to always-abstain or to a DRep that does not vote earns nothing.
+`delegator_k_exclude` pays nothing to the delegators of the K DReps with the most voting
+power, though those DReps can still be paid themselves; the delegators' part is shared
+among the delegators of the other paid DReps.
 
 **How payments are made.** Payments go straight into reward accounts as direct deposits,
 which [CIP-159](https://cips.cardano.org/cip/CIP-159) adds to the ledger: no transaction
@@ -459,7 +473,14 @@ designs were found by hand: they have only two settings each, so they are easy t
 and to implement. The delegator designs at the end of the table pay delegators to move
 away from the largest DReps, by pledge, by rank or both; `config.yaml` also runs
 variations of them (other leverages, no cap, half to delegators, the top 10 instead of
-the top 20, a pledge soft cap, and a minimum pledge of 10,000 ADA).
+the top 20, a pledge soft cap, and a minimum pledge of 10,000 ADA). A last group pairs
+each DRep rule (proportional, square root, equal) with each way of splitting half the
+budget among delegators (`per_drep` with `delegator_alpha` 1, 0.5 and 0); runs the leading
+delegator designs and a pledge soft cap with delegator pay limited by pledge; and pays
+delegators a fifth or four fifths instead of half. Around the leading design with delegator
+pay limited by pledge it also varies the delegator exponent, the pledge leverage (1×, 5×,
+10×), the delegator share and the budget, and tries the same change in two other
+delegator designs.
 
 | Name | Rule | Source |
 |---|---|---|
@@ -495,6 +516,7 @@ the top 20, a pledge soft cap, and a minimum pledge of 10,000 ADA).
 - **Delegator mechanics**: time-weighted balances, one-time bonuses for leaving
   always-abstain or a large DRep, matching new delegation, caps per delegator, and a pool
   that grows with participation. Each needs a response assumption with no data behind it.
+  Equal pay per delegating account is left out on purpose: it pays for splitting wallets.
 - **A base for everyone plus a bonus for the top m** (IO Research variant 3): the family
   applies one eligibility rule to the whole pot.
 

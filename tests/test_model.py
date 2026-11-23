@@ -131,7 +131,8 @@ def test_unpaid_concentration_stays_near_its_start(world, params):
     assert abs(out["effective_n"] / effective_number(start) - 1) < 0.35
 
 
-def test_pass_through_yield_dilutes_as_delegation_arrives(params):
+@pytest.mark.parametrize("mode", ["passthrough", "per_drep"])
+def test_a_delegator_pot_per_drep_dilutes_as_delegation_arrives(params, mode):
     """Two DReps share the same delegator award. Arrivals must not all pile into the
     smaller one: its yield falls as it fills."""
     from tests.conftest import make_params
@@ -142,7 +143,7 @@ def test_pass_through_yield_dilutes_as_delegation_arrives(params):
     acct_ada = np.concatenate([[1_000.0, 100_000.0], np.full(n, 1_000.0)])
     power = np.array([1_000.0, 100_000.0])
     yield_pp = 50_000.0 / power  # the same award (in points x ADA) behind both DReps
-    scheme = mechanisms.Scheme(budget_ada=1.0, delegator_share=0.8)
+    scheme = mechanisms.Scheme(budget_ada=1.0, delegator_share=0.8, delegator_mode=mode)
     moved = model._move(
         params, scheme, model.Scenario("s", 0.0, 1.0), np.random.default_rng(0), target,
         acct_ada, np.ones(n + 2), power, np.array([True, True]), np.zeros(2), yield_pp,

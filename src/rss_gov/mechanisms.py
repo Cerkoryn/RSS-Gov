@@ -48,15 +48,21 @@ class Scheme:
     per_vote_ada: float = 0.0  # fixed pay per vote (0: the pot is always split in full)
     max_award_share: float = 0.0  # no DRep gets more than this share of the DReps' pot
     delegator_share: float = 0.0  # fraction of the budget paid to delegators
-    delegator_mode: str = "passthrough"  # "passthrough": follows the DRep's award; "flat": same yield for all qualifying DReps
+    # How the delegators' part is split across DReps; each DRep's delegators then share it per
+    # ADA delegated. "passthrough": by the DRep's award; "flat": the same yield per ADA through
+    # every paid DRep; "per_drep": by counted power ** delegator_alpha, times the vote rate.
+    delegator_mode: str = "passthrough"
+    delegator_alpha: float = 1.0  # per_drep only: 1 = by counted power, 0 = equal per DRep
     delegator_k_exclude: int = 0  # delegators of the K largest DReps are not paid (the DReps are)
     # Counted power is at most leverage * pledge (0 = off): a pledge soft cap.
     pledge_leverage: float = 0.0
     hard_cap: bool = False  # also cap voting power at leverage * pledge
 
     def __post_init__(self):
-        if self.delegator_mode not in {"passthrough", "flat"}:
-            raise ValueError("delegator_mode must be 'passthrough' or 'flat'")
+        if self.delegator_mode not in {"passthrough", "flat", "per_drep"}:
+            raise ValueError("delegator_mode must be 'passthrough', 'flat' or 'per_drep'")
+        if not 0 <= self.delegator_alpha <= 1:
+            raise ValueError("delegator_alpha must be in [0, 1]")
         if not 0 <= self.delegator_share <= 1:
             raise ValueError("delegator_share must be in [0, 1]")
         if self.alpha < 0 or self.rationale_bonus < 0:
@@ -162,7 +168,12 @@ class Scheme:
         if self.rationale_bonus:
             parts.append(f"rationale +{self.rationale_bonus:.0%}")
         if self.delegator_share:
-            parts.append(f"{self.delegator_share:.0%} to delegators ({self.delegator_mode})")
+            mode = self.delegator_mode
+            if mode == "per_drep":
+                mode = {0.0: "equal per DRep", 0.5: "sqrt per DRep", 1.0: "by counted power"}.get(
+                    self.delegator_alpha, f"power^{self.delegator_alpha:g} per DRep"
+                )
+            parts.append(f"{self.delegator_share:.0%} to delegators ({mode})")
             if self.delegator_k_exclude:
                 parts.append(f"not via top {self.delegator_k_exclude}")
         if self.pledge_leverage:
@@ -273,10 +284,12 @@ def _awards(s, parts, totals, reps, actions):
 def allocate(s, r, pot):
     """Split one round's pot. Returns (DRep awards, delegator yield per ADA delegated).
 
-    Delegators are paid only through a DRep that voted, and not through the K largest
+    Delegators are paid only through a DRep that is paid, and not through the K largest
     with `delegator_k_exclude`: their part goes to the other delegators. `passthrough`
     shares each DRep's own award with its delegators; `flat` pays one yield per ADA and per
-    unit of the DRep's vote rate, whatever the DRep's size.
+    unit of the DRep's vote rate, whatever the DRep's size or pledge; `per_drep` gives each
+    DRep's delegators a pot by its counted power (capped, pledge-limited) ** delegator_alpha
+    times its vote rate. Within a DRep, delegators always share per ADA delegated.
     """
     n = len(r.power)
     if pot <= 0:
@@ -297,6 +310,12 @@ def allocate(s, r, pot):
             base = (r.power[paid] * r.activity[paid]).sum()
             if base > 0:
                 yields[paid] = delegator_pot * r.activity[paid] / base
+        elif s.delegator_mode == "per_drep":
+            size = counted_power(s, r)[paid]
+            w = np.power(size, s.delegator_alpha) if s.delegator_alpha else (size > 0) * 1.0
+            w = w * r.activity[paid]
+            if w.sum() > 0:
+                yields[paid] = delegator_pot * w / w.sum() / r.power[paid]
         elif rep[paid].sum() > 0:
             yields[paid] = delegator_pot * rep[paid] / rep[paid].sum() / r.power[paid]
     return rep, yields

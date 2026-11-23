@@ -197,6 +197,42 @@ experiment:
     - {name: skip_top20_delegators_min_pledge, preset: skip_top20_delegators, min_pledge_ada: 10000}
     - {name: top100_delegators_not_top20_min_pledge, preset: top100_delegators_not_top20, min_pledge_ada: 10000}
     - {name: pledge_soft_cap_skip20_min_pledge, preset: pledge_soft_cap_skip20, min_pledge_ada: 10000}
+    # How DReps are paid against how their delegators are: each DRep rule (proportional,
+    # square root, equal) with half the budget to delegators, split across DReps by its own
+    # rule (a pot per DRep by counted power, its square root, or equal) and shared per ADA.
+    - {name: proportional_delegators_by_power, preset: proportional, delegator_share: 0.5, delegator_mode: per_drep, delegator_alpha: 1}
+    - {name: proportional_delegators_sqrt, preset: proportional, delegator_share: 0.5, delegator_mode: per_drep, delegator_alpha: 0.5}
+    - {name: proportional_delegators_equal, preset: proportional, delegator_share: 0.5, delegator_mode: per_drep, delegator_alpha: 0}
+    - {name: sqrt_delegators_by_power, preset: sqrt, delegator_share: 0.5, delegator_mode: per_drep, delegator_alpha: 1}
+    - {name: sqrt_delegators_sqrt, preset: sqrt, delegator_share: 0.5, delegator_mode: per_drep, delegator_alpha: 0.5}
+    - {name: sqrt_delegators_equal, preset: sqrt, delegator_share: 0.5, delegator_mode: per_drep, delegator_alpha: 0}
+    - {name: equal_delegators_by_power, preset: equal, delegator_share: 0.5, delegator_mode: per_drep, delegator_alpha: 1}
+    - {name: equal_delegators_sqrt, preset: equal, delegator_share: 0.5, delegator_mode: per_drep, delegator_alpha: 0.5}
+    - {name: equal_delegators_equal, preset: equal, delegator_share: 0.5, delegator_mode: per_drep, delegator_alpha: 0}
+    # Delegator pay limited by pledge, against a flat yield that only needs some pledge.
+    - {name: pledge_soft_cap_2x_delegators_flat, preset: pledge_soft_cap, pledge_leverage: 2, delegator_share: 0.5, delegator_mode: flat}
+    - {name: pledge_soft_cap_2x_delegators_by_power, preset: pledge_soft_cap, pledge_leverage: 2, delegator_share: 0.5, delegator_mode: per_drep}
+    - {name: skip_top20_delegators_by_power, preset: skip_top20_delegators, delegator_mode: per_drep}
+    - {name: skip_top20_delegators_min_pledge_by_power, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep}
+    # Around delegator pay limited by pledge (LESSONS.md, L9): does it beat a flat yield in
+    # other designs; does an equal pot per pledged DRep bring splitting back; how tight
+    # should the pledge limit be; how much to delegators; what more or less money buys.
+    - {name: haircut_top20_delegators_by_power, preset: haircut_top20_delegators, delegator_mode: per_drep}
+    - {name: delegators_not_top20_2x_flat, preset: delegators_not_top20, pledge_leverage: 2}
+    - {name: delegators_not_top20_2x_by_power, preset: delegators_not_top20, pledge_leverage: 2, delegator_mode: per_drep}
+    - {name: skip_top20_min_pledge_delegators_sqrt, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, delegator_alpha: 0.5}
+    - {name: skip_top20_min_pledge_delegators_equal, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, delegator_alpha: 0}
+    - {name: skip_top20_min_pledge_by_power_1x, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1}
+    - {name: skip_top20_min_pledge_by_power_5x, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 5}
+    - {name: skip_top20_min_pledge_by_power_10x, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 10}
+    - {name: skip_top20_min_pledge_by_power_half, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, delegator_share: 0.5}
+    - {name: skip_top20_min_pledge_by_power_2m5, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, budget_ada: 2500000}
+    - {name: skip_top20_min_pledge_by_power_10m, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, budget_ada: 10000000}
+    # How much goes to delegators: a fifth or four fifths instead of half.
+    - {name: proportional_delegators_by_power_20, preset: proportional, delegator_share: 0.2, delegator_mode: per_drep}
+    - {name: proportional_delegators_by_power_80, preset: proportional, delegator_share: 0.8, delegator_mode: per_drep}
+    - {name: proportional_delegators_equal_20, preset: proportional, delegator_share: 0.2, delegator_mode: per_drep, delegator_alpha: 0}
+    - {name: proportional_delegators_equal_80, preset: proportional, delegator_share: 0.8, delegator_mode: per_drep, delegator_alpha: 0}
     # Paid by a proposer fee kept from each governance action instead of a budget (CIP PR #1117): a quarter of
     # today's 100,000 ADA deposit.
     - {name: equal_plus_power_fee_25k, preset: equal_plus_power, budget_ada: 0, fee_ada: 25000}

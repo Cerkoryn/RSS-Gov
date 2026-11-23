@@ -1,27 +1,3 @@
-- name: pledge_hard_cap
-  budget_ada: 5000000.0
-  fee_ada: 0.0
-  alpha: 1.0
-  cap_ada: null
-  k_exclude: 0
-  top_weight: 0.0
-  n_pay: 0
-  roll_down: false
-  min_power_ada: 0.0
-  min_share: 0.0
-  min_delegators: 0
-  min_pledge_ada: 0.0
-  activity_gate: 0.0
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.0
-  delegator_share: 0.0
-  delegator_mode: passthrough
-  delegator_k_exclude: 0
-  pledge_leverage: 1000
-  hard_cap: true
 - name: threshold_k
   budget_ada: 5000000.0
   fee_ada: 0.0
@@ -43,6 +19,7 @@
   max_award_share: 0.01
   delegator_share: 0.0
   delegator_mode: passthrough
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
   pledge_leverage: 0.0
   hard_cap: false
@@ -67,32 +44,9 @@
   max_award_share: 0.0
   delegator_share: 0.0
   delegator_mode: passthrough
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
   pledge_leverage: 1.0
-  hard_cap: false
-- name: pledge_soft_cap_skip10
-  budget_ada: 5000000.0
-  fee_ada: 0.0
-  alpha: 1.0
-  cap_ada: null
-  k_exclude: 10
-  top_weight: 0.0
-  n_pay: 0
-  roll_down: false
-  min_power_ada: 0.0
-  min_share: 0.0
-  min_delegators: 0
-  min_pledge_ada: 0.0
-  activity_gate: 0.0
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.0
-  delegator_share: 0.0
-  delegator_mode: passthrough
-  delegator_k_exclude: 0
-  pledge_leverage: 2.0
   hard_cap: false
 - name: capped_1m
   budget_ada: 1000000
@@ -115,6 +69,7 @@
   max_award_share: 0.0
   delegator_share: 0.0
   delegator_mode: passthrough
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
   pledge_leverage: 0.0
   hard_cap: false
@@ -139,32 +94,9 @@
   max_award_share: 0.0
   delegator_share: 0.0
   delegator_mode: passthrough
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
   pledge_leverage: 0.0
-  hard_cap: false
-- name: pledge_backed_delegators_half
-  budget_ada: 5000000.0
-  fee_ada: 0.0
-  alpha: 1.0
-  cap_ada: 5000000
-  k_exclude: 0
-  top_weight: 0.0
-  n_pay: 0
-  roll_down: false
-  min_power_ada: 0.0
-  min_share: 0.0
-  min_delegators: 0
-  min_pledge_ada: 0.0
-  activity_gate: 0.0
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.0
-  delegator_share: 0.5
-  delegator_mode: passthrough
-  delegator_k_exclude: 0
-  pledge_leverage: 1.0
   hard_cap: false
 - name: skip_top20_delegators_min_pledge
   budget_ada: 5000000.0
@@ -187,22 +119,23 @@
   max_award_share: 0.0
   delegator_share: 0.8
   delegator_mode: flat
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
   pledge_leverage: 2.0
   hard_cap: false
-- name: top100_delegators_not_top20_min_pledge
+- name: pledge_soft_cap_2x_delegators_by_power
   budget_ada: 5000000.0
   fee_ada: 0.0
   alpha: 1.0
   cap_ada: null
   k_exclude: 0
   top_weight: 0.0
-  n_pay: 100
+  n_pay: 0
   roll_down: false
   min_power_ada: 0.0
   min_share: 0.0
   min_delegators: 0
-  min_pledge_ada: 10000
+  min_pledge_ada: 0.0
   activity_gate: 0.0
   rationale_bonus: 0.0
   basis: power
@@ -210,36 +143,13 @@
   per_vote_ada: 0.0
   max_award_share: 0.0
   delegator_share: 0.5
-  delegator_mode: flat
-  delegator_k_exclude: 20
-  pledge_leverage: 0.0
-  hard_cap: false
-- name: g1_20
-  budget_ada: 5000000.0
-  fee_ada: 0.0
-  alpha: 1.0
-  cap_ada: null
-  k_exclude: 20
-  top_weight: 0.5
-  n_pay: 0
-  roll_down: false
-  min_power_ada: 0.0
-  min_share: 0.0
-  min_delegators: 0
-  min_pledge_ada: 10000
-  activity_gate: 0.0
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.0
-  delegator_share: 0.0
-  delegator_mode: passthrough
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
-  pledge_leverage: 1.0
+  pledge_leverage: 2
   hard_cap: false
-- name: g5_22
-  budget_ada: 10000000.0
+- name: skip_top20_min_pledge_delegators_sqrt
+  budget_ada: 5000000.0
   fee_ada: 0.0
   alpha: 1.0
   cap_ada: null
@@ -251,19 +161,20 @@
   min_share: 0.0
   min_delegators: 0
   min_pledge_ada: 10000
-  activity_gate: 0.0
+  activity_gate: 0.7
   rationale_bonus: 0.0
   basis: power
   equal_share: 0.0
   per_vote_ada: 0.0
   max_award_share: 0.0
   delegator_share: 0.8
-  delegator_mode: passthrough
+  delegator_mode: per_drep
+  delegator_alpha: 0.5
   delegator_k_exclude: 0
-  pledge_leverage: 1.0
+  pledge_leverage: 2.0
   hard_cap: false
-- name: g5_16
-  budget_ada: 2500000.0
+- name: skip_top20_min_pledge_delegators_equal
+  budget_ada: 5000000.0
   fee_ada: 0.0
   alpha: 1.0
   cap_ada: null
@@ -275,18 +186,94 @@
   min_share: 0.0
   min_delegators: 0
   min_pledge_ada: 10000
-  activity_gate: 0.0
+  activity_gate: 0.7
   rationale_bonus: 0.0
   basis: power
   equal_share: 0.0
   per_vote_ada: 0.0
   max_award_share: 0.0
-  delegator_share: 0.0
-  delegator_mode: passthrough
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 0
   delegator_k_exclude: 0
-  pledge_leverage: 1.0
+  pledge_leverage: 2.0
   hard_cap: false
-- name: g2_22
+- name: skip_top20_min_pledge_by_power_1x
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  pledge_leverage: 1
+  hard_cap: false
+- name: skip_top20_min_pledge_by_power_half
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.5
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  pledge_leverage: 2.0
+  hard_cap: false
+- name: skip_top20_min_pledge_by_power_2m5
+  budget_ada: 2500000
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  pledge_leverage: 2.0
+  hard_cap: false
+- name: g3_17
   budget_ada: 10000000.0
   fee_ada: 0.0
   alpha: 1.0
@@ -306,22 +293,98 @@
   per_vote_ada: 0.0
   max_award_share: 0.0
   delegator_share: 0.8
-  delegator_mode: flat
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
-  pledge_leverage: 2.0
+  pledge_leverage: 1
   hard_cap: false
-- name: g10_7
-  budget_ada: 1000000.0
+- name: g3_3
+  budget_ada: 5000000.0
   fee_ada: 0.0
   alpha: 1.0
-  cap_ada: 5000000
+  cap_ada: null
   k_exclude: 0
-  top_weight: 0.25
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 0.0
+  activity_gate: 0.0
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.25
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  pledge_leverage: 2
+  hard_cap: false
+- name: g5_2
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 0
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 0.0
+  activity_gate: 0.5
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.5
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 20
+  pledge_leverage: 2
+  hard_cap: false
+- name: g10_0
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 0.0
+  cap_ada: 2000000.0
+  k_exclude: 20
+  top_weight: 0.0
   n_pay: 0
   roll_down: false
   min_power_ada: 10000.0
   min_share: 0.0
   min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 0.5
+  delegator_k_exclude: 0
+  pledge_leverage: 10000.0
+  hard_cap: false
+- name: g3_22
+  budget_ada: 10000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 0
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
   min_pledge_ada: 0.0
   activity_gate: 0.0
   rationale_bonus: 0.0
@@ -330,62 +393,65 @@
   per_vote_ada: 0.0
   max_award_share: 0.0
   delegator_share: 0.5
-  delegator_mode: passthrough
-  delegator_k_exclude: 10
-  pledge_leverage: 1.0
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  pledge_leverage: 2
   hard_cap: false
-- name: g1_12
-  budget_ada: 2500000.0
+- name: g8_1
+  budget_ada: 1000000.0
   fee_ada: 0.0
-  alpha: 0.75
-  cap_ada: 200000000.0
+  alpha: 1.0
+  cap_ada: null
   k_exclude: 20
   top_weight: 0.0
   n_pay: 0
   roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.5
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  pledge_leverage: 2.0
+  hard_cap: false
+- name: g7_18
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: 2000000.0
+  k_exclude: 10
+  top_weight: 0.0
+  n_pay: 200
+  roll_down: false
   min_power_ada: 1000000.0
   min_share: 0.0
-  min_delegators: 10
-  min_pledge_ada: 10000.0
+  min_delegators: 0
+  min_pledge_ada: 100000.0
   activity_gate: 0.25
-  rationale_bonus: 0.0
+  rationale_bonus: 2.0
   basis: power
   equal_share: 0.0
   per_vote_ada: 0.0
   max_award_share: 0.02
-  delegator_share: 0.8
+  delegator_share: 0.5
   delegator_mode: flat
-  delegator_k_exclude: 0
+  delegator_alpha: 1.0
+  delegator_k_exclude: 20
   pledge_leverage: 100.0
   hard_cap: false
-- name: g7_2
+- name: g9_18
   budget_ada: 10000000.0
   fee_ada: 0.0
-  alpha: 0.0
-  cap_ada: 2000000.0
-  k_exclude: 0
-  top_weight: 0.0
-  n_pay: 0
-  roll_down: false
-  min_power_ada: 100000.0
-  min_share: 0.0
-  min_delegators: 0
-  min_pledge_ada: 10000.0
-  activity_gate: 0.0
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.05
-  delegator_share: 0.5
-  delegator_mode: passthrough
-  delegator_k_exclude: 10
-  pledge_leverage: 0.0
-  hard_cap: false
-- name: g7_12
-  budget_ada: 1000000.0
-  fee_ada: 0.0
-  alpha: 0.75
+  alpha: 1.0
   cap_ada: null
   k_exclude: 20
   top_weight: 0.0
@@ -402,84 +468,13 @@
   per_vote_ada: 0.0
   max_award_share: 0.0
   delegator_share: 0.8
-  delegator_mode: flat
+  delegator_mode: per_drep
+  delegator_alpha: 0.5
   delegator_k_exclude: 0
-  pledge_leverage: 2.0
+  pledge_leverage: 1
   hard_cap: false
-- name: g0_18
-  budget_ada: 1000000.0
-  fee_ada: 0.0
-  alpha: 1.0
-  cap_ada: 50000000.0
-  k_exclude: 0
-  top_weight: 0.0
-  n_pay: 100
-  roll_down: true
-  min_power_ada: 0.0
-  min_share: 0.0
-  min_delegators: 5
-  min_pledge_ada: 0.0
-  activity_gate: 0.0
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.25
-  per_vote_ada: 0.0
-  max_award_share: 0.0
-  delegator_share: 0.0
-  delegator_mode: passthrough
-  delegator_k_exclude: 0
-  pledge_leverage: 10000.0
-  hard_cap: false
-- name: g5_23
-  budget_ada: 10000000.0
-  fee_ada: 0.0
-  alpha: 1.0
-  cap_ada: null
-  k_exclude: 20
-  top_weight: 0.0
-  n_pay: 0
-  roll_down: false
-  min_power_ada: 1000000.0
-  min_share: 0.0
-  min_delegators: 50
-  min_pledge_ada: 10000.0
-  activity_gate: 0.5
-  rationale_bonus: 2.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.0
-  delegator_share: 0.8
-  delegator_mode: passthrough
-  delegator_k_exclude: 20
-  pledge_leverage: 100.0
-  hard_cap: false
-- name: g8_6
-  budget_ada: 2500000.0
-  fee_ada: 0.0
-  alpha: 0.75
-  cap_ada: 200000000.0
-  k_exclude: 20
-  top_weight: 0.0
-  n_pay: 0
-  roll_down: false
-  min_power_ada: 1000000.0
-  min_share: 0.0
-  min_delegators: 5
-  min_pledge_ada: 10000.0
-  activity_gate: 0.25
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.02
-  delegator_share: 0.8
-  delegator_mode: passthrough
-  delegator_k_exclude: 0
-  pledge_leverage: 100.0
-  hard_cap: false
-- name: g9_13
-  budget_ada: 10000000.0
+- name: g2_6
+  budget_ada: 10000000
   fee_ada: 0.0
   alpha: 1.0
   cap_ada: null
@@ -491,42 +486,19 @@
   min_share: 0.0
   min_delegators: 0
   min_pledge_ada: 10000
-  activity_gate: 0.25
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.01
-  delegator_share: 0.8
-  delegator_mode: flat
-  delegator_k_exclude: 0
-  pledge_leverage: 2.0
-  hard_cap: false
-- name: g7_6
-  budget_ada: 2500000.0
-  fee_ada: 0.0
-  alpha: 1.0
-  cap_ada: null
-  k_exclude: 0
-  top_weight: 0.0
-  n_pay: 100
-  roll_down: false
-  min_power_ada: 0.0
-  min_share: 0.0
-  min_delegators: 0
-  min_pledge_ada: 10000
   activity_gate: 0.0
   rationale_bonus: 0.0
   basis: power
   equal_share: 0.0
   per_vote_ada: 0.0
   max_award_share: 0.0
-  delegator_share: 0.5
-  delegator_mode: flat
-  delegator_k_exclude: 20
-  pledge_leverage: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  pledge_leverage: 2.0
   hard_cap: false
-- name: g7_7
+- name: g4_19
   budget_ada: 5000000.0
   fee_ada: 0.0
   alpha: 1.0
@@ -539,16 +511,117 @@
   min_share: 0.0
   min_delegators: 0
   min_pledge_ada: 0.0
-  activity_gate: 0.5
+  activity_gate: 0.0
   rationale_bonus: 0.0
   basis: power
   equal_share: 0.0
   per_vote_ada: 0.0
   max_award_share: 0.0
-  delegator_share: 0.0
+  delegator_share: 0.25
   delegator_mode: passthrough
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
   pledge_leverage: 2.0
+  hard_cap: false
+- name: g9_19
+  budget_ada: 10000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: 2000000.0
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.5
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  pledge_leverage: 2.0
+  hard_cap: false
+- name: g5_5
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: flat
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  pledge_leverage: 100.0
+  hard_cap: false
+- name: g4_7
+  budget_ada: 2500000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: 2000000.0
+  k_exclude: 10
+  top_weight: 0.0
+  n_pay: 200
+  roll_down: false
+  min_power_ada: 1000000.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 100000.0
+  activity_gate: 0.25
+  rationale_bonus: 2.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.02
+  delegator_share: 0.5
+  delegator_mode: flat
+  delegator_alpha: 1.0
+  delegator_k_exclude: 20
+  pledge_leverage: 100.0
+  hard_cap: false
+- name: g2_4
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 0.5
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 0.5
+  delegator_k_exclude: 0
+  pledge_leverage: 0.0
   hard_cap: false
 - name: proportional_gate_half_budget
   budget_ada: 2500000
@@ -571,6 +644,7 @@
   max_award_share: 0.0
   delegator_share: 0.0
   delegator_mode: passthrough
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
   pledge_leverage: 0.0
   hard_cap: false
@@ -595,6 +669,7 @@
   max_award_share: 0.0
   delegator_share: 0.0
   delegator_mode: passthrough
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
   pledge_leverage: 0.0
   hard_cap: false

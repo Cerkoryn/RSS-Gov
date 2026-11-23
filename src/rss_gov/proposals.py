@@ -314,10 +314,34 @@ FIELDS = [
         choices=[
             ["passthrough", "Share the DRep's award"],
             ["flat", "Same yield per ADA"],
+            ["per_drep", "A pot per DRep, by its counted power"],
         ],
+        tags={"per_drep": "delegator pots by counted power"},
         label="How delegators are paid",
-        help="Passthrough follows the DRep rule. Flat pays delegators of small and large DReps "
-        "alike, per ADA and per unit of the DRep's vote rate.",
+        help="Delegators always share their DRep's part per ADA delegated; this sets how the "
+        "delegators' money is split across DReps. Passthrough follows the DRep rule. Flat pays "
+        "the same yield per ADA through every paid DRep, whatever its size or pledge. A pot per "
+        "DRep splits it by the DRep's counted voting power (after any cap and pledge soft cap) "
+        "to the power set below.",
+    ),
+    dict(
+        name="delegator_alpha",
+        short="Delegator pots grow as",
+        tag="delegator pots by power^{}",
+        tags={
+            "0": "an equal delegator pot per DRep",
+            "0.5": "delegator pots by √power",
+            "1": "delegator pots by counted power",
+        },
+        group="Delegators",
+        kind="number",
+        min=0,
+        max=1,
+        step=0.05,
+        label="With a pot per DRep: how it grows with counted voting power",
+        help="1: in proportion, so every delegator earns the same per ADA counted. 0: the same "
+        "pot for every DRep, so delegators of small DReps earn much more per ADA. 0.5 is in "
+        "between. Ignored unless delegators are paid by a pot per DRep.",
     ),
     dict(
         name="delegator_k_exclude",
@@ -349,6 +373,9 @@ def tag(name, value):
     """One setting, briefly, as in "Middle out · skip 20": "skip 20", "1M ADA", "no cap"."""
     field = BY_NAME[name]
     kind = field["kind"]
+    key = value if isinstance(value, str) else f"{value:g}" if value is not None else None
+    if key in field.get("tags", {}):
+        return field["tags"][key]
     if value is None or (kind == "bool" and not value):
         return "no " + field["tag"].replace("{}", "").strip()
     if kind == "bool":

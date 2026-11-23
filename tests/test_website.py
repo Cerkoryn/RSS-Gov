@@ -79,6 +79,14 @@ def test_a_design_close_to_a_named_one_is_named_after_it():
     assert proposals.tag("budget_ada", 0) == "no budget"
     assert proposals.tag("fee_ada", 25_000) == "25k ADA proposer fee"
     assert all(f["short"] and f["tag"] for f in proposals.FIELDS)
+    # a variation declared in config.yaml keeps its preset as parent, with up to 3 changes
+    mixed = {**base["capped"], "delegator_share": 0.5, "delegator_mode": "per_drep"}
+    schemes["capped_mixed"] = mechanisms.scheme(name="capped_mixed", **mixed, delegator_alpha=0.0)
+    family = website.lineage(schemes, ["middle_out", "capped"], {"capped_mixed": "capped"})
+    changed = family["capped_mixed"][1]
+    assert family["capped_mixed"][0] == "capped" and len(changed) == 3
+    rule = schemes["capped_mixed"].to_dict()
+    assert website._changes(rule, changed) == "50% to delegators, an equal delegator pot per DRep"
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node.js")
@@ -98,6 +106,8 @@ def test_the_browser_tags_settings_like_python():
         ("activity_gate", 0.7), ("basis", "delegators"), ("per_vote_ada", 10.0),
         ("min_power_ada", 10000.0), ("delegator_mode", "flat"), ("rationale_bonus", 1.0),
         ("fee_ada", 25000.0), ("fee_ada", 0.0), ("budget_ada", 0.0),
+        ("delegator_mode", "per_drep"), ("delegator_alpha", 0.0), ("delegator_alpha", 0.5),
+        ("delegator_alpha", 0.25),
     ]  # fmt: skip
     script = (
         f"{functions}\nconst F = {json.dumps(proposals.BY_NAME)};"

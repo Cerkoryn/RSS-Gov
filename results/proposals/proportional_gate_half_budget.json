@@ -21,6 +21,7 @@
   "max_award_share": 0.0,
   "delegator_share": 0.0,
   "delegator_mode": "passthrough",
+  "delegator_alpha": 1.0,
   "delegator_k_exclude": 0,
   "pledge_leverage": 0.0,
   "hard_cap": false
@@ -30,10 +31,10 @@
  "holdout": 1000000,
  "rerun": true,
  "accepted": true,
- "hypervolume_gain": 7.378682378815504e-05,
+ "hypervolume_gain": 2.3952224800949384e-05,
  "hypervolume_gain_ci": [
-  6.941101402760317e-05,
-  7.80589747636097e-05
+  2.104001290846938e-05,
+  2.701940146101235e-05
  ],
  "reason": "widens the front",
  "change_from_unpaid": {
@@ -46,6 +47,6 @@
  "pilot_testable": true,
  "hypothesis": "Half the budget buys most of the participation of the full one.",
  "author": "",
- "evaluated": "2026-11-21T20:38:56Z",
+ "evaluated": "2026-11-23T00:03:40Z",
  "calibration": "4a6c2a9aafd4970d"
 }

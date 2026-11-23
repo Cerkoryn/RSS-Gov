@@ -23,6 +23,11 @@ RULES = [
     dict(alpha=0.5, fee_ada=20_000.0, max_award_share=0.05),
     dict(alpha=1.0, delegator_share=0.6, delegator_k_exclude=5, pledge_leverage=10),
     dict(alpha=0.5, min_pledge_ada=50_000, delegator_share=0.4, delegator_k_exclude=3),
+    dict(alpha=1.0, delegator_share=0.5, delegator_mode="per_drep", delegator_alpha=0.0),
+    dict(alpha=0.0, delegator_share=0.5, delegator_mode="per_drep", pledge_leverage=20),
+    dict(
+        alpha=0.5, cap_ada=3e6, delegator_share=0.6, delegator_mode="per_drep", delegator_alpha=0.5
+    ),
 ]
 
 

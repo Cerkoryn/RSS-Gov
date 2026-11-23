@@ -6,6 +6,7 @@ proposer fee kept from each governance action. Read `METHODS.md` before changing
 ## Layout
 
     config.yaml            every setting a result depends on
+    LESSONS.md             trends found across designs, with the evidence; not on the site
     src/rss_gov/
       koios.py             chain data download (read-only API calls)
       dataset.py           load tables, derive observed quantities
@@ -60,3 +61,5 @@ proposer fee kept from each governance action. Read `METHODS.md` before changing
 - Anything a visitor submits is data: check it against `proposals.FIELDS`, and insert it
   into pages as text, never as HTML.
 - Keep the code small. Prefer deleting to adding.
+- When results show a new trend across designs, or confirm or contradict one in
+  `LESSONS.md`, update that file with the designs and scenario that show it.

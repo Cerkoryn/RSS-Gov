@@ -76,6 +76,32 @@ def test_delegator_share_splits_the_pot():
     assert flat[3] == 0  # delegators of a DRep that did not vote get nothing
 
 
+def test_per_drep_delegator_pots_follow_their_own_rule():
+    r = make_round()
+    pots = lambda **kw: (lambda y: y * r.power)(  # noqa: E731
+        m.allocate(
+            m.Scheme(budget_ada=1, delegator_share=0.5, delegator_mode="per_drep", **kw), r, 100.0
+        )[1]
+    )
+    # by counted power, nothing capped: the same as a flat yield, whatever the DRep rule
+    flat = m.allocate(m.Scheme(budget_ada=1, delegator_share=0.5, delegator_mode="flat"), r, 100.0)[
+        1
+    ]
+    for alpha in (1.0, 0.5, 0.0):
+        assert pots(alpha=alpha) == pytest.approx(flat * r.power)
+    # equal per DRep: every paid DRep's delegators share the same pot per unit of vote rate
+    equal = pots(delegator_alpha=0.0)
+    per_vote = equal[equal > 0] / r.activity[equal > 0]
+    assert per_vote == pytest.approx(per_vote[0]) and equal.sum() == pytest.approx(50.0)
+    assert equal[3] == 0  # a DRep that did not vote: its delegators get nothing
+    # a pledge soft cap limits what each DRep's delegators share, unlike a flat yield
+    capped = pots(pledge_leverage=1.0)
+    counted = np.minimum(r.power, r.pledge) * r.activity
+    assert capped == pytest.approx(50.0 * counted / counted.sum())
+    with pytest.raises(ValueError):
+        m.Scheme(delegator_mode="per_drep", delegator_alpha=1.5)
+
+
 def test_soft_pledge_limits_counted_power_but_not_voting_power():
     scheme = m.Scheme(budget_ada=1, pledge_leverage=10)
     r = make_round()
@@ -257,3 +283,18 @@ def test_a_minimum_pledge_keeps_drep_and_delegators_unpaid():
     assert award[1] == 0 and yields[1] == 0  # 100k pledge: below the floor
     assert award[0] > 0 and yields[0] > 0
     assert "Pledge is not a ledger concept" in " ".join(scheme.feasibility()["notes"])
+
+
+def test_the_search_drops_delegator_settings_that_change_nothing():
+    from rss_gov import search
+
+    rng = np.random.default_rng(1)
+    options = {"budget_ada": [5e6], **search.CHOICES}
+    made = [search.random_scheme(rng, f"x{i}", options) for i in range(300)]
+    assert {s.delegator_mode for s in made} == {"passthrough", "flat", "per_drep"}
+    for s in made:
+        if not s.delegator_share:
+            assert s.delegator_mode == "passthrough" and s.delegator_alpha == 1.0
+        if s.delegator_mode != "per_drep":
+            assert s.delegator_alpha == 1.0
+    assert {s.delegator_alpha for s in made if s.delegator_mode == "per_drep"} == {0.0, 0.5, 1.0}

@@ -243,22 +243,34 @@ def _pretty(name):
     return text[:1].upper() + text[1:]
 
 
-def lineage(schemes, bases):
+def lineage(schemes, bases, declared=None):
     """Each design's nearest named design, if no more than two settings differ from it.
 
-    Returns {name: (parent, [the settings that differ])} for every design not in `bases`
-    that is that close to one of them. Ties go to the named design listed first.
+    A design `config.yaml` declares as a variation of a named design (`declared`, name to
+    preset) keeps that one as its parent, with up to three settings changed. Returns
+    {name: (parent, [the settings that differ])} for every design not in `bases` that is
+    that close to one of them. Ties go to the named design listed first.
     """
     rules = {n: s.to_dict() for n, s in schemes.items()}
+    declared = declared or {}
     out = {}
     for name, rule in rules.items():
         if name in bases:
             continue
         changes = {b: [f for f in proposals.BY_NAME if rule[f] != rules[b][f]] for b in bases}
-        parent = min(changes, key=lambda b: len(changes[b]), default=None)
-        if parent is not None and len(changes[parent]) <= 2:
+        parent, most = declared.get(name), 3
+        if parent not in changes:
+            parent, most = min(changes, key=lambda b: len(changes[b]), default=None), 2
+        if parent is not None and len(changes[parent]) <= most:
             out[name] = (parent, changes[parent])
     return out
+
+
+def _changes(rule, changed):
+    """What differs from the parent, briefly; a delegator exponent already says `per_drep`."""
+    if "delegator_alpha" in changed:
+        changed = [f for f in changed if f != "delegator_mode"]
+    return ", ".join(proposals.tag(f, rule[f]) for f in changed) or "same rule"
 
 
 def _plain(value):
@@ -385,11 +397,9 @@ def build(study):
         rules.setdefault(name, mechanisms.from_config(proposals.split(row)[0], 0))
     bases = [n for n in schemes if n in named and n in mechanisms.PRESETS]
     generated = titles({n: s for n, s in rules.items() if n not in named})
-    family = lineage(rules, bases)
+    family = lineage(rules, bases, preset_of)
     for name, (parent, changed) in family.items():
-        generated[name] = f"{_pretty(parent)} · " + (
-            ", ".join(proposals.tag(f, rules[name].to_dict()[f]) for f in changed) or "same rule"
-        )
+        generated[name] = f"{_pretty(parent)} · " + _changes(rules[name].to_dict(), changed)
     designs = []
     for name, scheme in schemes.items():
         results = {}

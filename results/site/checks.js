@@ -37,20 +37,23 @@ const Checks = (() => {
     return keep;
   }
 
+  // Voting power counted for rewards: at most the cap, and at most leverage x pledge.
+  function counted(s, r, i) {
+    const cap = s.cap_ada === null || s.cap_ada === undefined ? Infinity : s.cap_ada;
+    let size = Math.min(r.power[i], cap);
+    if (s.pledge_leverage > 0) size = Math.min(size, s.pledge_leverage * r.pledge[i]);
+    return size;
+  }
+
   // Reward weights as [fraction of the DReps' pot, weights]; zero means not paid.
   function parts(s, r, expected) {
     const n = r.power.length, ok = eligible(s, r);
     if (!expected) expected = r.activity.map((a, i) => (ok[i] ? a : 0));
     const keep = ranked(s, r, ok, expected);
-    const cap = s.cap_ada === null || s.cap_ada === undefined ? Infinity : s.cap_ada;
     const votes = new Float64Array(n), w = new Float64Array(n);
     for (let i = 0; i < n; i++) {
       votes[i] = keep[i] * r.activity[i] * (1 + s.rationale_bonus * r.rationale[i]);
-      let size = r.delegators[i];
-      if (s.basis !== "delegators") {
-        size = Math.min(r.power[i], cap);
-        if (s.pledge_leverage > 0) size = Math.min(size, s.pledge_leverage * r.pledge[i]);
-      }
+      const size = s.basis === "delegators" ? r.delegators[i] : counted(s, r, i);
       w[i] = votes[i] * (s.alpha === 0 ? 1 : Math.pow(size, s.alpha));
     }
     return s.equal_share ? [[s.equal_share, votes], [1 - s.equal_share, w]] : [[1, w]];
@@ -92,6 +95,12 @@ const Checks = (() => {
       if (s.delegator_mode === "flat") {
         const base = sum(paid.map((i) => r.power[i] * r.activity[i]));
         if (base > 0) for (const i of paid) yields[i] = (delegatorPot * r.activity[i]) / base;
+      } else if (s.delegator_mode === "per_drep") {
+        // a pot per DRep by counted power ** delegator_alpha and vote rate, shared per ADA
+        const b = s.delegator_alpha ?? 1;
+        const w = paid.map((i) => (b ? Math.pow(counted(s, r, i), b) : counted(s, r, i) > 0 ? 1 : 0) * r.activity[i]);
+        const total = sum(w);
+        if (total > 0) paid.forEach((i, j) => { yields[i] = (delegatorPot * w[j]) / total / r.power[i]; });
       } else {
         const shared = sum(paid.map((i) => award[i]));
         if (shared > 0) for (const i of paid) yields[i] = (delegatorPot * award[i]) / shared / r.power[i];

@@ -5,7 +5,8 @@ is to propose better designs and to explain why they should work.
 
 ## The loop
 
-1. Read `results/report.md` and `results/search_front.csv`: which trade-offs the current
+1. Read `LESSONS.md`: the trends found so far, and the designs that showed them. Then read
+   `results/report.md` and `results/search_front.csv`: which trade-offs the current
    shortlist offers and which it lacks. Read `results/ledger.jsonl` and
    `results/proposals/*.json`: what has been tried, by you and by others.
 2. Form a hypothesis about the mechanism, in one or two sentences, naming the axis it
@@ -18,7 +19,8 @@ is to propose better designs and to explain why they should work.
 5. Run `rss-gov try --source agent candidates.yaml`. Put each design's hypothesis in its
    `hypothesis` field: it is shown with the design if it is accepted.
 6. Record the hypothesis and the outcome in `notes/` (one short file per round). A
-   rejected proposal that kills a hypothesis is a useful result.
+   rejected proposal that kills a hypothesis is a useful result. When the outcome shows a
+   new trend, or confirms or contradicts one in `LESSONS.md`, update that file too.
 
 The five axes are in `config.yaml` under `axes`: participation, decentralisation, skin in
 the game, cost and Sybil resistance. A proposal is accepted only when
@@ -44,7 +46,8 @@ not a recommendation: the report's shortlist also applies the guardrails.
 Fields: `budget_ada`, `alpha`, `basis` (`power` or `delegators`), `cap_ada`, `k_exclude`,
 `top_weight`, `n_pay`, `roll_down`, `min_power_ada`, `min_share`, `min_delegators`,
 `min_pledge_ada`, `activity_gate`, `rationale_bonus`, `equal_share`, `per_vote_ada`,
-`max_award_share`, `delegator_share`, `delegator_mode` (`passthrough` or `flat`),
+`max_award_share`, `delegator_share`, `delegator_mode` (`passthrough`, `flat` or
+`per_drep`), `delegator_alpha` (with `per_drep`: 1 by counted power, 0 equal per DRep),
 `delegator_k_exclude`, `pledge_leverage`, `hard_cap`,
 `fee_ada` (ADA per governance action, on top of `budget_ada`; needs a hard fork). See
 `src/rss_gov/mechanisms.py`.
@@ -52,7 +55,7 @@ Every scheme pays only for explicit votes; that is not a parameter.
 
 ## What you may change
 
-- `candidates.yaml` and `notes/`: freely.
+- `candidates.yaml`, `notes/` and `LESSONS.md`: freely, keeping `LESSONS.md` to its format.
 - `src/rss_gov/mechanisms.py`: you may add a new field to the family when a hypothesis
   cannot be expressed with the existing ones. It must read only what `Round` provides,
   default to "off", pay nothing to a DRep that has not voted, come with a test in

@@ -482,7 +482,7 @@ def _move(
     abstain = np.where(large, params.abstain_large, params.abstain_small)
     target = target.copy()
 
-    if not (responsive and scheme.delegator_mode == "passthrough"):
+    if not (responsive and scheme.delegator_mode != "flat"):
         # Every mover of a size class faces the same odds. Under a flat delegator yield
         # the paying DReps are simply more attractive by a common factor.
         if responsive:
@@ -497,8 +497,8 @@ def _move(
             target[movers] = codes[np.minimum(choice, len(codes) - 1)]
         return target
 
-    # Pass-through yield: a DRep's delegator award is shared by everyone delegating to it,
-    # so each arrival lowers the yield for the next. Movers are taken in small random
+    # Pass-through or per-DRep yield: a DRep's delegator award is shared by everyone
+    # delegating to it, so each arrival lowers the yield for the next. Movers are taken in small random
     # batches and the DRep totals are updated between batches.
     movers = np.flatnonzero(moving)
     movers = movers[np.argsort(u_move[movers] / hazard[movers])]

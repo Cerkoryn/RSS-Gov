@@ -268,7 +268,7 @@ details.more > summary::-webkit-details-marker { display: none; }
 details.more > summary::after { content: "+"; font-weight: 400; color: var(--muted); font-size: 18px; }
 details.more[open] > summary::after { content: "−"; }
 details.more > *:not(summary) { margin-top: 10px; }
-.facts { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 14px; font-size: 13.5px; margin: 10px 0; }
+.facts { display: grid; grid-template-columns: minmax(6.5em, max-content) minmax(0, 1fr); gap: 5px 14px; font-size: 13.5px; margin: 10px 0; }
 .facts dt { color: var(--ink-2); }
 .facts dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 560; }
 .facts dd .was { color: var(--muted); font-weight: 400; }

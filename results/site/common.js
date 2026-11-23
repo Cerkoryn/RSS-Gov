@@ -105,10 +105,16 @@ function setting(field, v) {
     return num(v, 2) + (word ? ` (${word[1]})` : v > 1 ? " (favours the largest)" : "");
   }
   if (field.name === "pledge_leverage") return v ? `${num(v, 0)}×` : "off";
+  if (field.name === "delegator_alpha") {
+    const word = [[0, "equal per DRep"], [0.5, "square root"], [1, "in proportion"]].find(([a]) => Math.abs(a - v) < 1e-9);
+    return num(v, 2) + (word ? ` (${word[1]})` : "");
+  }
   return num(v, 0);
 }
 // One setting, briefly, as in titles ("skip 20", "1M ADA", "no cap"); proposals.tag in Python.
 function tag(field, v) {
+  const key = typeof v === "number" ? String(+v.toPrecision(6)) : v;
+  if (field.tags && key in field.tags) return field.tags[key];
   if (v === null || v === undefined || (field.kind === "bool" && !v)) return "no " + field.tag.replace("{}", "").trim();
   if (field.kind === "bool") return field.tag;
   if ((field.kind === "ada" || field.name === "pledge_leverage") && !v) return "no " + field.short.toLowerCase();
@@ -153,8 +159,15 @@ function describe(s, always = false) {
     if (s.hard_cap) out.push("Pledge hard cap: voting power itself is limited the same way, which needs a hard fork.");
   }
   if (s.delegator_share) {
+    const b = s.delegator_alpha ?? 1;
+    const perDrep = b === 1 ? "in proportion to its counted voting power (so the pledge soft cap and any cap apply)"
+      : b === 0 ? "the same for every DRep, however large"
+      : b === 0.5 ? "by the square root of its counted voting power, which tilts it towards smaller DReps"
+      : `by its counted voting power to the power ${num(b, 2)}`;
     out.push(s.delegator_mode === "flat"
       ? `${pct(s.delegator_share)} of the budget goes to delegators of DReps that vote, at the same rate per ADA whichever DRep they chose.`
+      : s.delegator_mode === "per_drep"
+      ? `${pct(s.delegator_share)} of the budget goes to delegators. Each paid DRep's delegators get a pot ${perDrep}, times its vote rate, shared per ADA delegated.`
       : `${pct(s.delegator_share)} of the budget goes to delegators, each sharing in their DRep's award.`);
     if (s.delegator_k_exclude) out.push(`Delegators of the ${num(s.delegator_k_exclude, 0)} largest DReps get nothing, though those DReps can still be paid; their part goes to the other delegators.`);
   }
