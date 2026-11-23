@@ -33,7 +33,12 @@ a wealthy newcomer in the model (`central_whale`), two wealth stress tests (`cen
 `central_rich`), pots that grow with pledge (`pledge_rate`) and combinations of the R3
 contest winners (L23 to L28); the search was rerun with `pledge_rate` and leverages of 1×
 and 2× among its choices, so its finalists are new (R2's `g10_0` is gone). Designs in
-earlier runs keep their numbers. "DReps" below is the number
+earlier runs keep their numbers. **R5** = the same day and data, with DReps taking back
+added pledge that stops paying (all scenarios), and two more newcomer tests: wanting only
+1% a year (`central_whale_idle`) and also splitting over up to 20 DReps
+(`central_whale_split`), whose DReps count as one actor in the concentration measures
+(L29 to L31). The search was rerun; designs' numbers moved by at most a few hundredths of
+a point in `central` (L29). "DReps" below is the number
 of DReps holding two thirds of the voting power: more is more decentralised.
 
 ## DRep pay
@@ -256,6 +261,8 @@ count the harm.*
   delegators stops nothing (51%): the newcomer holds its ADA in as many accounts as it
   needs. By the ranking values its ADA is backing like any other, so the newcomer raises
   the uncapped contest's `central` score (−4.9M to −0.9M) and the cap still costs.
+- R5 (`central_whale_split`): a newcomer that splits over up to 20 DReps gets past both
+  caps: 59% of the pay at 1M (19 DReps), 73% at 5M (L30).
 
 ## A wealthy newcomer, and a pot that grows with pledge
 
@@ -282,6 +289,9 @@ large against the pledge already there.** *Holds; the harm is not on the axes.*
   mid-sized one, so by the ranking values it *raises* a contest's score (`pledge_contest`
   −4.9M to −0.9M in `central`). Whether one actor taking half the pay for about 1% of the
   voting power is acceptable is a judgement the score does not make.
+- R5 (`central_whale_idle`, hurdle 1%): `pledge_contest` 68% for all 100M, the 1M contest
+  61% for 50M, `pledge_contest_5x` 45% for 98M. Over the 136 paid pilot-testable designs
+  (fee variants left out) it takes 10% or more under 49 at a 5% hurdle and 70 at 1%.
 
 **L24. A pot that grows with pledge spends only what DReps respond to, which removes the
 contest's loss when reactions are weak.** *Holds with an exception; the size rests on the
@@ -312,9 +322,10 @@ below the newcomer's hurdle.** *Holds.*
   above its hurdle the newcomer adds all it can until the pot reaches the budget, and then
   it is a contest (L23). A rate low enough to keep it out also keeps out DReps with the
   same hurdle, and a holder of idle ADA likely has the lower one.
+- R5 (`central_whale_idle`): `rate2` 91% and `rate5` 78% of the pay, each for all 100M.
 
 **L26. Skipping the largest DReps holds a single wealthy newcomer to a few percent, when
-delegators follow pay.** *Holds; rests on one identity and on delegators chasing yield.*
+delegators follow pay.** *Holds for one identity; a newcomer that splits gets past it (L30).*
 - Evidence (R4, `central_whale`): with delegator pay, `skip_top20_min_pledge_by_power_1x`
   2.2%, `pledge_contest_delegators_skip20` 3.3%, the search's `g10_5` 6% (50 seeds); with a
   1% hurdle 2.6%, 4.0% and 7.0%. Without delegator pay, `pledge_contest_skip20` 41% and
@@ -336,6 +347,55 @@ delegators follow pay.** *Holds; rests on one identity and on delegators chasing
   +1.56M ± 0.19M.
 - Why: skipping the largest pays only through delegators moving (L21), so a smaller
   delegator share undoes it; a fifth is best only when nobody is skipped.
+
+**L29. Letting DReps take back pledge that stops paying changes results only where pledge
+outgrows what the pot pays.** *Holds.*
+- Evidence (R5 against R4, the 128 designs with a pledge rule): backing in `central`
+  −0.009 points on average (at most −0.07, `pledge_contest_fee_10k`); in `low` nothing; in
+  `high` −0.15 on average and up to −0.81 (`pledge_contest_1m`, −3.5M ADA a year of net
+  benefit); `central_rich` −0.08, up to −0.59 (`pledge_contest_rate10`). With the newcomer
+  in the contest, DReps' own backing is +0.71 points in both runs (+0.75 without it).
+- Why: a DRep takes pledge back only once its part earns less than its hurdle. In `central`
+  the contest still pays well above 5% on DReps' pledge even with a newcomer taking half;
+  only when strong reactions or rich DReps pile in does the return fall below it, most in
+  the 1M contest and the pots that grow with pledge.
+
+**L30. A newcomer that can run many DReps gets past every per-DRep limit tried; only rules
+that pay nothing for pledge or for being one more DRep keep it out.** *Holds; rests on
+cheap identities (a DRep deposit is refundable).*
+- Evidence (R5, wanting 1% a year, one DRep → up to 20): the leader
+  `skip_top20_min_pledge_by_power_1x` 3% → 26% of the pay (95M ADA over 13 DReps);
+  `pledge_contest_delegators_skip20` 4% → 46%; `pledge_contest_skip20` 40% → 77%;
+  `pledge_contest_cap1m` 7% → 59%; `pledge_contest_cap5m` 14% → 73%; `pledge_contest_sqrt`
+  15% → 48%; `middle_out` 1% → 21% (all 20 DReps); `top_m_equal` 1% → 17%. 0% under
+  `proportional`, `capped`, `threshold_k`, `exclude_k_pay_n`, `delegator_flat`,
+  `delegators_not_top20`. Mean share over 136 paid pilot-testable designs: 14% (5%, one
+  DRep), 25% (1%, one DRep), 35% (1%, split). Among designs worth their cost, the least
+  exposed are `exclude_k_pay_n` and `capped_1m` (0%, +0.3M and +0.2M) and the
+  `skip_top20_*` family (17% to 36%).
+- Why: skipping the largest, caps and square roots all act per DRep, and one actor can be
+  any number of DReps, each below the line. Pay by voting power earns a newcomer only its
+  share of all power (100M is about 2% of the pot), less than it wants.
+- Not tried in the pipeline: counting pledge only as far as others' delegation matches it.
+  A prototype kept this newcomer out entirely at a cost of up to 0.12 points of backing,
+  but only because the model's newcomer does not campaign; delegating half its ADA from
+  accounts it does not declare would undo it (by the formula in L23, about 56% of the
+  plain contest's pay instead of 68%).
+
+**L31. Under delegator pay by counted power, a splitting newcomer gathers a voting bloc; a
+flat delegator yield does not.** *Holds; rests on delegators chasing yield without seeing
+that the DReps are one actor.*
+- Evidence (R5, `central_whale_split`): under the leader, others delegate about 1.1B ADA
+  to the newcomer's DReps, a bloc of 19% of voting power (traced runs, 4 seeds), and DReps
+  holding two thirds fall from +7.1 to +1.4 against unpaid. `pledge_contest_delegators_skip20`
+  15%, +5.4 to +0.5; the search's `g10_10` (pots by √power) +8.5 to +1.2 (30 seeds). With a
+  flat yield (`skip_top20_delegators_min_pledge`): 6%, +6.1 to +5.2; the plain contest 3%.
+  Paired over 100 seeds, the flat design trails the leader by −1.39M ± 0.44M ADA a year in
+  `central` and leads it by +1.11M ± 0.50M with the splitting newcomer.
+- Why: a pot per DRep by counted power pays each DRep's delegators in proportion to its
+  pledge, and the newcomer's DReps carry much pledge and few delegators, so they offer the
+  highest yields and movers go to them. A flat yield is the same at every paid DRep, so
+  nothing draws movers to the newcomer. Under the contest it pays no delegators.
 
 ## Cost and ranking
 

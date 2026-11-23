@@ -32,10 +32,10 @@
  "holdout": 1000000,
  "rerun": true,
  "accepted": false,
- "hypervolume_gain": 2.060809215868875e-05,
+ "hypervolume_gain": 2.1072012151943098e-05,
  "hypervolume_gain_ci": [
-  1.93041066787733e-05,
-  2.2240936949353278e-05
+  1.9574873549460526e-05,
+  2.2779787706886724e-05
  ],
  "reason": "matched or beaten by a design already on the front",
  "change_from_unpaid": {
@@ -48,6 +48,6 @@
  "pilot_testable": true,
  "hypothesis": "Square-root pay spreads money beyond the largest DReps; a floor of 25 delegators and a 50% vote gate should make extra identities costly. Test of the submission queue.",
  "author": "RSS-Gov example",
- "evaluated": "2026-11-23T05:21:39Z",
+ "evaluated": "2026-11-23T14:05:24Z",
  "calibration": "4a6c2a9aafd4970d"
 }

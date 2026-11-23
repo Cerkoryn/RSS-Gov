@@ -234,3 +234,46 @@ def test_a_wealthy_newcomer_joins_only_where_it_pays_more_than_its_hurdle(world,
     assert go(slow, whale_ada=5e7)["whale_pledge"] == 0
     fast = mechanisms.scheme(**{**contest.to_dict(), "pledge_rate": 0.5})
     assert go(fast, whale_ada=5e7)["whale_pledge"] > 0
+
+
+def test_a_newcomer_has_its_own_hurdle_and_may_split_into_several_dreps(world, params):
+    capped = mechanisms.Scheme(
+        name="capped contest", budget_ada=5e6, alpha=1.0, pledge_leverage=1.0, cap_ada=2e5
+    )
+
+    def go(**kw):
+        scenario = model.Scenario("w", pledge_min_return=0.05, whale_ada=5e7, **kw)
+        return model.run(world, params, capped, scenario, epochs=12, seed=3)
+
+    one = go()
+    assert go(whale_min_return=0.05) == one  # None: the DReps' hurdle
+    assert go(whale_min_return=50.0)["whale_pledge"] == 0
+    assert one["whale_dreps"] <= 1
+    # a cap on counted power per DRep binds one identity, not twenty
+    many = go(whale_identities=20)
+    assert many["whale_dreps"] > 1 and many["whale_take"] > one["whale_take"]
+    with pytest.raises(ValueError):
+        go(whale_identities=0)
+
+
+def test_a_drep_takes_back_added_pledge_once_it_stops_paying(world, params, monkeypatch):
+    soft = mechanisms.Scheme(name="soft", budget_ada=2e5, alpha=1.0, pledge_leverage=1.0)
+    hard = mechanisms.scheme(**{**soft.to_dict(), "hard_cap": True})
+    scenario = model.Scenario("s", pledge_response=0.9, pledge_min_return=0.0001)
+    real, calls = mechanisms.pledge_gain, []
+
+    def pays_at_first(s, r, pot, extra):  # pledge pays for three epochs, then never again
+        calls.append(1)
+        return real(s, r, pot, extra) if len(calls) <= 3 else np.zeros(len(r.power))
+
+    def backing(scheme):
+        calls.clear()
+        series, _ = model.run(world, params, scheme, scenario, 12, 3, trace=True)
+        return np.array([row["backing"] for row in series])
+
+    monkeypatch.setattr(mechanisms, "pledge_gain", pays_at_first)
+    soft_backing, hard_backing = backing(soft), backing(hard)
+    monkeypatch.undo()
+    unpaid = run(world, params, "unpaid")["backing"]
+    assert soft_backing.max() > soft_backing[-1] > unpaid * 0.99  # some taken back, not more
+    assert hard_backing[-1] >= hard_backing.max() * 0.99  # kept under a hard cap

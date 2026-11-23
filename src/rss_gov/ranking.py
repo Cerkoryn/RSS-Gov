@@ -35,7 +35,7 @@ def _key(study, scheme, seeds):
     blob = json.dumps(
         [
             (study.results / "calibration.json").read_text(),
-            config["scenarios"],
+            {name: config["scenarios"][name] for name in study.ranking_scenarios},
             config["assumptions"],
             config["programme"],
             scheme.to_dict(),

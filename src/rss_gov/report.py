@@ -89,25 +89,64 @@ def _stress(study, summary, axes, middle, skip=(), rows=25):
         "Scenarios outside the ranking, each the `central` reactions with one thing changed.",
         "",
     ]
-    for name in [s for s in stress if study.scenarios[s].whale_ada > 0]:
-        sc = study.scenarios[name]
-        view = summary[summary.scenario == name].set_index("scheme")
-        joins = view[view.whale_take >= 0.01].sort_values("whale_take", ascending=False)
-        table = pd.DataFrame({"scheme": joins.index[:rows]})
-        table["newcomer's share of the pay"] = [f"{v:.0%}" for v in joins.whale_take[:rows]]
-        table["ADA it self-delegates"] = [f"{v / 1e6:.1f}M" for v in joins.whale_pledge[:rows]]
-        table["skin in the game, against `central` (points)"] = [
-            _value(backing, view.loc[n, "backing"] - mid.loc[n, "backing"]) for n in table.scheme
+    whales = [s for s in stress if study.scenarios[s].whale_ada > 0]
+    if whales:
+        views = {s: summary[summary.scenario == s].set_index("scheme") for s in whales}
+        value, loss = ranking.values(study.config)
+        paid = mid[(mid.spent_ada > 0) & ~mid.index.isin(skip)]
+        net = (
+            paid[[f"{g}_diff" for g in ranking.GAINS]].to_numpy() @ np.array(value)
+            - paid.annual_cost_ada_diff.to_numpy()
+            - loss * paid.split_gain.to_numpy() * paid.annual_cost_ada.to_numpy()
+        )
+        best = pd.Series(net, index=paid.index).sort_values(ascending=False)[:rows]
+        table = pd.DataFrame({"scheme": best.index})
+        table[f"net benefit, `{middle}`"] = [f"{v / 1e6:+.1f}M" for v in best]
+        for s, v in views.items():
+            table[f"`{s}`"] = [
+                f"{v.loc[n, 'whale_take']:.0%} ({v.loc[n, 'whale_pledge'] / 1e6:.0f}M"
+                + (
+                    f" in {v.loc[n, 'whale_dreps']:.0f})"
+                    if study.scenarios[s].whale_identities > 1
+                    else ")"
+                )
+                for n in table.scheme
+            ]
+        last = views[whales[-1]]
+        table[f"DReps holding ⅔: `{middle}` → `{whales[-1]}`"] = [
+            f"{mid.loc[n, 'tau67_diff']:+.1f} → {last.loc[n, 'tau67_diff']:+.1f}"
+            for n in table.scheme
         ]
-        paid = int((view.spent_ada > 0).sum())
+
+        def who(s):
+            sc = study.scenarios[s]
+            want = sc.pledge_min_return if sc.whale_min_return is None else sc.whale_min_return
+            split = (
+                f", over as many as {sc.whale_identities} DReps" if sc.whale_identities > 1 else ""
+            )
+            paid = int((views[s].spent_ada > 0).sum())
+            hit = int((views[s].whale_take >= 0.01).sum())
+            return (
+                f"`{s}` {sc.whale_ada / 1e6:,.0f}M ADA wanting {want:.0%} a year{split} "
+                f"(1% of the pay or more under {hit} of {paid} paid designs)"
+            )
+
         text += [
-            f"A wealthy newcomer (`{name}`): it holds {sc.whale_ada / 1e6:,.0f}M ADA and each "
-            "epoch self-delegates the part of it that earns the most over "
-            f"{sc.pledge_min_return:.0%} a year on that ADA and the cost of voting on everything. "
-            f"It takes 1% of the pay or more under {len(joins)} of {paid} paid designs"
-            + (f"; the {rows} where it takes most:" if len(joins) > rows else ":"),
+            "A wealthy newcomer self-delegates each epoch the part of its ADA that earns the "
+            "most over the return it wants on that ADA and the cost of voting on everything: "
+            + "; ".join(who(s) for s in whales)
+            + ". Cells are its share of all that is paid, with the ADA it self-delegates"
+            + (
+                " and the DReps it runs"
+                if any(study.scenarios[s].whale_identities > 1 for s in whales)
+                else ""
+            )
+            + "; the last column is the change against unpaid in DReps holding two thirds of "
+            "the voting power, counting the newcomer's DReps as one"
+            + f". The {len(table)} designs with the highest net benefit in `{middle}` (from "
+            "these runs, at the ranking's values; fee variants left out):",
             "",
-            _table(table) if len(joins) else "(none)",
+            _table(table) if len(table) else "(none)",
             "",
         ]
     wealth = [s for s in stress if not study.scenarios[s].whale_ada]

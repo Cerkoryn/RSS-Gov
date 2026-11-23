@@ -266,6 +266,11 @@ once an epoch:
    strength. Under a rule that pays everyone the same, pledge earns nothing and nobody
    adds any. Under a hard cap the test is skipped: the DRep adds pledge to keep its voting
    power, whatever it earns.
+5. **Taking it back.** A DRep that adds nothing in an epoch takes back some of the pledge
+   it added during the programme, at the same pace (a quarter of it over the programme at
+   the central strength), while that part earns less than `pledge_min_return` a year: when
+   others' pledge or a newcomer dilutes its share, or its delegators leave. It never takes
+   back the pledge it started with, and under a hard cap it keeps all of it.
 
 ADA a DRep adds counts as its pledge from then on and joins its voting power, so it
 votes. The model treats it as new ADA brought into governance, not taken from another
@@ -641,7 +646,7 @@ on. With every channel at zero, paying changes nothing (the tests check this).
 | `drep_response` | A DRep's log-odds of voting rise by `response × log(1 + reward for one more vote / vote cost)`. The same strength scales rationale publishing and new registrations. | Participation |
 | `delegator_response` | A mover's log-weight for a DRep rises by `response` per point of annual yield; accounts earning less than a typical paying DRep offers become more likely to move. Yield falls as delegation arrives. | Mobilising idle ADA; where it goes |
 | `reinvest_response` | A DRep's pull on movers is multiplied by `(1 + award / upkeep)^response`: awards pay for reach. Under a power-proportional rule this adds about `response` to the exponent with which movers already favour large DReps. | Concentration under proportional pay |
-| `pledge_response` | Under a rule that ties rewards or voting power to pledge, a DRep closes this share of its missing pledge over the programme. Under a pledge soft cap, only the pledge that would count for rewards is missing (no more than any cap on counted power allows), and a DRep adds each part only while the extra award it brings is at least `pledge_min_return` a year on that ADA. Under a pledge hard cap a DRep adds it to keep its voting power, whatever it earns. Either way its pledge grows to at most `pledge_wealth_multiple` times its holdings (the ADA in its linked accounts, or `untraced_wealth_share` of its voting power if more), a bound on what it could buy, and the ADA it adds joins its voting power. | Skin in the game |
+| `pledge_response` | Under a rule that ties rewards or voting power to pledge, a DRep closes this share of its missing pledge over the programme. Under a pledge soft cap, only the pledge that would count for rewards is missing (no more than any cap on counted power allows), and a DRep adds each part only while the extra award it brings is at least `pledge_min_return` a year on that ADA. Under a pledge hard cap a DRep adds it to keep its voting power, whatever it earns. Either way its pledge grows to at most `pledge_wealth_multiple` times its holdings (the ADA in its linked accounts, or `untraced_wealth_share` of its voting power if more), a bound on what it could buy, and the ADA it adds joins its voting power. Under a soft cap it takes added pledge back at the same pace once it earns less than that return. | Skin in the game |
 
 `low`, `central` and `high` move all four together. `voting_only`, `yield_only`,
 `reinvest_only` and `pledge_only` switch on one channel at its central value; the report
@@ -649,19 +654,24 @@ uses them to show which assumption each result depends on. A scheme's score for 
 its mean over `low`, `central` and `high`. The central values are guesses. A design is
 credible only if its verdicts hold from `low` to `high`.
 
-Three stress tests are the `central` reactions with one thing changed, and are reported
+Five stress tests are the `central` reactions with one thing changed, and are reported
 but not ranked. `central_poor` and `central_rich` change only what DReps can afford to add
 as pledge, to `low`'s bound (traced holdings only, twice) and `high`'s (1% of voting power,
 seven times). `central_whale` adds a *wealthy newcomer* with `whale_ada` (100M ADA) of
 its own. Each epoch it weighs self-delegating none of it or 25 amounts from 1/4096 of it
-to all of it, and takes the one that earns the most over `pledge_min_return` a year on the
-ADA used and the cost of voting on every action (nothing, if none does). It reads the
-award off the rule as it stands that epoch, with every other DRep's power and pledge as
-they are. It votes on nearly every action with a rationale, as one DRep, and holds its
-ADA in as many accounts as a delegator minimum needs. What it self-delegates is its
-pledge and joins its voting power. The report shows its share of what is paid
-(`whale_take`) and the ADA it self-delegates. It is a single identity, so splitting into
-several DReps (the Sybil axis) is measured separately.
+to all of it, and takes the one that earns the most over `whale_min_return` a year on the
+ADA used (by default the DReps' `pledge_min_return`, 5%) and the cost of voting on every
+action (nothing, if none does). It reads the award off the rule as it stands that epoch,
+with every other DRep's power and pledge as they are. It votes on nearly every action
+with a rationale and holds its ADA in as many accounts as a delegator minimum needs. What
+it self-delegates is its pledge and joins its voting power. `central_whale_idle` has it
+want only 1%: self-delegating ADA one already holds locks nothing, so a holder's hurdle
+may be far below a DRep's that must buy ADA. `central_whale_split` also lets it run up
+to `whale_identities` (20) DReps: every six epochs it weighs splitting its ADA equally
+over 1, 2, 3, 5, 8, 13 or 20 of them, each paying the cost of voting. DReps it stops using
+keep their delegators. Its DReps count as one in the concentration measures (DReps
+holding two thirds, effective number). The report shows its share of what is paid
+(`whale_take`), the ADA it self-delegates and how many DReps it uses.
 
 Not modelled: delegators leaving a DRep whose voting power is capped, vote buying,
 collusion, changes in vote *direction* or quality, and price effects.

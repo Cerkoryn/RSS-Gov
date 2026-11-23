@@ -371,7 +371,7 @@ ceiling it is the contest again.</p>
 <h3 id="topping-up-pledge">Topping up pledge<a class="headerlink" href="#topping-up-pledge" title="Permanent link">#</a></h3>
 <p>Under such a rule a DRep may add pledge, when <code>pledge_response</code> is above zero. It decides
 once an epoch:</p>
-<figure class="diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 262" role="img" aria-label="How a DRep adds pledge each epoch under a rule that counts only a multiple of its pledge: work out what is missing, take a small step toward it, stop at what it could afford, and add the step only if the extra reward pays the minimum return. If so, the ADA counts as its pledge and joins its voting power; otherwise nothing is added this epoch.">
+<figure class="diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 262" role="img" aria-label="How a DRep adds pledge each epoch under a rule that counts only a multiple of its pledge: work out what is missing, take a small step toward it, stop at what it could afford, and add the step only if the extra reward pays the minimum return. If so, the ADA counts as its pledge and joins its voting power; otherwise nothing is added this epoch, and some of the pledge it added is taken back if it no longer pays the minimum return.">
   <defs>
     <marker id="head-topup" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path class="head" d="M0 0 L10 5 L0 10 z"/>
@@ -422,8 +422,8 @@ once an epoch:</p>
   <text x="384" y="237">The ADA counts as its pledge and votes with it.</text>
 
   <rect class="box" x="8" y="194" width="341" height="56" rx="10"/>
-  <text class="t" x="22" y="217">Otherwise nothing is added this epoch.</text>
-  <text x="22" y="237">Next epoch it looks again, with the new numbers.</text>
+  <text class="t" x="22" y="217">Otherwise it adds nothing this epoch,</text>
+  <text x="22" y="237">and takes back added pledge that stopped paying.</text>
 </svg>
 </figure>
 
@@ -446,6 +446,11 @@ once an epoch:</p>
    strength. Under a rule that pays everyone the same, pledge earns nothing and nobody
    adds any. Under a hard cap the test is skipped: the DRep adds pledge to keep its voting
    power, whatever it earns.</li>
+<li><strong>Taking it back.</strong> A DRep that adds nothing in an epoch takes back some of the pledge
+   it added during the programme, at the same pace (a quarter of it over the programme at
+   the central strength), while that part earns less than <code>pledge_min_return</code> a year: when
+   others' pledge or a newcomer dilutes its share, or its delegators leave. It never takes
+   back the pledge it started with, and under a hard cap it keeps all of it.</li>
 </ol>
 <p>ADA a DRep adds counts as its pledge from then on and joins its voting power, so it
 votes. The model treats it as new ADA brought into governance, not taken from another
@@ -960,7 +965,7 @@ on. With every channel at zero, paying changes nothing (the tests check this).</
 </tr>
 <tr>
 <td><code>pledge_response</code></td>
-<td>Under a rule that ties rewards or voting power to pledge, a DRep closes this share of its missing pledge over the programme. Under a pledge soft cap, only the pledge that would count for rewards is missing (no more than any cap on counted power allows), and a DRep adds each part only while the extra award it brings is at least <code>pledge_min_return</code> a year on that ADA. Under a pledge hard cap a DRep adds it to keep its voting power, whatever it earns. Either way its pledge grows to at most <code>pledge_wealth_multiple</code> times its holdings (the ADA in its linked accounts, or <code>untraced_wealth_share</code> of its voting power if more), a bound on what it could buy, and the ADA it adds joins its voting power.</td>
+<td>Under a rule that ties rewards or voting power to pledge, a DRep closes this share of its missing pledge over the programme. Under a pledge soft cap, only the pledge that would count for rewards is missing (no more than any cap on counted power allows), and a DRep adds each part only while the extra award it brings is at least <code>pledge_min_return</code> a year on that ADA. Under a pledge hard cap a DRep adds it to keep its voting power, whatever it earns. Either way its pledge grows to at most <code>pledge_wealth_multiple</code> times its holdings (the ADA in its linked accounts, or <code>untraced_wealth_share</code> of its voting power if more), a bound on what it could buy, and the ADA it adds joins its voting power. Under a soft cap it takes added pledge back at the same pace once it earns less than that return.</td>
 <td>Skin in the game</td>
 </tr>
 </tbody>
@@ -970,19 +975,24 @@ on. With every channel at zero, paying changes nothing (the tests check this).</
 uses them to show which assumption each result depends on. A scheme's score for ranking is
 its mean over <code>low</code>, <code>central</code> and <code>high</code>. The central values are guesses. A design is
 credible only if its verdicts hold from <code>low</code> to <code>high</code>.</p>
-<p>Three stress tests are the <code>central</code> reactions with one thing changed, and are reported
+<p>Five stress tests are the <code>central</code> reactions with one thing changed, and are reported
 but not ranked. <code>central_poor</code> and <code>central_rich</code> change only what DReps can afford to add
 as pledge, to <code>low</code>'s bound (traced holdings only, twice) and <code>high</code>'s (1% of voting power,
 seven times). <code>central_whale</code> adds a <em>wealthy newcomer</em> with <code>whale_ada</code> (100M ADA) of
 its own. Each epoch it weighs self-delegating none of it or 25 amounts from 1/4096 of it
-to all of it, and takes the one that earns the most over <code>pledge_min_return</code> a year on the
-ADA used and the cost of voting on every action (nothing, if none does). It reads the
-award off the rule as it stands that epoch, with every other DRep's power and pledge as
-they are. It votes on nearly every action with a rationale, as one DRep, and holds its
-ADA in as many accounts as a delegator minimum needs. What it self-delegates is its
-pledge and joins its voting power. The report shows its share of what is paid
-(<code>whale_take</code>) and the ADA it self-delegates. It is a single identity, so splitting into
-several DReps (the Sybil axis) is measured separately.</p>
+to all of it, and takes the one that earns the most over <code>whale_min_return</code> a year on the
+ADA used (by default the DReps' <code>pledge_min_return</code>, 5%) and the cost of voting on every
+action (nothing, if none does). It reads the award off the rule as it stands that epoch,
+with every other DRep's power and pledge as they are. It votes on nearly every action
+with a rationale and holds its ADA in as many accounts as a delegator minimum needs. What
+it self-delegates is its pledge and joins its voting power. <code>central_whale_idle</code> has it
+want only 1%: self-delegating ADA one already holds locks nothing, so a holder's hurdle
+may be far below a DRep's that must buy ADA. <code>central_whale_split</code> also lets it run up
+to <code>whale_identities</code> (20) DReps: every six epochs it weighs splitting its ADA equally
+over 1, 2, 3, 5, 8, 13 or 20 of them, each paying the cost of voting. DReps it stops using
+keep their delegators. Its DReps count as one in the concentration measures (DReps
+holding two thirds, effective number). The report shows its share of what is paid
+(<code>whale_take</code>), the ADA it self-delegates and how many DReps it uses.</p>
 <p>Not modelled: delegators leaving a DRep whose voting power is capped, vote buying,
 collusion, changes in vote <em>direction</em> or quality, and price effects.</p>
 <p>A DRep reacts to what one more vote is worth at its current size. It does not campaign
@@ -1192,7 +1202,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=3d9141b682"></script>
+<script src="data.js?v=03d628a3b8"></script>
 <script src="common.js?v=29155c3061"></script>
 </body>
 </html>

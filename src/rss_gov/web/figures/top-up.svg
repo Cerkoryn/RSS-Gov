@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 262" role="img" aria-label="How a DRep adds pledge each epoch under a rule that counts only a multiple of its pledge: work out what is missing, take a small step toward it, stop at what it could afford, and add the step only if the extra reward pays the minimum return. If so, the ADA counts as its pledge and joins its voting power; otherwise nothing is added this epoch.">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 262" role="img" aria-label="How a DRep adds pledge each epoch under a rule that counts only a multiple of its pledge: work out what is missing, take a small step toward it, stop at what it could afford, and add the step only if the extra reward pays the minimum return. If so, the ADA counts as its pledge and joins its voting power; otherwise nothing is added this epoch, and some of the pledge it added is taken back if it no longer pays the minimum return.">
   <defs>
     <marker id="head-topup" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path class="head" d="M0 0 L10 5 L0 10 z"/>
@@ -49,6 +49,6 @@
   <text x="384" y="237">The ADA counts as its pledge and votes with it.</text>
 
   <rect class="box" x="8" y="194" width="341" height="56" rx="10"/>
-  <text class="t" x="22" y="217">Otherwise nothing is added this epoch.</text>
-  <text x="22" y="237">Next epoch it looks again, with the new numbers.</text>
+  <text class="t" x="22" y="217">Otherwise it adds nothing this epoch,</text>
+  <text x="22" y="237">and takes back added pledge that stopped paying.</text>
 </svg>

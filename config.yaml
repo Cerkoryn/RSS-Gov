@@ -81,11 +81,19 @@ scenarios:
   pledge_only: {pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 5,
                 untraced_wealth_share: 0.001}
   # Stress tests at central strength (not in the ranking): a wealthy newcomer with 100M ADA
-  # that self-delegates whatever earns it more than 5% a year; and what DReps can afford to
-  # add as pledge, as at low (only traced wealth, 2x) and as at high (1% of power, 7x).
+  # that self-delegates whatever earns it more than 5% a year; the same newcomer wanting
+  # only 1% (ADA it already holds), as one DRep or as many as 20; and what DReps can afford
+  # to add as pledge, as at low (only traced wealth, 2x) and as at high (1% of power, 7x).
   central_whale: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2,
                   pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 5,
                   untraced_wealth_share: 0.001, whale_ada: 100000000}
+  central_whale_idle: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2,
+                       pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 5,
+                       untraced_wealth_share: 0.001, whale_ada: 100000000, whale_min_return: 0.01}
+  central_whale_split: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2,
+                        pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 5,
+                        untraced_wealth_share: 0.001, whale_ada: 100000000, whale_min_return: 0.01,
+                        whale_identities: 20}
   central_poor: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2,
                  pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 2,
                  untraced_wealth_share: 0}
