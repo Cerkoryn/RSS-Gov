@@ -227,7 +227,10 @@ with at least that much, and their delegators. Or, set by a *leverage* L:
 
 - **A pledge soft cap**, for pay. Only up to L times its pledge counts toward the DRep's
   reward. With L = 2, a DRep with 10M ADA of voting power and 1M of pledge is paid as if
-  it had 2M. It still votes with all 10M.
+  it had 2M. It still votes with all 10M. Rewards are shares of the pot, so what one DRep
+  does not count goes to the others: the pot is paid in full, and DReps compete for it with
+  their pledge. A lone pledged DRep among the paid would take all of it. Pledge is part of
+  voting power, so with L = 1 (or less) every DRep is simply paid by its pledge.
 - **A pledge hard cap** on voting power itself: that DRep would vote with 2M. This needs a
   change to the ledger.
 
@@ -480,7 +483,12 @@ delegator designs and a pledge soft cap with delegator pay limited by pledge; an
 delegators a fifth or four fifths instead of half. Around the leading design with delegator
 pay limited by pledge it also varies the delegator exponent, the pledge leverage (1×, 5×,
 10×), the delegator share and the budget, and tries the same change in two other
-delegator designs.
+delegator designs. Around the pledge contest it varies how many may compete (the 25 to 400
+largest, or all), the leverage (1× to 100×, and none), skipping the largest 10 or 20, the
+conditions to compete, a cap on counted power, the square root, roll-down, the budget, a
+budget topped up by a proposer fee, and, with delegators, their share, a flat yield, and
+leaving out the delegators of the largest 10 or 20. `top100_min_pledge` uses pledge as an
+entry ticket instead of a share.
 
 | Name | Rule | Source |
 |---|---|---|
@@ -503,6 +511,8 @@ delegator designs.
 | `small_drep_delegators` | square root of power up to the pledge, at least 100k ADA and 10 delegators; 80% passed through to delegators, so yield per ADA is higher at smaller DReps | this project |
 | `delegators_not_top20` | by voting power, half to delegators, flat, but not to delegators of the 20 largest (who are still paid themselves) | this project |
 | `top100_delegators_not_top20` | the same, paying only the 100 largest DReps: their delegators from rank 21 to 100 | this project |
+| `pledge_contest` | the 100 largest by voting power share the pot by voting power counted up to their pledge (L = 1): by pledge, so a DRep with no pledge earns nothing | this project: a contest for the pot with pledge |
+| `pledge_contest_delegators` | the same with half to delegators, in a pot per DRep by the same counted power | this project |
 
 ### What the family cannot express
 

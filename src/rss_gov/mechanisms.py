@@ -431,6 +431,13 @@ PRESETS = {
     "top100_delegators_not_top20": dict(
         alpha=1.0, n_pay=100, delegator_share=0.5, delegator_mode="flat", delegator_k_exclude=20
     ),
+    # The 100 largest compete for the whole pot with their pledge: each is paid by its voting
+    # power counted only up to its pledge, so a DRep with no pledge earns nothing, and one
+    # pledged DRep alone would take everything.
+    "pledge_contest": dict(alpha=1.0, n_pay=100, pledge_leverage=1.0),
+    "pledge_contest_delegators": dict(
+        alpha=1.0, n_pay=100, pledge_leverage=1.0, delegator_share=0.5, delegator_mode="per_drep"
+    ),
 }
 
 

@@ -228,6 +228,63 @@ experiment:
     - {name: skip_top20_min_pledge_by_power_half, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, delegator_share: 0.5}
     - {name: skip_top20_min_pledge_by_power_2m5, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, budget_ada: 2500000}
     - {name: skip_top20_min_pledge_by_power_10m, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, budget_ada: 10000000}
+    # The pledge contest (METHODS.md, "Named designs"): the 100 largest share the whole pot by
+    # voting power counted up to their pledge. With delegators, half goes to their delegators
+    # in pots by the same counted power. Both are also run paid by a proposer fee.
+    - pledge_contest
+    - pledge_contest_delegators
+    # How many may compete (N) and how far pledge stretches (L); "proportional" is no L.
+    - {name: pledge_contest_top25, preset: pledge_contest, n_pay: 25}
+    - {name: pledge_contest_top50, preset: pledge_contest, n_pay: 50}
+    - {name: pledge_contest_top50_2x, preset: pledge_contest, n_pay: 50, pledge_leverage: 2}
+    - {name: pledge_contest_top50_10x, preset: pledge_contest, n_pay: 50, pledge_leverage: 10}
+    - {name: top50_proportional, preset: top_m_proportional, n_pay: 50}
+    - {name: pledge_contest_2x, preset: pledge_contest, pledge_leverage: 2}
+    - {name: pledge_contest_5x, preset: pledge_contest, pledge_leverage: 5}
+    - {name: pledge_contest_10x, preset: pledge_contest, pledge_leverage: 10}
+    - {name: pledge_contest_100x, preset: pledge_contest, pledge_leverage: 100}
+    - {name: pledge_contest_top200, preset: pledge_contest, n_pay: 200}
+    - {name: pledge_contest_top200_2x, preset: pledge_contest, n_pay: 200, pledge_leverage: 2}
+    - {name: pledge_contest_top200_10x, preset: pledge_contest, n_pay: 200, pledge_leverage: 10}
+    - {name: top200_proportional, preset: top_m_proportional, n_pay: 200}
+    - {name: pledge_contest_top400, preset: pledge_contest, n_pay: 400}
+    - {name: pledge_contest_all, preset: pledge_contest, n_pay: 0}
+    - {name: pledge_contest_all_2x, preset: pledge_contest, n_pay: 0, pledge_leverage: 2}
+    - {name: pledge_contest_all_10x, preset: pledge_contest, n_pay: 0, pledge_leverage: 10}
+    # Pledge as an entry ticket instead of a share: the 100 largest by voting power, 10k pledge.
+    - {name: top100_min_pledge, preset: top_m_proportional, min_pledge_ada: 10000}
+    # Leaving out the largest K: skip 10 or 20, then the next 100.
+    - {name: pledge_contest_skip10, preset: pledge_contest, k_exclude: 10}
+    - {name: pledge_contest_skip20, preset: pledge_contest, k_exclude: 20}
+    # Other conditions to compete: a 70% vote rate, 10 delegators, or 0.5% of all power.
+    - {name: pledge_contest_gate70, preset: pledge_contest, activity_gate: 0.7}
+    - {name: pledge_contest_min10_delegators, preset: pledge_contest, min_delegators: 10}
+    - {name: pledge_contest_share, preset: pledge_contest, n_pay: 0, min_share: 0.005}
+    # Against one large pledge taking the pot: count at most 1M or 5M per DRep.
+    - {name: pledge_contest_cap1m, preset: pledge_contest, cap_ada: 1000000}
+    - {name: pledge_contest_cap5m, preset: pledge_contest, cap_ada: 5000000}
+    # Shape: by the square root of counted power, and slots that pass down to the next voter.
+    - {name: pledge_contest_sqrt, preset: pledge_contest, alpha: 0.5}
+    - {name: pledge_contest_roll_down, preset: pledge_contest, roll_down: true}
+    # Money: other budgets, and a budget topped up by a proposer fee (needs a hard fork).
+    - {name: pledge_contest_1m, preset: pledge_contest, budget_ada: 1000000}
+    - {name: pledge_contest_2m5, preset: pledge_contest, budget_ada: 2500000}
+    - {name: pledge_contest_10m, preset: pledge_contest, budget_ada: 10000000}
+    - {name: pledge_contest_2m5_fee_10k, preset: pledge_contest, budget_ada: 2500000, fee_ada: 10000}
+    # With delegators: what share goes to DReps, a flat yield instead of pots, leaving out
+    # the delegators of the largest K, and the same N, K, L and budget changes.
+    - {name: pledge_contest_delegators_20, preset: pledge_contest_delegators, delegator_share: 0.2}
+    - {name: pledge_contest_delegators_80, preset: pledge_contest_delegators, delegator_share: 0.8}
+    - {name: pledge_contest_delegators_flat, preset: pledge_contest_delegators, delegator_mode: flat}
+    - {name: pledge_contest_delegators_not_top10, preset: pledge_contest_delegators, delegator_k_exclude: 10}
+    - {name: pledge_contest_delegators_not_top20, preset: pledge_contest_delegators, delegator_k_exclude: 20}
+    - {name: pledge_contest_delegators_skip20, preset: pledge_contest_delegators, k_exclude: 20}
+    - {name: pledge_contest_delegators_top200, preset: pledge_contest_delegators, n_pay: 200}
+    - {name: pledge_contest_delegators_all, preset: pledge_contest_delegators, n_pay: 0}
+    - {name: pledge_contest_delegators_2x, preset: pledge_contest_delegators, pledge_leverage: 2}
+    - {name: pledge_contest_delegators_10x, preset: pledge_contest_delegators, pledge_leverage: 10}
+    - {name: pledge_contest_delegators_2m5, preset: pledge_contest_delegators, budget_ada: 2500000}
+    - {name: pledge_contest_delegators_10m, preset: pledge_contest_delegators, budget_ada: 10000000}
     # How much goes to delegators: a fifth or four fifths instead of half.
     - {name: proportional_delegators_by_power_20, preset: proportional, delegator_share: 0.2, delegator_mode: per_drep}
     - {name: proportional_delegators_by_power_80, preset: proportional, delegator_share: 0.8, delegator_mode: per_drep}

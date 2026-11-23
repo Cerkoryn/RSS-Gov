@@ -26,7 +26,9 @@ research agent (`program.md`); it is not published on the site.
 Runs cited: **R1** = 2026-11-22, data to epoch 666, 100 seeds per design, budget 5M ADA
 over the six-month programme (about 10M a year) unless stated. **R2** = the same day and
 data, with `per_drep` delegator pots added to the search and eleven variations around the
-leading design; numbers for designs in both runs are the same. "DReps" below is the number
+leading design; numbers for designs in both runs are the same. **R3** = the same day and
+data, with 51 pledge contest designs (`pledge_contest*`, L17 to L22); the search was not
+rerun, and earlier designs' numbers are unchanged. "DReps" below is the number
 of DReps holding two thirds of the voting power: more is more decentralised.
 
 ## DRep pay
@@ -42,7 +44,8 @@ awards buy.** *Holds.*
 **L2. The flatter the DRep rule, the more splitting into many DReps pays.** *Holds.*
 - Evidence (R1, exact): share of the budget gained by splitting, `proportional` 0%,
   `sqrt` 15%, `equal` 87%; caps and skip-the-largest designs in between (`capped` 30%,
-  `middle_out` 24%, `top_m_equal` 23%).
+  `middle_out` 24%, `top_m_equal` 23%). R3: the pledge contest by counted power gains 1%,
+  by its square root 12% (`pledge_contest_sqrt`).
 - Why: an exact property of the rule on today's DReps (`static.py`); no reaction assumed.
 
 **L3. Requiring pledge removes the Sybil gain of skip-the-largest designs, as long as pay
@@ -96,6 +99,8 @@ moving.** *Holds with exceptions; rests on a model assumption.*
   +4.2 against +3.2 points, DReps +7.2 against +6.0, net benefit +1.3M ± 0.2M ADA a year.
   Its DRep pay adds only +0.3 points in `voting_only`: the 20 largest are skipped and
   the rest must vote on 70% of actions.
+- Evidence (R3, pledge contest with 0 / 20 / 50 / 80% to delegators): net benefit +1.6 /
+  +2.2 / +0.4 / −3.3M ADA a year; a fifth to delegators beats none by +0.6M ± 0.15M.
 - Why: a DRep weighs only its own award when deciding to vote, not that its delegators
   are paid only when it votes (`METHODS.md`, "How DReps behave"). If real DReps do care,
   paying delegators costs less participation than this. The trade only matters where the
@@ -132,27 +137,112 @@ other designs in R2.*
 - Evidence (R2, the same comparison in two more designs): `haircut_top20_delegators`
   +2.8 DReps, +4.5M ± 0.2M; `delegators_not_top20` with a 2× pledge soft cap +1.0 DReps,
   Sybil 2% against 20%, +2.9M ± 0.2M. When the search may choose (R2), 10 of its 14 new
-  finalists use pots by counted power or its square root.
+  finalists use pots by counted power or its square root. R3: in the pledge contest
+  with half to delegators, a flat yield instead of pots −2.1M ± 0.15M.
 - Why: an ADA delegated to a DRep with more pledge per ADA then earns more, so delegators
   move to pledge-backed DReps, which are mostly not the largest. Under a flat yield all
   pledged DReps pay the same, and the minimum-pledge design drew more delegation to its
   22 DReps (`yield_only` +7.9 points of participation against +5.3).
 
-**L10. Tying pay to pledge raises pledge backing only by tenths of a point.** *Holds.*
+**L10. Tying pay to pledge raises pledge backing only by tenths of a point, unless DReps
+can afford more.** *Holds in `central`; contradicted in `high` (R3).*
 - Evidence (R1, `central`): `pledge_soft_cap_2x_delegators_by_power` +0.8 points,
   `pledge_soft_cap_skip20` +0.6, the skip-the-largest delegator designs +0.2 to +0.4;
-  designs without a pledge soft cap about 0.
+  designs without a pledge soft cap about 0. R3: the pledge contests reach +1.2 in
+  `central` but about +6 in `high` (L17).
 - Why: little pledge stands behind votes today; DReps add only part of what is missing,
   and only while it pays (`pledge_response`, `pledge_min_return`). Assumed reaction.
 
-**L14. The tighter the pledge limit on delegator pay, the better, down to 1×.** *Holds.*
+**L14. The tighter the pledge limit on pay, the better, down to 1×.** *Holds; widened from
+delegator pay to all pay in R3.*
 - Evidence (R2, `skip_top20_delegators_min_pledge_by_power` at 1× / 2× / 5× / 10× pledge
   leverage, `central`): backing +0.45 / +0.35 / +0.21 / +0.10 points; DReps and
   participation about the same. Net benefit against 2×: +0.35M ± 0.18M, 0, −0.39M ± 0.17M,
   −1.41M ± 0.20M ADA a year. 1× also has the smallest shortfall in any scenario.
-- Why: the looser the limit, the less an ADA delegated to a well-pledged DRep earns over
-  one delegated to a thinly pledged one, so the less pledge pays (`pledge_response`).
-  Untested below 1×.
+- Evidence (R3, `pledge_contest`, the top 100 at 1× / 2× / 5× / 10× / 100× / no pledge
+  limit): backing +0.75 / +0.63 / +0.54 / +0.49 / +0.17 / 0 points; net benefit +1.6 /
+  +1.3 / +0.8 / −2.5 / −8.0 / −8.6M ADA a year (2× against 1×: −0.34M ± 0.08M). The same
+  order with 50, 200 or all DReps competing, and with delegators.
+- Why: the looser the limit, the less an extra pledged ADA adds to the DRep's share (and
+  its delegators' pot), so the less pledge pays (`pledge_response`). Below 1× the split is
+  the same as at 1×: pledge is part of voting power, so at L = 1 every DRep is already
+  paid by its pledge alone.
+
+## The pledge contest
+
+The paid DReps share the whole pot by voting power counted up to their pledge (L = 1: by
+pledge), so they compete for it with their own ADA. `pledge_contest` pays the 100 largest;
+`pledge_contest_delegators` gives half to their delegators in pots by the same counted
+power.
+
+**L17. Paying by pledge buys skin in the game more cheaply than any other rule tried, and
+the cheapest contest buys the most per ADA.** *Holds; the size rests on wealth assumptions.*
+- Evidence (R3, `central`): `pledge_contest` doubles backing, 0.71% to 1.46% of voting
+  power (+0.75 points, about 40M ADA more pledge behind votes), for 10.1M ADA a year; the
+  R2 leader `skip_top20_min_pledge_by_power_1x` adds +0.45. Of the 25 budget-funded designs
+  that buy the most backing per ADA, 22 are contests (the other 3 pay delegators by pledge). Backing
+  stops growing with money: 1M / 2.5M / 5M / 10M budgets add +0.50 / +0.73 / +0.75 /
+  +0.75 points, so 2.5 / 1.4 / 0.7 / 0.4 points per 10M ADA a year; paid by a 10,000 ADA
+  proposer fee (0.9M a year, hard fork), 4.2. In `high` the contests add about 6 points,
+  more than any other design. All of it comes from `pledge_only` (+0.73).
+- Why: the pot is shared, so a pledged ADA earns the pot over all pledge, a very high
+  return today (12M ADA of traced pledge). DReps add pledge until what they can afford
+  stops them (`pledge_wealth_multiple`, `untraced_wealth_share`), and more money cannot
+  buy past that. The order of designs should survive other wealth assumptions; the
+  points will not.
+
+**L18. In a pledge contest, limiting who may compete saves nothing and shuts out small
+pledged DReps.** *Holds.*
+- Evidence (R3, L = 1, the 25 / 50 / 100 / 200 / 400 largest / all): net benefit −2.9 /
+  +0.4 / +1.6 / +2.1 / +2.1 / +2.2M ADA a year; backing +0.41 / +0.61 / +0.75 / +0.82 /
+  +0.83 / +0.83 points; DReps −3.1 / −2.0 / −1.6 / −1.4 / −1.4 / −1.4. The cost is the
+  whole pot in every case, and the Sybil gain at most 1% (0% with everyone). The same
+  order at 2× and 10×. Other limits: 0.5% of all power to compete −0.7M; a 70% vote-rate
+  gate −1.1M ± 0.2M; roll-down within the top 100, which reaches further down, +0.4M ± 0.1M.
+- Why: pay by pledge is already Sybil-proof (pledge split across DReps adds to no more),
+  so a limit buys no protection. The 100th DRep holds about 1M ADA, which leaves out
+  small self-funded DReps whose pledge is a large part of their power.
+
+**L19. Pledge works as a share of the pot, not as an entry ticket.** *Holds; partly by
+model assumption.*
+- Evidence (R3): `pledge_contest` against the same top 100 paid by voting power
+  (`top_m_proportional`) +10.2M ± 0.15M ADA a year: backing +0.75 against 0, DReps −1.6
+  against −2.1. Against the top 100 with a 10,000 ADA minimum pledge (`top100_min_pledge`)
+  +12.0M ± 0.2M; the minimum adds no backing and only +1.7 points of participation, as
+  most of the top 100 are left out.
+- Why: under a share every extra pledged ADA earns more; under a ticket nothing past the
+  minimum does. The model also takes a DRep below a minimum to stay below it (`METHODS.md`,
+  "Topping up pledge"), so a ticket buys no new pledge by assumption.
+
+**L20. Paying by pledge buys little voting from the largest DReps.** *Holds; rests on traced
+pledge.*
+- Evidence (R3, `voting_only`): `pledge_contest` +1.2 points of participation,
+  `top_m_proportional` +4.3. In `central` +4.0 against +4.4: the rest comes from DReps
+  that add pledge and then earn.
+- Why: the largest DReps have almost no traced pledge (among the top 20, a median under a
+  millionth of their voting power), so they earn nothing for voting, and they hold most
+  of the ADA. If they declared their own ADA in a pilot this would change (`METHODS.md`,
+  "What the chain cannot show").
+
+**L21. Skipping the largest DReps pays only together with delegator pay.** *Holds.*
+- Evidence (R3): skipping the 20 largest in the contest without delegators −1.4M ± 0.2M
+  ADA a year (DReps +2.4 against −1.6, participation +1.5 against +4.0 points); with half
+  to delegators +5.5M ± 0.2M (DReps +5.5, the best contest design,
+  `pledge_contest_delegators_skip20`). Leaving out only the delegators of the 20 largest,
+  who are still paid themselves, +2.2M ± 0.15M. Every R1/R2 leader skips the top 20 and
+  pays delegators; `pledge_soft_cap_skip20`, without delegators, +0.7M.
+- Why: a skipped DRep loses its pay and votes less, but only delegators react to yield.
+  With delegator pay, the delegators of the largest move to paid DReps (`yield_only`).
+
+**L22. Capping counted power per DRep, against one large pledge taking the pot, costs a lot
+in the model.** *Holds; the model lacks the threat.*
+- Evidence (R3): counting at most 1M ADA per DRep −7.4M ± 0.2M ADA a year against the
+  uncapped contest (backing +0.21 against +0.75); at most 5M about −4.4M (+0.50).
+  Requiring 10 delegators instead costs nothing (+0.04M ± 0.06M).
+- Why: a cap removes pay for pledge beyond it, the very thing that buys backing. The
+  model has no newcomer who self-delegates a fortune to win the pot, which is what a cap
+  or a delegator minimum would guard against; whether either is worth it cannot be
+  judged until that is modelled.
 
 ## Cost and ranking
 
@@ -178,18 +268,22 @@ minimum pledge.** *Holds with exceptions; claim widened in R2.*
 - Evidence (R1): 21 designs that need only CIP-159 rank above paying nothing; 19 have a
   pledge soft cap. The plain DRep × delegator grid scores −8M to −12M ADA a year.
   R2: 33 above paying nothing; 30 have a pledge soft cap, and `g2_4` (square root DReps and
-  pots, no soft cap) has a 10,000 ADA minimum pledge.
+  pots, no soft cap) has a 10,000 ADA minimum pledge. R3: the top 50, 100 or 200, or all
+  DReps, paid by voting power score −8.5M to −9.1M; paid by pledge (L = 1), +0.4M to
+  +2.2M.
 - Counter-examples: `exclude_k_pay_n` (10 ADA a vote, about 0.14M a year) and
   `capped_1m` (1M budget): cheap designs can clear the bar without either.
 - Why: at the starting values, Sybil gain counts as lost ADA and concentration as a loss;
   tying pay to pledge removes most of both.
 
-**L15. For the leading design, the middle budget is best.** *Holds (one design).*
+**L15. The middle budget is best.** *Holds (two families).*
 - Evidence (R2, `skip_top20_delegators_min_pledge_by_power` at 2.5M / 5M / 10M over the
   programme): participation +2.4 / +4.2 / +7.4 points and DReps +4.2 / +7.2 / +11.3, so
   gains grow, but less than in proportion to money; net benefit against 5M −1.9M ± 0.2M
   and −1.4M ± 0.2M ADA a year. The 10M version found by the search with 1× leverage (`g3_17`)
   is also below the 5M one (−0.7M ± 0.2M).
+- Evidence (R3, `pledge_contest` at 1M / 2.5M / 5M / 10M): net benefit +2.7 / +3.6 / +1.6 /
+  −7.8M ADA a year; 2.5M beats 1M by +0.9M ± 0.1M and 5M by +2.0M ± 0.1M.
 - Why: net benefit peaks where an extra ADA buys gains worth one ADA; from 2.5M to 5M it
   buys more than that, from 5M to 10M less. With weak reactions the cheapest is least bad
   (−0.6M), with strong ones the largest is best (L12).

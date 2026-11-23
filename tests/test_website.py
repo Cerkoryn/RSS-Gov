@@ -107,7 +107,7 @@ def test_the_browser_tags_settings_like_python():
         ("min_power_ada", 10000.0), ("delegator_mode", "flat"), ("rationale_bonus", 1.0),
         ("fee_ada", 25000.0), ("fee_ada", 0.0), ("budget_ada", 0.0),
         ("delegator_mode", "per_drep"), ("delegator_alpha", 0.0), ("delegator_alpha", 0.5),
-        ("delegator_alpha", 0.25),
+        ("delegator_alpha", 0.25), ("n_pay", 0),
     ]  # fmt: skip
     script = (
         f"{functions}\nconst F = {json.dumps(proposals.BY_NAME)};"

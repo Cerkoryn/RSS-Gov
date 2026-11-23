@@ -128,6 +128,7 @@ FIELDS = [
         name="n_pay",
         short="Then pay at most",
         tag="pay {}",
+        tags={"0": "pay all"},
         group="Who qualifies",
         kind="int",
         min=0,

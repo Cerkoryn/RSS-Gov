@@ -355,7 +355,10 @@ with at least that much, and their delegators. Or, set by a <em>leverage</em> L:
 <ul>
 <li><strong>A pledge soft cap</strong>, for pay. Only up to L times its pledge counts toward the DRep's
   reward. With L = 2, a DRep with 10M ADA of voting power and 1M of pledge is paid as if
-  it had 2M. It still votes with all 10M.</li>
+  it had 2M. It still votes with all 10M. Rewards are shares of the pot, so what one DRep
+  does not count goes to the others: the pot is paid in full, and DReps compete for it with
+  their pledge. A lone pledged DRep among the paid would take all of it. Pledge is part of
+  voting power, so with L = 1 (or less) every DRep is simply paid by its pledge.</li>
 <li><strong>A pledge hard cap</strong> on voting power itself: that DRep would vote with 2M. This needs a
   change to the ledger.</li>
 </ul>
@@ -671,7 +674,12 @@ delegator designs and a pledge soft cap with delegator pay limited by pledge; an
 delegators a fifth or four fifths instead of half. Around the leading design with delegator
 pay limited by pledge it also varies the delegator exponent, the pledge leverage (1×, 5×,
 10×), the delegator share and the budget, and tries the same change in two other
-delegator designs.</p>
+delegator designs. Around the pledge contest it varies how many may compete (the 25 to 400
+largest, or all), the leverage (1× to 100×, and none), skipping the largest 10 or 20, the
+conditions to compete, a cap on counted power, the square root, roll-down, the budget, a
+budget topped up by a proposer fee, and, with delegators, their share, a flat yield, and
+leaving out the delegators of the largest 10 or 20. <code>top100_min_pledge</code> uses pledge as an
+entry ticket instead of a share.</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -774,6 +782,16 @@ delegator designs.</p>
 <tr>
 <td><code>top100_delegators_not_top20</code></td>
 <td>the same, paying only the 100 largest DReps: their delegators from rank 21 to 100</td>
+<td>this project</td>
+</tr>
+<tr>
+<td><code>pledge_contest</code></td>
+<td>the 100 largest by voting power share the pot by voting power counted up to their pledge (L = 1): by pledge, so a DRep with no pledge earns nothing</td>
+<td>this project: a contest for the pot with pledge</td>
+</tr>
+<tr>
+<td><code>pledge_contest_delegators</code></td>
+<td>the same with half to delegators, in a pot per DRep by the same counted power</td>
 <td>this project</td>
 </tr>
 </tbody>
@@ -1151,7 +1169,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=8b6c931b6b"></script>
+<script src="data.js?v=843f8d0fff"></script>
 <script src="common.js?v=35735c91d9"></script>
 </body>
 </html>
