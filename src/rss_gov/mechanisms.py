@@ -57,6 +57,9 @@ class Scheme:
     # Counted power is at most leverage * pledge (0 = off): a pledge soft cap.
     pledge_leverage: float = 0.0
     hard_cap: bool = False  # also cap voting power at leverage * pledge
+    # A pot that grows with pledge (0 = off): each round pays at most this yearly rate on the
+    # pledge behind paid votes; the rest of the budget stays unspent.
+    pledge_rate: float = 0.0
 
     def __post_init__(self):
         if self.delegator_mode not in {"passthrough", "flat", "per_drep"}:
@@ -85,6 +88,7 @@ class Scheme:
             self.min_power_ada,
             self.min_pledge_ada,
             self.pledge_leverage,
+            self.pledge_rate,
         )
         if min(*amounts, self.per_vote_ada) < 0:
             raise ValueError("amounts must be non-negative")
@@ -114,7 +118,7 @@ class Scheme:
             notes.append(
                 "Pays every delegating account, however little: one CIP-159 direct deposit each."
             )
-        if self.pledge_leverage > 0 or self.min_pledge_ada > 0:
+        if self.pledge_leverage > 0 or self.min_pledge_ada > 0 or self.pledge_rate > 0:
             inputs.append("DRep pledge accounts (signed declaration, checked on chain)")
             notes.append("Pledge is not a ledger concept: DReps must declare their accounts.")
         if self.hard_cap:
@@ -179,6 +183,8 @@ class Scheme:
         if self.pledge_leverage:
             kind = "hard" if self.hard_cap else "soft"
             parts.append(f"pledge {kind} cap {self.pledge_leverage:g}x")
+        if self.pledge_rate:
+            parts.append(f"pot at most {self.pledge_rate:.0%} of pledge a year")
         money = [f"{_ada(self.budget_ada)} ADA"] if self.budget_ada else []
         if self.fee_ada:
             money.append(f"{_ada(self.fee_ada)} ADA proposer fee")
@@ -197,6 +203,34 @@ def scheme(**kwargs):
     if unknown:
         raise ValueError(f"unknown scheme fields: {sorted(unknown)}")
     return Scheme(**kwargs)
+
+
+ROUNDS_PER_YEAR = 73  # one reward round per five-day epoch
+
+
+def _pledge_behind(s, r, expected=None):
+    """Each DRep's pledge behind paid votes: pledge (at most its voting power) times its
+    vote rate and what its rank keeps. Zero for a DRep that is not paid."""
+    ok = eligible(s, r)
+    expected = r.activity * ok if expected is None else expected
+    return _ranked(s, r, ok, expected) * r.activity * np.minimum(r.pledge, r.power)
+
+
+def spendable(s, r, pot):
+    """The part of the round's pot that may be paid: with `pledge_rate`, at most that
+    yearly rate on all the pledge behind paid votes. The rest stays unspent."""
+    if s.pledge_rate <= 0:
+        return pot
+    return min(pot, s.pledge_rate * float(_pledge_behind(s, r).sum()) / ROUNDS_PER_YEAR)
+
+
+def _spendable_each(s, r, pot, now, then):
+    """`spendable` for each DRep if only its own pledge behind paid votes went from `now`
+    to `then` (both per DRep); others are held as they are."""
+    if s.pledge_rate <= 0:
+        return pot
+    base = now.sum() - now + then
+    return np.minimum(pot, s.pledge_rate * base / ROUNDS_PER_YEAR)
 
 
 def counted_power(s, r):
@@ -292,6 +326,7 @@ def allocate(s, r, pot):
     times its vote rate. Within a DRep, delegators always share per ADA delegated.
     """
     n = len(r.power)
+    pot = spendable(s, r, pot)
     if pot <= 0:
         return np.zeros(n), np.zeros(n)
     parts = _parts(s, r)
@@ -329,9 +364,11 @@ def vote_value(s, r, pot):
     if pot <= 0:
         return np.zeros(len(r.power))
     expected = r.activity * eligible(s, r)
-    full = _parts(s, replace_activity(r, np.ones_like(r.activity)), expected)
+    everyone = replace_activity(r, np.ones_like(r.activity))
+    full = _parts(s, everyone, expected)
     now = _parts(s, r)
     totals = [w_now.sum() - w_now + w_full for (_, w_full), (_, w_now) in zip(full, now)]
+    pot = _spendable_each(s, r, pot, _pledge_behind(s, r), _pledge_behind(s, everyone, expected))
     award = _awards(s, full, totals, pot * (1 - s.delegator_share), r.actions)
     return np.zeros(len(r.power)) + award / max(r.actions, 1e-9)
 
@@ -343,12 +380,15 @@ def pledge_gain(s, r, pot, extra):
     """
     if pot <= 0:
         return np.zeros(len(r.power))
+    plus = replace(r, pledge=r.pledge + extra)
     now = _parts(s, r)
-    more = _parts(s, replace(r, pledge=r.pledge + extra))
-    reps = pot * (1 - s.delegator_share)
+    more = _parts(s, plus)
     alone = [w_now.sum() - w_now + w_more for (_, w_more), (_, w_now) in zip(more, now)]
+    reps = spendable(s, r, pot) * (1 - s.delegator_share)
     before = _awards(s, now, [w.sum() for _, w in now], reps, r.actions)
-    return np.zeros(len(r.power)) + _awards(s, more, alone, reps, r.actions) - before
+    pots = _spendable_each(s, r, pot, _pledge_behind(s, r), _pledge_behind(s, plus))
+    after = _awards(s, more, alone, pots * (1 - s.delegator_share), r.actions)
+    return np.zeros(len(r.power)) + after - before
 
 
 def replace_activity(r, activity):

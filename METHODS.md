@@ -234,6 +234,13 @@ with at least that much, and their delegators. Or, set by a *leverage* L:
 - **A pledge hard cap** on voting power itself: that DRep would vote with 2M. This needs a
   change to the ledger.
 
+A pot can also *grow with pledge* (`pledge_rate`): each epoch it pays at most this yearly
+rate on all the pledge of the paid DReps that vote (each counted up to its voting power,
+weighted by its vote rate), up to the budget, which becomes a ceiling; the rest is not
+spent. Below the ceiling, every unit of pledge earns the same yield, the rate: it is not a
+contest, and anyone whose return on ADA is below the rate adds as much as they can. At the
+ceiling it is the contest again.
+
 ### Topping up pledge
 
 Under such a rule a DRep may add pledge, when `pledge_response` is above zero. It decides
@@ -488,7 +495,11 @@ largest, or all), the leverage (1× to 100×, and none), skipping the largest 10
 conditions to compete, a cap on counted power, the square root, roll-down, the budget, a
 budget topped up by a proposer fee, and, with delegators, their share, a flat yield, and
 leaving out the delegators of the largest 10 or 20. `top100_min_pledge` uses pledge as an
-entry ticket instead of a share.
+entry ticket instead of a share. The `*_rate*` designs give the contest, its delegator
+version and the leading delegator design a pot that grows with pledge, at 2% to 50% a year;
+and the `pledge_contest_delegators_*` combinations pair the settings that did best
+around the contest: everyone competing, a fifth to delegators, the 20 largest skipped or
+their delegators left out, and 2.5M ADA.
 
 | Name | Rule | Source |
 |---|---|---|
@@ -637,6 +648,20 @@ on. With every channel at zero, paying changes nothing (the tests check this).
 uses them to show which assumption each result depends on. A scheme's score for ranking is
 its mean over `low`, `central` and `high`. The central values are guesses. A design is
 credible only if its verdicts hold from `low` to `high`.
+
+Three stress tests are the `central` reactions with one thing changed, and are reported
+but not ranked. `central_poor` and `central_rich` change only what DReps can afford to add
+as pledge, to `low`'s bound (traced holdings only, twice) and `high`'s (1% of voting power,
+seven times). `central_whale` adds a *wealthy newcomer* with `whale_ada` (100M ADA) of
+its own. Each epoch it weighs self-delegating none of it or 25 amounts from 1/4096 of it
+to all of it, and takes the one that earns the most over `pledge_min_return` a year on the
+ADA used and the cost of voting on every action (nothing, if none does). It reads the
+award off the rule as it stands that epoch, with every other DRep's power and pledge as
+they are. It votes on nearly every action with a rationale, as one DRep, and holds its
+ADA in as many accounts as a delegator minimum needs. What it self-delegates is its
+pledge and joins its voting power. The report shows its share of what is paid
+(`whale_take`) and the ADA it self-delegates. It is a single identity, so splitting into
+several DReps (the Sybil axis) is measured separately.
 
 Not modelled: delegators leaving a DRep whose voting power is capped, vote buying,
 collusion, changes in vote *direction* or quality, and price effects.

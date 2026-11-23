@@ -2,98 +2,104 @@
   "history": [
     {
       "generation": 0,
-      "evaluated": 96,
-      "front": 26,
-      "hypervolume": 0.06448372101080219
+      "evaluated": 161,
+      "front": 29,
+      "hypervolume": 0.0829193800006303
     },
     {
       "generation": 1,
-      "evaluated": 108,
-      "front": 32,
-      "hypervolume": 0.06499360043269835
+      "evaluated": 178,
+      "front": 34,
+      "hypervolume": 0.08480998939240852
     },
     {
       "generation": 2,
-      "evaluated": 126,
-      "front": 34,
-      "hypervolume": 0.06768597181849423
+      "evaluated": 192,
+      "front": 37,
+      "hypervolume": 0.08587037975176405
     },
     {
       "generation": 3,
-      "evaluated": 144,
-      "front": 38,
-      "hypervolume": 0.07320824893825277
+      "evaluated": 210,
+      "front": 41,
+      "hypervolume": 0.08846166467200824
     },
     {
       "generation": 4,
-      "evaluated": 164,
-      "front": 43,
-      "hypervolume": 0.07519391386087453
+      "evaluated": 229,
+      "front": 44,
+      "hypervolume": 0.08894359542321646
     },
     {
       "generation": 5,
-      "evaluated": 176,
+      "evaluated": 245,
       "front": 45,
-      "hypervolume": 0.07626953370019321
+      "hypervolume": 0.08894606199547804
     },
     {
       "generation": 6,
-      "evaluated": 194,
-      "front": 44,
-      "hypervolume": 0.0762829706363791
+      "evaluated": 261,
+      "front": 47,
+      "hypervolume": 0.09010791286456503
     },
     {
       "generation": 7,
-      "evaluated": 209,
-      "front": 47,
-      "hypervolume": 0.07721786601709982
+      "evaluated": 281,
+      "front": 53,
+      "hypervolume": 0.09032293013833047
     },
     {
       "generation": 8,
-      "evaluated": 224,
-      "front": 47,
-      "hypervolume": 0.07809079233453019
+      "evaluated": 295,
+      "front": 54,
+      "hypervolume": 0.091097165922182
     },
     {
       "generation": 9,
-      "evaluated": 241,
-      "front": 50,
-      "hypervolume": 0.07967319491233846
+      "evaluated": 314,
+      "front": 57,
+      "hypervolume": 0.09169179267213967
     },
     {
       "generation": 10,
-      "evaluated": 261,
-      "front": 54,
-      "hypervolume": 0.07972338431796641
+      "evaluated": 330,
+      "front": 57,
+      "hypervolume": 0.09380374530789504
     }
   ],
   "front": [
-    "pledge_soft_cap_skip20",
     "capped_1m",
     "capped_2m5",
     "skip_top20_delegators_min_pledge",
-    "pledge_soft_cap_2x_delegators_by_power",
     "skip_top20_min_pledge_delegators_sqrt",
     "skip_top20_min_pledge_delegators_equal",
     "skip_top20_min_pledge_by_power_1x",
     "skip_top20_min_pledge_by_power_half",
     "skip_top20_min_pledge_by_power_2m5",
-    "g3_17",
-    "g3_3",
-    "g5_2",
-    "g10_0",
-    "g3_22",
-    "g8_1",
-    "g7_18",
-    "g9_18",
-    "g2_6",
-    "g4_19",
-    "g9_19",
-    "g5_5",
-    "g4_7",
-    "g2_4",
-    "proportional_gate_half_budget",
-    "sqrt_floor_25_gate_half"
+    "pledge_contest_skip10",
+    "pledge_contest_1m",
+    "pledge_contest_delegators_not_top20",
+    "pledge_contest_delegators_all",
+    "pledge_contest_rate2",
+    "pledge_contest_rate5",
+    "pledge_contest_rate10",
+    "pledge_contest_all_rate5",
+    "pledge_contest_10m_rate10",
+    "skip_top20_min_pledge_by_power_1x_rate10",
+    "pledge_contest_delegators_all_20_not_top20",
+    "pledge_contest_delegators_all_skip20",
+    "pledge_contest_delegators_skip20_rate5",
+    "pledge_contest_delegators_skip20_rate10",
+    "g6_19",
+    "g10_5",
+    "g3_18",
+    "g1_2",
+    "g4_23",
+    "g10_1",
+    "g10_11",
+    "g1_7",
+    "g8_11",
+    "g9_12"
   ],
   "shortlist": [
     "skip_top20_delegators_min_pledge",
@@ -102,17 +108,20 @@
     "skip_top20_min_pledge_by_power_1x",
     "skip_top20_min_pledge_by_power_half",
     "skip_top20_min_pledge_by_power_2m5",
-    "g3_17",
-    "g10_0",
-    "g9_18",
-    "g2_6",
-    "g9_19",
+    "g6_19",
+    "g10_11",
+    "g1_7",
     "capped_1m",
     "capped_2m5",
-    "g5_2",
-    "g4_19",
-    "pledge_soft_cap_skip20",
-    "g8_1"
+    "pledge_contest_delegators_not_top20",
+    "pledge_contest_delegators_all_skip20",
+    "g9_12",
+    "pledge_contest_skip10",
+    "skip_top20_min_pledge_by_power_1x_rate10",
+    "pledge_contest_delegators_skip20_rate5",
+    "pledge_contest_delegators_skip20_rate10",
+    "g10_5",
+    "g4_23"
   ],
   "pilot_shortlist": [
     "skip_top20_delegators_min_pledge",
@@ -121,17 +130,20 @@
     "skip_top20_min_pledge_by_power_1x",
     "skip_top20_min_pledge_by_power_half",
     "skip_top20_min_pledge_by_power_2m5",
-    "g3_17",
-    "g10_0",
-    "g9_18",
-    "g2_6",
-    "g9_19",
+    "g6_19",
+    "g10_11",
+    "g1_7",
     "capped_1m",
     "capped_2m5",
-    "g5_2",
-    "g4_19",
-    "pledge_soft_cap_skip20",
-    "g8_1"
+    "pledge_contest_delegators_not_top20",
+    "pledge_contest_delegators_all_skip20",
+    "g9_12",
+    "pledge_contest_skip10",
+    "skip_top20_min_pledge_by_power_1x_rate10",
+    "pledge_contest_delegators_skip20_rate5",
+    "pledge_contest_delegators_skip20_rate10",
+    "g10_5",
+    "g4_23"
   ],
   "axes": [
     "participation",
@@ -152,16 +164,16 @@
     "annual_cost_ada": 0.0,
     "split_gain": 0.0
   },
-  "hypervolume": 0.08055189910977845,
+  "hypervolume": 0.09520024681680736,
   "hypervolume_ci": [
-    0.07923574192608718,
-    0.08217855129603831
+    0.09356407118280977,
+    0.09722142130594282
   ],
   "hypervolume_unpaid": 0.004545454545454546,
-  "search_gain": 0.014816997372177551,
+  "search_gain": 0.00926262528798151,
   "search_gain_ci": [
-    0.014388148536297322,
-    0.015351435738317314
+    0.008971789754837797,
+    0.009594549119801394
   ],
   "holdout_seeds": 100
 }

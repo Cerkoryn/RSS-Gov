@@ -45,6 +45,18 @@ const Checks = (() => {
     return size;
   }
 
+  // With pledge_rate, the round pays at most that yearly rate on the pledge behind paid
+  // votes (pledge at most voting power, times vote rate and rank keep); mechanisms.spendable.
+  const ROUNDS_PER_YEAR = 73;
+  function spendable(s, r, pot) {
+    if (!(s.pledge_rate > 0)) return pot;
+    const ok = eligible(s, r);
+    const keep = ranked(s, r, ok, r.activity.map((a, i) => (ok[i] ? a : 0)));
+    let behind = 0;
+    for (let i = 0; i < r.power.length; i++) behind += keep[i] * r.activity[i] * Math.min(r.pledge[i], r.power[i]);
+    return Math.min(pot, (s.pledge_rate * behind) / ROUNDS_PER_YEAR);
+  }
+
   // Reward weights as [fraction of the DReps' pot, weights]; zero means not paid.
   function parts(s, r, expected) {
     const n = r.power.length, ok = eligible(s, r);
@@ -81,6 +93,7 @@ const Checks = (() => {
   function allocate(s, r, pot) {
     const n = r.power.length;
     const zero = [new Float64Array(n), new Float64Array(n)];
+    pot = spendable(s, r, pot);
     if (pot <= 0) return zero;
     const ps = parts(s, r);
     const award = awards(s, ps, ps.map(([, w]) => sum(w)), pot * (1 - s.delegator_share), r.actions ?? 1);
@@ -176,7 +189,7 @@ const Checks = (() => {
     if (s.rationale_bonus > 0) out.push("An anchor proves a rationale exists, not that it is good.");
     if (s.basis === "delegators") out.push("Accounts are cheap to create: paying by their number invites fake ones.");
     if (s.delegator_share > 0) out.push("Pays every delegating account, however little: one CIP-159 direct deposit each.");
-    if (s.pledge_leverage > 0 || s.min_pledge_ada > 0) out.push("Pledge is not a ledger concept: DReps must declare their accounts.");
+    if (s.pledge_leverage > 0 || s.min_pledge_ada > 0 || s.pledge_rate > 0) out.push("Pledge is not a ledger concept: DReps must declare their accounts.");
     if (s.hard_cap) out.push("Capping voting power changes ratification rules: needs a hard fork.");
     if (s.fee_ada > 0) out.push("Today every governance action deposit is returned: keeping part of it as a fee changes the ledger's rules and needs a hard fork.");
     return out;

@@ -28,6 +28,18 @@ RULES = [
     dict(
         alpha=0.5, cap_ada=3e6, delegator_share=0.6, delegator_mode="per_drep", delegator_alpha=0.5
     ),
+    dict(alpha=1.0, n_pay=30, pledge_leverage=1.0, pledge_rate=0.1),
+    dict(
+        alpha=1.0,
+        k_exclude=2,
+        pledge_leverage=1.0,
+        pledge_rate=0.5,
+        delegator_share=0.3,
+        delegator_mode="per_drep",
+        roll_down=False,
+        activity_gate=0.4,
+    ),
+    dict(alpha=0.0, n_pay=10, roll_down=True, pledge_rate=2.0),
 ]
 
 

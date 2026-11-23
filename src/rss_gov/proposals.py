@@ -284,6 +284,21 @@ FIELDS = [
         "their accounts.",
     ),
     dict(
+        name="pledge_rate",
+        short="Pot grows with pledge",
+        tag="pot ≤ {} of pledge a year",
+        group="Pledge",
+        kind="share",
+        min=0,
+        max=1,
+        step=0.01,
+        label="Pot grows with pledge: pay at most this share of the pledge behind paid votes, "
+        "a year (0: off)",
+        help="Each round pays at most this yearly rate on all the pledge of the paid DReps that "
+        "vote, so the pot starts small and grows as DReps add pledge, up to the budget. What it "
+        "does not pay stays unspent. Needs DReps to declare their accounts.",
+    ),
+    dict(
         name="hard_cap",
         short="Pledge hard cap",
         tag="pledge hard cap",

@@ -17,10 +17,13 @@ from rss_gov import mechanisms
 from rss_gov.metrics import effective_number, tau
 
 NONE, ABSTAIN, NO_CONFIDENCE = -1, -2, -3  # account targets that are not a DRep slot
-EPOCHS_PER_YEAR = 73
+EPOCHS_PER_YEAR = mechanisms.ROUNDS_PER_YEAR
 ENTRY_CAP = 8.0  # registrations can rise to at most this multiple of the historical rate
 HAZARD_CAP = 10.0  # likewise for the re-delegation rate of an account
 MOVE_BATCH = 100  # accounts that re-delegate before pass-through yields are recomputed
+# Shares of its wealth a wealthy newcomer weighs self-delegating each epoch (0: stay out).
+WHALE_GRID = np.concatenate([[0.0], np.geomspace(1 / 4096, 1.0, 25)])
+WHALE_VOTE = 0.99  # it votes, with a rationale, on nearly every action: that is what pays
 
 
 @dataclass
@@ -84,6 +87,10 @@ class Scenario:
     # Own ADA that cannot be traced on chain: a DRep's holdings are taken to be at least
     # this share of its voting power at the start.
     untraced_wealth_share: float = 0.0
+    # A wealthy newcomer with this much ADA (0: none). Each epoch it self-delegates the part
+    # of it that earns the most over pledge_min_return on that ADA and the cost of voting,
+    # and votes on everything; while nothing pays, it stays out.
+    whale_ada: float = 0.0
 
 
 @dataclass
@@ -142,30 +149,34 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
     new_own = np.minimum(new_power, r_entry.choice(world.entrant_own, n_new))
 
     n0, a0 = len(world.p), len(world.acct_ada)
-    D, A = n0 + n_new, a0 + n_new
+    whale = int(scenario.whale_ada > 0)  # its slot is the last one; it has no account rows
+    D, A = n0 + n_new + whale, a0 + n_new
     registered = np.zeros(D, bool)
     registered[:n0] = True
-    base_p = logit(np.concatenate([world.p, world.entrant_p[pick]]))
-    base_q = logit(np.concatenate([world.q, world.entrant_q[pick]]))
-    last_active = np.concatenate([world.last_active, np.zeros(n_new)])
-    pledge = np.concatenate([world.pledge, new_own])
-    holdings = np.concatenate([world.holdings, new_own])
+    sure = np.full(whale, WHALE_VOTE)
+    base_p = logit(np.concatenate([world.p, world.entrant_p[pick], sure]))
+    base_q = logit(np.concatenate([world.q, world.entrant_q[pick], sure]))
+    last_active = np.concatenate([world.last_active, np.zeros(n_new + whale)])
+    pledge = np.concatenate([world.pledge, new_own, np.zeros(whale)])
+    holdings = np.concatenate([world.holdings, new_own, np.zeros(whale)])
     if scenario.untraced_wealth_share > 0:
-        start = np.concatenate([_by_drep(world.acct_target, world.acct_ada, n0), new_power])
+        start = np.concatenate(
+            [_by_drep(world.acct_target, world.acct_ada, n0), new_power, np.zeros(whale)]
+        )
         holdings = np.maximum(holdings, scenario.untraced_wealth_share * start)
     added = np.zeros(D)  # pledge added during the programme; it votes with the DRep
     acct_ada = np.concatenate([world.acct_ada, np.zeros(n_new)])
     acct_count = np.concatenate([world.acct_count, np.zeros(n_new)])
     target = np.concatenate([world.acct_target, np.full(n_new, NONE)])
     window = deque(
-        (tuple(np.pad(x, (0, n_new)) for x in row) for row in world.window),
+        (tuple(np.pad(x, (0, n_new + whale)) for x in row) for row in world.window),
         maxlen=params.activity_window,
     )
     activity, rationale_share = _activity(window, np.zeros(D), np.zeros(D))
 
     carry, entry_multiplier = 0.0, 1.0
     series, actions = [], []
-    spent = paid = top10 = rounds = entrants = 0.0
+    spent = paid = top10 = rounds = entrants = whale_paid = 0.0
     drep_total, acct_total = np.zeros(D), np.zeros(A)  # ADA earned over the programme
     top_up = 1 - (1 - scenario.pledge_response) ** (1 / epochs)
     action_i = candidate_i = exit_i = 0
@@ -212,6 +223,8 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
         if scheme.min_delegators > 0 or scheme.basis == "delegators":
             counted = acct_count * (acct_ada >= params.delegator_min_ada * acct_count)
             delegators = _by_drep(target, counted, D)[live]
+            if whale and registered[-1]:  # its own ADA, in as many accounts as it likes
+                delegators[-1] += max(added[-1] / params.delegator_min_ada, 1.0)
         rnd = mechanisms.Round(
             power=delegated[live],
             activity=activity[live],
@@ -223,6 +236,8 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
         award, yields = mechanisms.allocate(scheme, rnd, pot)
         received = award + yields * rnd.power
         carry = pot - received.sum()
+        if whale and registered[-1]:  # the last live slot: its award, and yield on its own ADA
+            whale_paid += award[-1] + yields[-1] * added[-1]
         drep_total[live] += award
         if scheme.delegator_share > 0:  # otherwise every yield is zero
             held = target >= 0
@@ -262,6 +277,25 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
             pledge[live] += step
             added[live] += step
             delegated[live] += step
+        if whale and seen > 0:
+            # The wealthy newcomer re-weighs how much of its ADA to self-delegate.
+            w = D - 1
+            others = rnd if not registered[w] else _without_last(rnd)
+            from_others = delegated[w] - added[w] if registered[w] else 0.0
+            best, best_net = 0.0, 0.0
+            for own in scenario.whale_ada * WHALE_GRID[1:]:
+                earned = _entrant_take(
+                    scheme, others, seen, from_others + own, own, params.delegator_min_ada
+                )
+                net = (earned - upkeep) * EPOCHS_PER_YEAR - scenario.pledge_min_return * own
+                if net > best_net:
+                    best, best_net = own, net
+            if best > 0 and not registered[w]:
+                registered[w] = True
+                last_active[w] = epoch
+                entrants += 1
+            delegated[w] += best - added[w]
+            pledge[w] = added[w] = best  # it takes part in the round from the next epoch
         if seen > 0 and scenario.drep_response > 0:
             value = mechanisms.vote_value(scheme, rnd, seen)
             shift[live] = scenario.drep_response * np.log1p(value / params.vote_cost_ada)
@@ -351,6 +385,7 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
                 represented_share=power[registered & (activity >= 0.5)].sum() / everything,
                 backing=np.minimum(live_power, pledge[registered]).sum() / live_power.sum(),
                 voting_dreps=int((registered & (activity >= 0.5)).sum()),
+                whale_pledge=float(added[-1]) if whale else 0.0,
                 shares=None,
             )
         )
@@ -401,6 +436,8 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
         spent_ada=float(spent),
         paid_per_round=paid / max(rounds, 1),
         top10_reward_share=top10 / rounds if rounds else np.nan,
+        whale_take=whale_paid / spent if spent > 0 else 0.0,
+        whale_pledge=late_mean("whale_pledge"),
     )
 
 
@@ -422,6 +459,33 @@ def _activity(window, activity, rationale_share):
     activity = np.where(seen, voted / np.maximum(eligible, 1), activity)
     rationale_share = np.where(voted > 0, with_rationale / np.maximum(voted, 1), rationale_share)
     return np.minimum(activity, 1.0), rationale_share
+
+
+def _without_last(rnd):
+    return mechanisms.Round(
+        power=rnd.power[:-1],
+        activity=rnd.activity[:-1],
+        rationale=rnd.rationale[:-1],
+        delegators=rnd.delegators[:-1],
+        pledge=rnd.pledge[:-1],
+        actions=rnd.actions,
+    )
+
+
+def _entrant_take(scheme, rnd, pot, power, own, account_ada):
+    """What one more DRep that votes on everything, with a rationale, earns per round: its
+    award and the delegator yield on its own ADA. It holds `own` ADA itself, in as many
+    accounts as it likes, so a delegator minimum does not stop it."""
+    plus = mechanisms.Round(
+        power=np.append(rnd.power, power),
+        activity=np.append(rnd.activity, 1.0),
+        rationale=np.append(rnd.rationale, 1.0),
+        delegators=np.append(rnd.delegators, max(own / account_ada, 1.0)),
+        pledge=np.append(rnd.pledge, own),
+        actions=rnd.actions,
+    )
+    award, yields = mechanisms.allocate(scheme, plus, pot)
+    return float(award[-1] + yields[-1] * own)
 
 
 def _newcomer_award(scheme, rnd, pot, delegated, own):

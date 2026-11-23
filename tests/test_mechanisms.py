@@ -298,3 +298,32 @@ def test_the_search_drops_delegator_settings_that_change_nothing():
         if s.delegator_mode != "per_drep":
             assert s.delegator_alpha == 1.0
     assert {s.delegator_alpha for s in made if s.delegator_mode == "per_drep"} == {0.0, 0.5, 1.0}
+
+
+def test_a_pot_that_grows_with_pledge_pays_a_yearly_rate_on_it_up_to_the_budget():
+    r = make_round()
+    rate = 0.1
+    s = m.Scheme(budget_ada=1, alpha=1.0, pledge_leverage=1.0, pledge_rate=rate)
+    # pledge behind paid votes: pledge (at most power) times vote rate; DRep 3 did not vote
+    behind = (np.minimum(r.pledge, r.power) * r.activity).sum()
+    per_round = rate * behind / m.ROUNDS_PER_YEAR
+    award, _ = m.allocate(s, r, 1e9)
+    assert award.sum() == pytest.approx(per_round)  # the rest of the budget is not spent
+    # paid by pledge (L = 1), each voting DRep earns the rate on its own pledge behind votes
+    own = np.minimum(r.pledge, r.power) * r.activity
+    assert award == pytest.approx(rate * own / m.ROUNDS_PER_YEAR)
+    # a small budget is the ceiling: then it is a contest for the whole of it again
+    award, _ = m.allocate(s, r, 1.0)
+    assert award.sum() == pytest.approx(1.0)
+    assert m.spendable(m.Scheme(budget_ada=1), r, 5.0) == 5.0  # off: the whole pot
+    # adding pledge enlarges the pot as well as the share: it earns the rate on what is added
+    extra = np.zeros(len(r.power))
+    extra[2] = 1e6
+    gain = m.pledge_gain(s, r, 1e9, extra)
+    assert gain[2] == pytest.approx(rate * 1e6 * r.activity[2] / m.ROUNDS_PER_YEAR)
+    # a vote is worth more when it also brings the DRep's pledge behind paid votes
+    value = m.vote_value(s, r, 1e9)
+    full = m.allocate(s, m.replace_activity(r, np.where(np.arange(5) == 1, 1.0, r.activity)), 1e9)
+    assert value[1] * r.actions == pytest.approx(full[0][1])
+    with pytest.raises(ValueError):
+        m.Scheme(pledge_rate=-0.1)

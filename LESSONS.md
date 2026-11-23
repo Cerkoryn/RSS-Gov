@@ -28,7 +28,12 @@ over the six-month programme (about 10M a year) unless stated. **R2** = the same
 data, with `per_drep` delegator pots added to the search and eleven variations around the
 leading design; numbers for designs in both runs are the same. **R3** = the same day and
 data, with 51 pledge contest designs (`pledge_contest*`, L17 to L22); the search was not
-rerun, and earlier designs' numbers are unchanged. "DReps" below is the number
+rerun, and earlier designs' numbers are unchanged. **R4** = 2026-11-23, the same data, with
+a wealthy newcomer in the model (`central_whale`), two wealth stress tests (`central_poor`,
+`central_rich`), pots that grow with pledge (`pledge_rate`) and combinations of the R3
+contest winners (L23 to L28); the search was rerun with `pledge_rate` and leverages of 1×
+and 2× among its choices, so its finalists are new (R2's `g10_0` is gone). Designs in
+earlier runs keep their numbers. "DReps" below is the number
 of DReps holding two thirds of the voting power: more is more decentralised.
 
 ## DRep pay
@@ -184,7 +189,9 @@ the cheapest contest buys the most per ADA.** *Holds; the size rests on wealth a
   stops growing with money: 1M / 2.5M / 5M / 10M budgets add +0.50 / +0.73 / +0.75 /
   +0.75 points, so 2.5 / 1.4 / 0.7 / 0.4 points per 10M ADA a year; paid by a 10,000 ADA
   proposer fee (0.9M a year, hard fork), 4.2. In `high` the contests add about 6 points,
-  more than any other design. All of it comes from `pledge_only` (+0.73).
+  more than any other design. All of it comes from `pledge_only` (+0.73). R4: a pot that
+  grows with pledge buys more per ADA still (`pledge_contest_rate5`, 2.8 per 10M; L24), and
+  the size does rest on wealth: `central_poor` +0.18, `central_rich` +3.53 (L28).
 - Why: the pot is shared, so a pledged ADA earns the pot over all pledge, a very high
   return today (12M ADA of traced pledge). DReps add pledge until what they can afford
   stops them (`pledge_wealth_multiple`, `untraced_wealth_share`), and more money cannot
@@ -235,7 +242,8 @@ pledge.*
   With delegator pay, the delegators of the largest move to paid DReps (`yield_only`).
 
 **L22. Capping counted power per DRep, against one large pledge taking the pot, costs a lot
-in the model.** *Holds; the model lacks the threat.*
+in the model.** *Holds; R4 models the threat (L23): the cap stops it, but the score does not
+count the harm.*
 - Evidence (R3): counting at most 1M ADA per DRep −7.4M ± 0.2M ADA a year against the
   uncapped contest (backing +0.21 against +0.75); at most 5M about −4.4M (+0.50).
   Requiring 10 delegators instead costs nothing (+0.04M ± 0.06M).
@@ -243,6 +251,91 @@ in the model.** *Holds; the model lacks the threat.*
   model has no newcomer who self-delegates a fortune to win the pot, which is what a cap
   or a delegator minimum would guard against; whether either is worth it cannot be
   judged until that is modelled.
+- R4 (`central_whale`): counting at most 1M ADA per DRep holds a newcomer with 100M ADA to
+  7% of the pay (51% uncapped), and 7% again with a 1% hurdle; 5M to 15%. Requiring 10
+  delegators stops nothing (51%): the newcomer holds its ADA in as many accounts as it
+  needs. By the ranking values its ADA is backing like any other, so the newcomer raises
+  the uncapped contest's `central` score (−4.9M to −0.9M) and the cap still costs.
+
+## A wealthy newcomer, and a pot that grows with pledge
+
+`central_whale` adds a newcomer with 100M ADA that each epoch self-delegates whatever part
+of it earns most over 5% a year and the cost of voting (`METHODS.md`, "What is assumed").
+`pledge_rate` caps each round's pot at a yearly rate on the pledge behind paid votes, up to
+the budget. An ad hoc check (30 seeds) put every hurdle, DReps' and the newcomer's, at 1%.
+
+**L23. A wealthy newcomer takes about half of a pot paid by pledge, more when the pot is
+large against the pledge already there.** *Holds; the harm is not on the axes.*
+- Evidence (R4, `central_whale`): `pledge_contest` 51% of the pay for 50M ADA
+  self-delegated (0.9% of voting power). The 25 / 50 / 100 / 200 largest / all competing:
+  67 / 57 / 51 / 48 / 46%. Budgets of 1M / 2.5M / 5M / 10M: 8 / 36 / 51 / 65% (all 100M
+  at 10M). Leverage 1× / 2× / 5× / 10×: 51 / 40 / 12 / 4%. Without any pledge rule at most
+  5% (mean 0.2% over 41 designs). DReps' own pledge hardly changes (+0.71 points against
+  +0.75 without it). With a 1% hurdle: `pledge_contest` 66% for all 100M, the 1M contest
+  52%.
+- Why: a contest pays a pledge W out of others' S a share W/(S+W) of the pot P; the best
+  W for a newcomer with hurdle h is √(PS/h) − S, for a share of 1 − √(hS/P). It stays out
+  only once others' pledge reaches P/h: about 200M ADA for 10M a year at 5%, against about
+  40M in `central`. Self-delegating ADA one already holds locks nothing, so a holder's
+  hurdle may be far below 5%.
+- Not on the axes: the newcomer's ADA counts as backing and its DRep is one more
+  mid-sized one, so by the ranking values it *raises* a contest's score (`pledge_contest`
+  −4.9M to −0.9M in `central`). Whether one actor taking half the pay for about 1% of the
+  voting power is acceptable is a judgement the score does not make.
+
+**L24. A pot that grows with pledge spends only what DReps respond to, which removes the
+contest's loss when reactions are weak.** *Holds with an exception; the size rests on the
+hurdle.*
+- Evidence (R4): `pledge_contest_rate5` against `pledge_contest` +4.46M ± 0.15M ADA a year,
+  `rate10` +4.59M ± 0.12M, `pledge_contest_all_rate5` against `pledge_contest_all` +3.95M ±
+  0.16M, `pledge_contest_delegators_rate10` against `pledge_contest_delegators` +2.75M ±
+  0.20M; `rate5` against the 1M contest +3.33M ± 0.12M. By scenario, `rate5` against the
+  plain contest: `low` −0.2M (it spends 0.4M a year and buys nothing) against −8.8M;
+  `central` +0.38 points of backing for 1.4M (2.8 points per 10M ADA a year, the most of
+  any budget-funded design); `high` the full 10.1M and +5.92 points, as the contest. Of the
+  search's 12 new finalists, 5 use a rate (10% or 20%).
+- Exception: on the leader (`skip_top20_min_pledge_by_power_1x`), whose pay goes mostly to
+  delegators and DReps with little pledge, a 10% rate −4.18M ± 0.22M.
+- Why: below the budget, the pot is the rate times the pledge behind paid votes, so it
+  stays small until DReps add pledge. A DRep adds pledge when the return is at least
+  `pledge_min_return`, and in the model that test is a threshold: `rate2` buys nothing in
+  `central` (hurdle 5%), `rate5` pays exactly the hurdle and buys +0.38. The rate that works
+  is the one just above what DReps want, which a pilot would have to find.
+
+**L25. A pot that grows with pledge keeps a wealthy newcomer out only while its rate is
+below the newcomer's hurdle.** *Holds.*
+- Evidence (R4, `central_whale`, hurdle 5%): `pledge_contest_rate2` and `rate5` 0% of the
+  pay; `rate10` 64% (67M self-delegated), `rate20` 55%, `rate50` 52%, against 51% for the
+  plain contest. With a 1% hurdle: `rate2` 72% and `rate5` 70%, each with all 100M.
+- Why: below the budget every pledged ADA earns the rate, the newcomer's included, and its
+  pledge grows the pot. It is a yield, not a prize that shrinks as the newcomer adds more:
+  above its hurdle the newcomer adds all it can until the pot reaches the budget, and then
+  it is a contest (L23). A rate low enough to keep it out also keeps out DReps with the
+  same hurdle, and a holder of idle ADA likely has the lower one.
+
+**L26. Skipping the largest DReps holds a single wealthy newcomer to a few percent, when
+delegators follow pay.** *Holds; rests on one identity and on delegators chasing yield.*
+- Evidence (R4, `central_whale`): with delegator pay, `skip_top20_min_pledge_by_power_1x`
+  2.2%, `pledge_contest_delegators_skip20` 3.3%, the search's `g10_5` 6% (50 seeds); with a
+  1% hurdle 2.6%, 4.0% and 7.0%. Without delegator pay, `pledge_contest_skip20` 41% and
+  `pledge_soft_cap_skip20` 37%; skipping 10, `pledge_contest_skip10` 53%.
+- Why: its pay draws delegation, 76M to 120M ADA in a traced run under the skip-20 designs
+  (28M under the plain contest), and more of its own ADA would put it among the 20 largest,
+  who are not paid. A DRep cannot refuse delegation. Several DReps, each below the line,
+  would escape it: splitting is measured on the Sybil axis, not here.
+
+**L27. The best contest settings do not add up.** *Holds.*
+- Evidence (R4): everyone competing with a fifth to delegators against
+  `pledge_contest_delegators` +2.13M ± 0.19M, as R3's parts suggest. But with the 20
+  largest skipped, a fifth to delegators −2.55M ± 0.18M (`pledge_contest_delegators_skip20_20`
+  against `pledge_contest_delegators_skip20`), −2.19M ± 0.16M with everyone competing too;
+  everyone competing +0.31M ± 0.17M; 2.5M instead of 5M −0.30M ± 0.18M. The best combination
+  (`pledge_contest_delegators_all_skip20`, +6.1M) is still −1.56M ± 0.25M behind the
+  leader. The search's `g10_5` (the top 100 after skipping 20, half to delegators, a 20%
+  rate) ties the leader (−0.31M ± 0.24M) and beats `pledge_contest_delegators_skip20` by
+  +1.56M ± 0.19M.
+- Why: skipping the largest pays only through delegators moving (L21), so a smaller
+  delegator share undoes it; a fifth is best only when nobody is skipped.
 
 ## Cost and ranking
 
@@ -287,6 +380,17 @@ minimum pledge.** *Holds with exceptions; claim widened in R2.*
 - Why: net benefit peaks where an extra ADA buys gains worth one ADA; from 2.5M to 5M it
   buys more than that, from 5M to 10M less. With weak reactions the cheapest is least bad
   (−0.6M), with strong ones the largest is best (L12).
+
+**L28. The leading design does not depend on what DReps can afford to pledge; the contest
+does.** *Holds.*
+- Evidence (R4, net benefit from the `central` reactions, with `central_poor` / `central`
+  / `central_rich` wealth): `skip_top20_min_pledge_by_power_1x` +6.6 / +5.3 / +5.9M ADA a
+  year; `pledge_contest` −8.1 / −4.9 / +6.7M (backing +0.18 / +0.75 / +3.53 points). The
+  five best when DReps are poor all skip the top 20 and pay delegators; when they are rich,
+  pots that grow with pledge and contests lead (`pledge_contest_rate10` +10.3M). Rank
+  correlation of all designs with `central`: 0.96 poor, 0.71 rich.
+- Why: the contest buys pledge, which wealth caps (L17); the leader buys DReps and
+  participation through delegators moving (L5), which wealth does not touch.
 
 **L16. Buying a lot of decentralisation can outweigh a Sybil gain at the starting values,
 but only if reactions are not weak.** *Holds (one design).*

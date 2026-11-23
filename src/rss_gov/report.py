@@ -71,6 +71,77 @@ def _value(axis, value, signed=True):
     return f"{scaled:+.{digits}f}" if signed else f"{scaled:.{digits}f}"
 
 
+def _stress(study, summary, axes, middle, skip=(), rows=25):
+    """Scenarios outside the ranking: a wealthy newcomer, and what DReps can afford to pledge."""
+    backing = next((a for a in axes if a.name == "backing"), None)
+    named = set(study.config["scenarios"])
+    stress = [
+        s
+        for s in summary.scenario.unique()
+        if s in named and s not in study.ranking_scenarios and not s.endswith("_only")
+    ]
+    if backing is None or not stress:
+        return []
+    mid = summary[summary.scenario == middle].set_index("scheme")
+    text = [
+        "### Stress tests",
+        "",
+        "Scenarios outside the ranking, each the `central` reactions with one thing changed.",
+        "",
+    ]
+    for name in [s for s in stress if study.scenarios[s].whale_ada > 0]:
+        sc = study.scenarios[name]
+        view = summary[summary.scenario == name].set_index("scheme")
+        joins = view[view.whale_take >= 0.01].sort_values("whale_take", ascending=False)
+        table = pd.DataFrame({"scheme": joins.index[:rows]})
+        table["newcomer's share of the pay"] = [f"{v:.0%}" for v in joins.whale_take[:rows]]
+        table["ADA it self-delegates"] = [f"{v / 1e6:.1f}M" for v in joins.whale_pledge[:rows]]
+        table["skin in the game, against `central` (points)"] = [
+            _value(backing, view.loc[n, "backing"] - mid.loc[n, "backing"]) for n in table.scheme
+        ]
+        paid = int((view.spent_ada > 0).sum())
+        text += [
+            f"A wealthy newcomer (`{name}`): it holds {sc.whale_ada / 1e6:,.0f}M ADA and each "
+            "epoch self-delegates the part of it that earns the most over "
+            f"{sc.pledge_min_return:.0%} a year on that ADA and the cost of voting on everything. "
+            f"It takes 1% of the pay or more under {len(joins)} of {paid} paid designs"
+            + (f"; the {rows} where it takes most:" if len(joins) > rows else ":"),
+            "",
+            _table(table) if len(joins) else "(none)",
+            "",
+        ]
+    wealth = [s for s in stress if not study.scenarios[s].whale_ada]
+    if wealth:
+        top = (
+            mid[(mid.spent_ada > 0) & ~mid.index.isin(skip)]
+            .sort_values("backing_diff", ascending=False)
+            .index[:rows]
+            .tolist()
+        )
+        table = pd.DataFrame({"scheme": top})
+        for name in wealth[:1] + [middle] + wealth[1:]:
+            view = summary[summary.scenario == name].set_index("scheme")
+            table[f"`{name}`"] = [_value(backing, view.loc[n, "backing_diff"]) for n in top]
+        text += [
+            "What DReps can afford to add as pledge: "
+            + "; ".join(
+                f"`{s}` up to {study.scenarios[s].pledge_wealth_multiple:g}× their holdings, "
+                + (
+                    f"taken as at least {share:.1%} of their voting power"
+                    if (share := study.scenarios[s].untraced_wealth_share)
+                    else "only what can be traced"
+                )
+                for s in [*wealth[:1], middle, *wealth[1:]]
+            )
+            + f". Change in skin in the game against unpaid (points), for the {len(top)} paid "
+            f"designs that raise it most in `{middle}` (fee variants left out):",
+            "",
+            _table(table),
+            "",
+        ]
+    return text
+
+
 def _mark(verdicts):
     """Solid when the verdict holds in every scenario, hollow when in some."""
     verdicts = [int(v) for v in verdicts if not np.isnan(v)]
@@ -692,6 +763,8 @@ def write(study):
                     _table(table),
                     "",
                 ]
+
+        text += _stress(study, summary, axes, middle, skip=set(fees))
 
         if variations:
             steps = by_scenario[middle].loc[list(variations)]

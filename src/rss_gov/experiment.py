@@ -194,6 +194,8 @@ METRICS = [
     "top10_reward_share",
     "payments",
     "spent_ada",
+    "whale_take",
+    "whale_pledge",
 ]
 
 

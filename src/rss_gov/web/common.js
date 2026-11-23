@@ -158,6 +158,7 @@ function describe(s, always = false) {
     out.push(`Pledge soft cap: pay counts at most ${num(s.pledge_leverage, 0)}× the DRep's pledge.`);
     if (s.hard_cap) out.push("Pledge hard cap: voting power itself is limited the same way, which needs a hard fork.");
   }
+  if (s.pledge_rate) out.push(`The pot grows with pledge: each epoch pays at most ${pct(s.pledge_rate)} a year on the pledge of the paid DReps that vote, up to the budget; the rest is not spent.`);
   if (s.delegator_share) {
     const b = s.delegator_alpha ?? 1;
     const perDrep = b === 1 ? "in proportion to its counted voting power (so the pledge soft cap and any cap apply)"

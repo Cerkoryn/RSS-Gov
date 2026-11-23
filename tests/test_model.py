@@ -205,3 +205,32 @@ def test_pledge_added_counts_in_the_ada_participation_is_measured_against(world,
     scenario = model.Scenario("s", pledge_response=0.99)
     _, actions = model.run(world, params, soft, scenario, epochs=12, seed=3, trace=True)
     assert all(a["participation"] <= a["turnout"] + 1e-12 for a in actions)
+
+
+def test_a_wealthy_newcomer_joins_only_where_it_pays_more_than_its_hurdle(world, params):
+    contest = mechanisms.Scheme(
+        name="contest", budget_ada=5e6, alpha=1.0, pledge_leverage=1.0, n_pay=100
+    )
+
+    def go(scheme, **kw):
+        scenario = model.Scenario("w", pledge_min_return=0.05, **kw)
+        return model.run(world, params, scheme, scenario, epochs=12, seed=3)
+
+    none = go(contest)
+    assert none["whale_take"] == 0 and none["whale_pledge"] == 0
+    assert go(contest, whale_ada=0.0) == none  # no newcomer: the same run, draw for draw
+    rich = go(contest, whale_ada=5e7)
+    assert rich["whale_pledge"] > 0 and 0 < rich["whale_take"] < 1
+    assert rich["backing"] > none["backing"]  # its own ADA backs its votes in full
+    # nothing paid, or a return on its ADA below the hurdle: it stays out
+    unpaid = go(mechanisms.Scheme(name="unpaid"), whale_ada=5e7)
+    assert unpaid["whale_take"] == 0 and unpaid["whale_pledge"] == 0
+    steep = model.run(
+        world, params, contest, model.Scenario("w", pledge_min_return=50.0, whale_ada=5e7), 12, 3
+    )
+    assert steep["whale_pledge"] == 0
+    # a pot that grows with pledge pays it that rate on its ADA: below the hurdle, nothing
+    slow = mechanisms.scheme(**{**contest.to_dict(), "pledge_rate": 0.02})
+    assert go(slow, whale_ada=5e7)["whale_pledge"] == 0
+    fast = mechanisms.scheme(**{**contest.to_dict(), "pledge_rate": 0.5})
+    assert go(fast, whale_ada=5e7)["whale_pledge"] > 0

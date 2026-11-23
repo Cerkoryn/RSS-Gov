@@ -80,6 +80,18 @@ scenarios:
   reinvest_only: {reinvest_response: 0.2}
   pledge_only: {pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 5,
                 untraced_wealth_share: 0.001}
+  # Stress tests at central strength (not in the ranking): a wealthy newcomer with 100M ADA
+  # that self-delegates whatever earns it more than 5% a year; and what DReps can afford to
+  # add as pledge, as at low (only traced wealth, 2x) and as at high (1% of power, 7x).
+  central_whale: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2,
+                  pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 5,
+                  untraced_wealth_share: 0.001, whale_ada: 100000000}
+  central_poor: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2,
+                 pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 2,
+                 untraced_wealth_share: 0}
+  central_rich: {drep_response: 0.5, delegator_response: 1.0, reinvest_response: 0.2,
+                 pledge_response: 0.25, pledge_min_return: 0.05, pledge_wealth_multiple: 7,
+                 untraced_wealth_share: 0.01}
 ranking_scenarios: [low, central, high]   # a scheme's score is its mean over these
 
 # The axes schemes are compared on: one per objective family. Every axis is reported on
@@ -285,6 +297,32 @@ experiment:
     - {name: pledge_contest_delegators_10x, preset: pledge_contest_delegators, pledge_leverage: 10}
     - {name: pledge_contest_delegators_2m5, preset: pledge_contest_delegators, budget_ada: 2500000}
     - {name: pledge_contest_delegators_10m, preset: pledge_contest_delegators, budget_ada: 10000000}
+    # A pot that grows with pledge (LESSONS.md, R4): each epoch pays at most a yearly rate on
+    # the pledge behind paid votes, up to the budget, which becomes a ceiling. At or below
+    # the 5% a wealthy newcomer wants (central_whale), it should stay out.
+    - {name: pledge_contest_rate2, preset: pledge_contest, pledge_rate: 0.02}
+    - {name: pledge_contest_rate5, preset: pledge_contest, pledge_rate: 0.05}
+    - {name: pledge_contest_rate10, preset: pledge_contest, pledge_rate: 0.1}
+    - {name: pledge_contest_rate20, preset: pledge_contest, pledge_rate: 0.2}
+    - {name: pledge_contest_rate50, preset: pledge_contest, pledge_rate: 0.5}
+    - {name: pledge_contest_all_rate5, preset: pledge_contest, n_pay: 0, pledge_rate: 0.05}
+    - {name: pledge_contest_all_rate10, preset: pledge_contest, n_pay: 0, pledge_rate: 0.1}
+    - {name: pledge_contest_10m_rate10, preset: pledge_contest, budget_ada: 10000000, pledge_rate: 0.1}
+    - {name: pledge_contest_delegators_rate5, preset: pledge_contest_delegators, pledge_rate: 0.05}
+    - {name: pledge_contest_delegators_rate10, preset: pledge_contest_delegators, pledge_rate: 0.1}
+    - {name: skip_top20_min_pledge_by_power_1x_rate5, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, pledge_rate: 0.05}
+    - {name: skip_top20_min_pledge_by_power_1x_rate10, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, pledge_rate: 0.1}
+    # The R3 contest winners combined: everyone competes, a fifth or half to delegators,
+    # the largest 20 skipped or their delegators left out, 2.5M, and a pot that grows.
+    - {name: pledge_contest_delegators_all_20, preset: pledge_contest_delegators, n_pay: 0, delegator_share: 0.2}
+    - {name: pledge_contest_delegators_all_20_2m5, preset: pledge_contest_delegators, n_pay: 0, delegator_share: 0.2, budget_ada: 2500000}
+    - {name: pledge_contest_delegators_all_20_not_top20, preset: pledge_contest_delegators, n_pay: 0, delegator_share: 0.2, delegator_k_exclude: 20}
+    - {name: pledge_contest_delegators_all_skip20, preset: pledge_contest_delegators, n_pay: 0, k_exclude: 20}
+    - {name: pledge_contest_delegators_all_skip20_20, preset: pledge_contest_delegators, n_pay: 0, k_exclude: 20, delegator_share: 0.2}
+    - {name: pledge_contest_delegators_skip20_20, preset: pledge_contest_delegators, k_exclude: 20, delegator_share: 0.2}
+    - {name: pledge_contest_delegators_skip20_2m5, preset: pledge_contest_delegators, k_exclude: 20, budget_ada: 2500000}
+    - {name: pledge_contest_delegators_skip20_rate5, preset: pledge_contest_delegators, k_exclude: 20, pledge_rate: 0.05}
+    - {name: pledge_contest_delegators_skip20_rate10, preset: pledge_contest_delegators, k_exclude: 20, pledge_rate: 0.1}
     # How much goes to delegators: a fifth or four fifths instead of half.
     - {name: proportional_delegators_by_power_20, preset: proportional, delegator_share: 0.2, delegator_mode: per_drep}
     - {name: proportional_delegators_by_power_80, preset: proportional, delegator_share: 0.8, delegator_mode: per_drep}

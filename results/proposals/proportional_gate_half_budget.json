@@ -24,19 +24,20 @@
   "delegator_alpha": 1.0,
   "delegator_k_exclude": 0,
   "pledge_leverage": 0.0,
-  "hard_cap": false
+  "hard_cap": false,
+  "pledge_rate": 0.0
  },
  "rule": "linear, gate 50%; 2.5M ADA",
  "source": "cli",
  "holdout": 1000000,
  "rerun": true,
- "accepted": true,
- "hypervolume_gain": 2.3952224800949384e-05,
+ "accepted": false,
+ "hypervolume_gain": 4.4353234310678946e-05,
  "hypervolume_gain_ci": [
-  2.104001290846938e-05,
-  2.701940146101235e-05
+  4.122864621209296e-05,
+  4.768686799790679e-05
  ],
- "reason": "widens the front",
+ "reason": "matched or beaten by a design already on the front",
  "change_from_unpaid": {
   "participation": 0.039769907975147456,
   "tau67": -2.1362962962962975,
@@ -47,6 +48,6 @@
  "pilot_testable": true,
  "hypothesis": "Half the budget buys most of the participation of the full one.",
  "author": "",
- "evaluated": "2026-11-23T00:03:40Z",
+ "evaluated": "2026-11-23T05:21:25Z",
  "calibration": "4a6c2a9aafd4970d"
 }

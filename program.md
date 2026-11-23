@@ -48,7 +48,7 @@ Fields: `budget_ada`, `alpha`, `basis` (`power` or `delegators`), `cap_ada`, `k_
 `min_pledge_ada`, `activity_gate`, `rationale_bonus`, `equal_share`, `per_vote_ada`,
 `max_award_share`, `delegator_share`, `delegator_mode` (`passthrough`, `flat` or
 `per_drep`), `delegator_alpha` (with `per_drep`: 1 by counted power, 0 equal per DRep),
-`delegator_k_exclude`, `pledge_leverage`, `hard_cap`,
+`delegator_k_exclude`, `pledge_leverage`, `pledge_rate`, `hard_cap`,
 `fee_ada` (ADA per governance action, on top of `budget_ada`; needs a hard fork). See
 `src/rss_gov/mechanisms.py`.
 Every scheme pays only for explicit votes; that is not a parameter.

@@ -24,7 +24,8 @@
   "delegator_alpha": 1.0,
   "delegator_k_exclude": 0,
   "pledge_leverage": 1000.0,
-  "hard_cap": false
+  "hard_cap": false,
+  "pledge_rate": 0.0
  },
  "rule": "linear, 25% equal, skip top 10, pay 400 (roll-down), min 10k, gate 75%, 25% to delegators (flat), pledge soft cap 1000x; 5M ADA",
  "source": "issue #3",
@@ -47,6 +48,6 @@
  "pilot_testable": true,
  "hypothesis": "Trying to improve skin-in-the-game",
  "author": "Cerkoryn",
- "evaluated": "2026-11-23T00:03:30Z",
+ "evaluated": "2026-11-23T05:21:11Z",
  "calibration": "4a6c2a9aafd4970d"
 }
