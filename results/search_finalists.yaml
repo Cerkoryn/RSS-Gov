@@ -21,6 +21,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -47,6 +48,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -73,6 +75,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -99,6 +102,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -125,6 +129,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -151,6 +156,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -177,6 +183,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -203,6 +210,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -229,6 +237,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -255,6 +264,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -281,6 +291,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1000
   hard_cap: false
   pledge_rate: 0.0
@@ -307,6 +318,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1000
   hard_cap: true
   pledge_rate: 0.0
@@ -333,6 +345,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -359,6 +372,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -385,6 +399,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -411,6 +426,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -437,6 +453,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -463,6 +480,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -489,6 +507,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -515,6 +534,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -541,6 +561,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -567,6 +588,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -593,6 +615,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -619,6 +642,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -645,6 +669,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -671,6 +696,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -697,6 +723,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -723,6 +750,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -749,6 +777,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -775,6 +804,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 20
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -801,6 +831,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 20
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -827,6 +858,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -853,6 +885,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -879,6 +912,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -905,6 +939,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2
   hard_cap: false
   pledge_rate: 0.0
@@ -931,6 +966,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 5
   hard_cap: false
   pledge_rate: 0.0
@@ -957,6 +993,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -983,6 +1020,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1009,6 +1047,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1035,6 +1074,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 10
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1061,6 +1101,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 20
+  delegator_yield_cap: 0.0
   pledge_leverage: 1000
   hard_cap: false
   pledge_rate: 0.0
@@ -1087,6 +1128,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1113,6 +1155,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 20
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1139,6 +1182,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1165,6 +1209,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1191,6 +1236,7 @@
   delegator_mode: per_drep
   delegator_alpha: 0.5
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1217,6 +1263,7 @@
   delegator_mode: per_drep
   delegator_alpha: 0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1243,6 +1290,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1269,6 +1317,7 @@
   delegator_mode: per_drep
   delegator_alpha: 0.5
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1295,6 +1344,7 @@
   delegator_mode: per_drep
   delegator_alpha: 0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1321,6 +1371,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1347,6 +1398,7 @@
   delegator_mode: per_drep
   delegator_alpha: 0.5
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1373,6 +1425,7 @@
   delegator_mode: per_drep
   delegator_alpha: 0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1399,6 +1452,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2
   hard_cap: false
   pledge_rate: 0.0
@@ -1425,6 +1479,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2
   hard_cap: false
   pledge_rate: 0.0
@@ -1451,6 +1506,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1477,6 +1533,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1503,6 +1560,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1529,6 +1587,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 20
+  delegator_yield_cap: 0.0
   pledge_leverage: 2
   hard_cap: false
   pledge_rate: 0.0
@@ -1555,6 +1614,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 20
+  delegator_yield_cap: 0.0
   pledge_leverage: 2
   hard_cap: false
   pledge_rate: 0.0
@@ -1581,6 +1641,7 @@
   delegator_mode: per_drep
   delegator_alpha: 0.5
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1607,6 +1668,7 @@
   delegator_mode: per_drep
   delegator_alpha: 0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1633,6 +1695,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1
   hard_cap: false
   pledge_rate: 0.0
@@ -1659,6 +1722,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 5
   hard_cap: false
   pledge_rate: 0.0
@@ -1685,6 +1749,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 10
   hard_cap: false
   pledge_rate: 0.0
@@ -1711,6 +1776,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1737,6 +1803,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1763,6 +1830,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1789,6 +1857,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1815,6 +1884,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1841,6 +1911,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1867,6 +1938,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1893,6 +1965,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2
   hard_cap: false
   pledge_rate: 0.0
@@ -1919,6 +1992,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 10
   hard_cap: false
   pledge_rate: 0.0
@@ -1945,6 +2019,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -1971,6 +2046,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2
   hard_cap: false
   pledge_rate: 0.0
@@ -1997,6 +2073,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 5
   hard_cap: false
   pledge_rate: 0.0
@@ -2023,6 +2100,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 10
   hard_cap: false
   pledge_rate: 0.0
@@ -2049,6 +2127,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 100
   hard_cap: false
   pledge_rate: 0.0
@@ -2075,6 +2154,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2101,6 +2181,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2
   hard_cap: false
   pledge_rate: 0.0
@@ -2127,6 +2208,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 10
   hard_cap: false
   pledge_rate: 0.0
@@ -2153,6 +2235,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2179,6 +2262,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2205,6 +2289,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2231,6 +2316,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2
   hard_cap: false
   pledge_rate: 0.0
@@ -2257,6 +2343,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 10
   hard_cap: false
   pledge_rate: 0.0
@@ -2283,6 +2370,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2309,6 +2397,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2335,6 +2424,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2361,6 +2451,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2387,6 +2478,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2413,6 +2505,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2439,6 +2532,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2465,6 +2559,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2491,6 +2586,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2517,6 +2613,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2543,6 +2640,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2569,6 +2667,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2595,6 +2694,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2621,6 +2721,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2647,6 +2748,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2673,6 +2775,7 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2699,6 +2802,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 10
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2725,6 +2829,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 20
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2751,6 +2856,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2777,6 +2883,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2803,6 +2910,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2829,6 +2937,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2
   hard_cap: false
   pledge_rate: 0.0
@@ -2855,6 +2964,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 10
   hard_cap: false
   pledge_rate: 0.0
@@ -2881,6 +2991,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2907,6 +3018,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -2933,6 +3045,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.02
@@ -2959,6 +3072,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.05
@@ -2985,6 +3099,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.1
@@ -3011,6 +3126,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.2
@@ -3037,6 +3153,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.5
@@ -3063,6 +3180,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.05
@@ -3089,6 +3207,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.1
@@ -3115,6 +3234,7 @@
   delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.1
@@ -3141,6 +3261,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.05
@@ -3167,6 +3288,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.1
@@ -3193,6 +3315,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1
   hard_cap: false
   pledge_rate: 0.05
@@ -3219,6 +3342,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1
   hard_cap: false
   pledge_rate: 0.1
@@ -3245,6 +3369,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -3271,6 +3396,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -3297,6 +3423,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 20
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -3323,6 +3450,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -3349,6 +3477,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -3375,6 +3504,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -3401,6 +3531,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
@@ -3427,6 +3558,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.05
@@ -3453,9 +3585,469 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.1
+- name: skip_top20_min_pledge_by_power_1x_ycap1_5
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 1.5
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top20_min_pledge_by_power_1x_ycap2
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 2
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top20_min_pledge_by_power_1x_ycap3
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 3
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top20_min_pledge_by_power_1x_ycap5
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 5
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top20_min_pledge_flat_1x
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: flat
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top20_min_pledge_sqrt_1x_ycap2
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 0.5
+  delegator_k_exclude: 0
+  delegator_yield_cap: 2
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top20_delegators_min_pledge_by_power_ycap2
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 2
+  pledge_leverage: 2.0
+  hard_cap: false
+  pledge_rate: 0.0
+- name: pledge_contest_delegators_ycap2
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 0
+  top_weight: 0.0
+  n_pay: 100
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 0.0
+  activity_gate: 0.0
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.5
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 2
+  pledge_leverage: 1.0
+  hard_cap: false
+  pledge_rate: 0.0
+- name: pledge_contest_delegators_skip20_ycap2
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 100
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 0.0
+  activity_gate: 0.0
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.5
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 2
+  pledge_leverage: 1.0
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top30_min_pledge_flat_1x
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 30
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: flat
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top50_min_pledge_flat_1x
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 50
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: flat
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top70_min_pledge_flat_1x
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 70
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: flat
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top100_min_pledge_flat_1x
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 100
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: flat
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top30_min_pledge_by_power_1x
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 30
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top50_min_pledge_by_power_1x
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 50
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top70_min_pledge_by_power_1x
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 70
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
+- name: skip_top100_min_pledge_by_power_1x
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 100
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
+  hard_cap: false
+  pledge_rate: 0.0
 - name: proportional_delegators_by_power_20
   budget_ada: 5000000.0
   fee_ada: 0.0
@@ -3479,6 +4071,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -3505,6 +4098,7 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -3531,6 +4125,7 @@
   delegator_mode: per_drep
   delegator_alpha: 0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
@@ -3557,17 +4152,45 @@
   delegator_mode: per_drep
   delegator_alpha: 0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 0.0
   hard_cap: false
   pledge_rate: 0.0
-- name: g1_2
-  budget_ada: 10000000
+- name: g9_4
+  budget_ada: 5000000.0
   fee_ada: 0.0
   alpha: 1.0
   cap_ada: null
-  k_exclude: 0
+  k_exclude: 70
   top_weight: 0.0
-  n_pay: 200
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 10000
+  activity_gate: 0.7
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.8
+  delegator_mode: flat
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 2.0
+  hard_cap: false
+  pledge_rate: 0.0
+- name: g10_5
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 20
+  top_weight: 0.0
+  n_pay: 400
   roll_down: false
   min_power_ada: 0.0
   min_share: 0.0
@@ -3583,41 +4206,70 @@
   delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
-  pledge_rate: 0.0
-- name: g10_10
-  budget_ada: 5000000.0
+  pledge_rate: 0.1
+- name: g5_4
+  budget_ada: 2500000.0
   fee_ada: 0.0
-  alpha: 0.75
+  alpha: 1.0
   cap_ada: null
-  k_exclude: 20
+  k_exclude: 30
   top_weight: 0.0
   n_pay: 0
   roll_down: false
   min_power_ada: 0.0
   min_share: 0.0
   min_delegators: 0
-  min_pledge_ada: 100000.0
-  activity_gate: 0.7
+  min_pledge_ada: 10000
+  activity_gate: 0.5
   rationale_bonus: 0.0
   basis: power
   equal_share: 0.0
   per_vote_ada: 0.0
   max_award_share: 0.0
   delegator_share: 0.8
-  delegator_mode: per_drep
-  delegator_alpha: 0.5
+  delegator_mode: flat
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
-  pledge_leverage: 2.0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
   hard_cap: false
   pledge_rate: 0.0
-- name: g10_17
-  budget_ada: 10000000.0
+- name: g8_14
+  budget_ada: 10000000
   fee_ada: 0.0
   alpha: 1.0
   cap_ada: null
-  k_exclude: 20
+  k_exclude: 5
+  top_weight: 0.0
+  n_pay: 100
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 0.0
+  activity_gate: 0.0
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.5
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1.0
+  hard_cap: false
+  pledge_rate: 0.0
+- name: g6_0
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 70
   top_weight: 0.0
   n_pay: 0
   roll_down: false
@@ -3631,25 +4283,80 @@
   equal_share: 0.0
   per_vote_ada: 0.0
   max_award_share: 0.0
-  delegator_share: 0.8
-  delegator_mode: per_drep
-  delegator_alpha: 0.5
+  delegator_share: 0.5
+  delegator_mode: flat
+  delegator_alpha: 1.0
   delegator_k_exclude: 0
-  pledge_leverage: 2.0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
   hard_cap: false
   pledge_rate: 0.0
-- name: g10_1
+- name: g7_17
   budget_ada: 5000000.0
   fee_ada: 0.0
   alpha: 1.0
   cap_ada: null
-  k_exclude: 20
+  k_exclude: 30
   top_weight: 0.0
-  n_pay: 50
+  n_pay: 0
   roll_down: false
-  min_power_ada: 1000000.0
+  min_power_ada: 0.0
   min_share: 0.0
-  min_delegators: 25
+  min_delegators: 0
+  min_pledge_ada: 0.0
+  activity_gate: 0.0
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.5
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1.0
+  hard_cap: false
+  pledge_rate: 0.0
+- name: g7_9
+  budget_ada: 5000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: 200000000.0
+  k_exclude: 0
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
+  min_pledge_ada: 0.0
+  activity_gate: 0.0
+  rationale_bonus: 0.0
+  basis: power
+  equal_share: 0.0
+  per_vote_ada: 0.0
+  max_award_share: 0.0
+  delegator_share: 0.5
+  delegator_mode: per_drep
+  delegator_alpha: 1.0
+  delegator_k_exclude: 20
+  delegator_yield_cap: 0.0
+  pledge_leverage: 2
+  hard_cap: false
+  pledge_rate: 0.0
+- name: g3_17
+  budget_ada: 1000000.0
+  fee_ada: 0.0
+  alpha: 1.0
+  cap_ada: null
+  k_exclude: 50
+  top_weight: 0.0
+  n_pay: 0
+  roll_down: false
+  min_power_ada: 0.0
+  min_share: 0.0
+  min_delegators: 0
   min_pledge_ada: 10000
   activity_gate: 0.7
   rationale_bonus: 0.0
@@ -3661,69 +4368,18 @@
   delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 0
-  pledge_leverage: 100.0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1
   hard_cap: false
   pledge_rate: 0.0
-- name: g9_16
+- name: g4_11
   budget_ada: 10000000.0
   fee_ada: 0.0
   alpha: 1.0
   cap_ada: null
-  k_exclude: 0
-  top_weight: 0.0
-  n_pay: 0
-  roll_down: false
-  min_power_ada: 0.0
-  min_share: 0.0
-  min_delegators: 0
-  min_pledge_ada: 10000
-  activity_gate: 0.7
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.0
-  delegator_share: 0.5
-  delegator_mode: per_drep
-  delegator_alpha: 0.5
-  delegator_k_exclude: 0
-  pledge_leverage: 2.0
-  hard_cap: false
-  pledge_rate: 0.0
-- name: g8_19
-  budget_ada: 10000000.0
-  fee_ada: 0.0
-  alpha: 1.0
-  cap_ada: 2000000.0
   k_exclude: 20
   top_weight: 0.0
   n_pay: 0
-  roll_down: false
-  min_power_ada: 0.0
-  min_share: 0.0
-  min_delegators: 0
-  min_pledge_ada: 10000
-  activity_gate: 0.7
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.0
-  delegator_share: 0.5
-  delegator_mode: per_drep
-  delegator_alpha: 1.0
-  delegator_k_exclude: 0
-  pledge_leverage: 0.0
-  hard_cap: false
-  pledge_rate: 0.0
-- name: g1_21
-  budget_ada: 5000000.0
-  fee_ada: 0.0
-  alpha: 1.0
-  cap_ada: null
-  k_exclude: 10
-  top_weight: 0.0
-  n_pay: 100
   roll_down: false
   min_power_ada: 0.0
   min_share: 0.0
@@ -3736,13 +4392,14 @@
   per_vote_ada: 0.0
   max_award_share: 0.0
   delegator_share: 0.25
-  delegator_mode: passthrough
+  delegator_mode: per_drep
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.0
-- name: g7_1
+- name: g9_20
   budget_ada: 10000000
   fee_ada: 0.0
   alpha: 1.0
@@ -3753,7 +4410,7 @@
   roll_down: false
   min_power_ada: 0.0
   min_share: 0.0
-  min_delegators: 25
+  min_delegators: 50
   min_pledge_ada: 10000
   activity_gate: 0.7
   rationale_bonus: 0.0
@@ -3762,18 +4419,19 @@
   per_vote_ada: 0.0
   max_award_share: 0.0
   delegator_share: 0.8
-  delegator_mode: per_drep
+  delegator_mode: flat
   delegator_alpha: 1.0
   delegator_k_exclude: 0
+  delegator_yield_cap: 0.0
   pledge_leverage: 2.0
   hard_cap: false
   pledge_rate: 0.0
-- name: g3_7
+- name: g1_22
   budget_ada: 5000000.0
   fee_ada: 0.0
   alpha: 1.0
-  cap_ada: null
-  k_exclude: 20
+  cap_ada: 200000000.0
+  k_exclude: 0
   top_weight: 0.0
   n_pay: 100
   roll_down: false
@@ -3787,36 +4445,11 @@
   equal_share: 0.0
   per_vote_ada: 0.0
   max_award_share: 0.0
-  delegator_share: 0.5
-  delegator_mode: per_drep
+  delegator_share: 0.0
+  delegator_mode: passthrough
   delegator_alpha: 1.0
   delegator_k_exclude: 0
-  pledge_leverage: 2.0
+  delegator_yield_cap: 0.0
+  pledge_leverage: 1.0
   hard_cap: false
   pledge_rate: 0.05
-- name: g2_20
-  budget_ada: 10000000.0
-  fee_ada: 0.0
-  alpha: 1.0
-  cap_ada: null
-  k_exclude: 20
-  top_weight: 0.0
-  n_pay: 0
-  roll_down: false
-  min_power_ada: 0.0
-  min_share: 0.0
-  min_delegators: 0
-  min_pledge_ada: 10000
-  activity_gate: 0.7
-  rationale_bonus: 0.0
-  basis: power
-  equal_share: 0.0
-  per_vote_ada: 0.0
-  max_award_share: 0.0
-  delegator_share: 0.5
-  delegator_mode: per_drep
-  delegator_alpha: 1.0
-  delegator_k_exclude: 0
-  pledge_leverage: 2.0
-  hard_cap: false
-  pledge_rate: 0.0

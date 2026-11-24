@@ -54,6 +54,9 @@ class Scheme:
     delegator_mode: str = "passthrough"
     delegator_alpha: float = 1.0  # per_drep only: 1 = by counted power, 0 = equal per DRep
     delegator_k_exclude: int = 0  # delegators of the K largest DReps are not paid (the DReps are)
+    # No DRep's delegators earn more than this multiple of the flat yield (0 = off); the excess
+    # goes to the other delegators. 1 is the flat yield; larger leaves pots per DRep alone.
+    delegator_yield_cap: float = 0.0
     # Counted power is at most leverage * pledge (0 = off): a pledge soft cap.
     pledge_leverage: float = 0.0
     hard_cap: bool = False  # also cap voting power at leverage * pledge
@@ -94,6 +97,8 @@ class Scheme:
             raise ValueError("amounts must be non-negative")
         if self.delegator_k_exclude < 0:
             raise ValueError("delegator_k_exclude must be non-negative")
+        if self.delegator_yield_cap and self.delegator_yield_cap < 1:
+            raise ValueError("delegator_yield_cap is 0 (off) or at least 1")
 
     @property
     def paid(self):
@@ -180,6 +185,8 @@ class Scheme:
             parts.append(f"{self.delegator_share:.0%} to delegators ({mode})")
             if self.delegator_k_exclude:
                 parts.append(f"not via top {self.delegator_k_exclude}")
+            if self.delegator_yield_cap and self.delegator_mode != "flat":
+                parts.append(f"delegator yield at most {self.delegator_yield_cap:g}x flat")
         if self.pledge_leverage:
             kind = "hard" if self.hard_cap else "soft"
             parts.append(f"pledge {kind} cap {self.pledge_leverage:g}x")
@@ -353,7 +360,32 @@ def allocate(s, r, pot):
                 yields[paid] = delegator_pot * w / w.sum() / r.power[paid]
         elif rep[paid].sum() > 0:
             yields[paid] = delegator_pot * rep[paid] / rep[paid].sum() / r.power[paid]
+        if s.delegator_yield_cap and s.delegator_mode != "flat":
+            yields = _cap_yields(yields, paid, r, delegator_pot, s.delegator_yield_cap)
     return rep, yields
+
+
+def _cap_yields(yields, paid, r, pot, k):
+    """Hold every paid DRep's delegator yield to k times the flat yield at its vote rate, and
+    share what that frees among the others by their pots, until none is above the line."""
+    base = (r.power[paid] * r.activity[paid]).sum()
+    if base <= 0 or (yields[paid] * r.power[paid]).sum() <= 0:
+        return yields
+    yields = yields.copy()
+    line = k * pot * r.activity / base
+    held = np.zeros(len(yields), bool)
+    while True:
+        over = paid & ~held & (yields > line * (1 + 1e-12))
+        if not over.any():
+            return yields
+        held |= over
+        yields[held] = line[held]
+        rest = paid & ~held
+        pots = yields[rest] * r.power[rest]
+        free = pot - (line[held] * r.power[held]).sum()
+        if pots.sum() <= 0 or free <= 0:
+            return yields
+        yields[rest] = free * pots / pots.sum() / r.power[rest]
 
 
 def vote_value(s, r, pot):

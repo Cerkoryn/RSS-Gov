@@ -23,6 +23,7 @@
   "delegator_mode": "flat",
   "delegator_alpha": 1.0,
   "delegator_k_exclude": 0,
+  "delegator_yield_cap": 0.0,
   "pledge_leverage": 1000.0,
   "hard_cap": false,
   "pledge_rate": 0.0
@@ -48,6 +49,6 @@
  "pilot_testable": true,
  "hypothesis": "Trying to improve skin-in-the-game",
  "author": "Cerkoryn",
- "evaluated": "2026-11-23T14:04:53Z",
+ "evaluated": "2026-11-24T02:24:34Z",
  "calibration": "4a6c2a9aafd4970d"
 }

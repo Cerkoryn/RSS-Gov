@@ -331,6 +331,29 @@ experiment:
     - {name: pledge_contest_delegators_skip20_2m5, preset: pledge_contest_delegators, k_exclude: 20, budget_ada: 2500000}
     - {name: pledge_contest_delegators_skip20_rate5, preset: pledge_contest_delegators, k_exclude: 20, pledge_rate: 0.05}
     - {name: pledge_contest_delegators_skip20_rate10, preset: pledge_contest_delegators, k_exclude: 20, pledge_rate: 0.1}
+    # A cap on any DRep's delegator yield, as a multiple of the flat yield (LESSONS.md, R6):
+    # against a splitting newcomer whose pledge buys its DReps' delegators the top yields
+    # (L31). 1x is a flat yield; the leader with a flat yield for comparison.
+    - {name: skip_top20_min_pledge_by_power_1x_ycap1_5, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, delegator_yield_cap: 1.5}
+    - {name: skip_top20_min_pledge_by_power_1x_ycap2, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, delegator_yield_cap: 2}
+    - {name: skip_top20_min_pledge_by_power_1x_ycap3, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, delegator_yield_cap: 3}
+    - {name: skip_top20_min_pledge_by_power_1x_ycap5, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, delegator_yield_cap: 5}
+    - {name: skip_top20_min_pledge_flat_1x, preset: skip_top20_delegators, min_pledge_ada: 10000, pledge_leverage: 1}
+    - {name: skip_top20_min_pledge_sqrt_1x_ycap2, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, delegator_alpha: 0.5, delegator_yield_cap: 2}
+    - {name: skip_top20_delegators_min_pledge_by_power_ycap2, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, delegator_yield_cap: 2}
+    - {name: pledge_contest_delegators_ycap2, preset: pledge_contest_delegators, delegator_yield_cap: 2}
+    - {name: pledge_contest_delegators_skip20_ycap2, preset: pledge_contest_delegators, k_exclude: 20, delegator_yield_cap: 2}
+    # How many of the largest DReps to skip (R6): the leader's shape with 30 to 100 skipped,
+    # with a flat delegator yield or pots by counted power. The fewer DReps are paid, the
+    # higher the delegator yield at the start: about 9% a year at 30, 20% at 50, 57% at 100.
+    - {name: skip_top30_min_pledge_flat_1x, preset: skip_top20_delegators, min_pledge_ada: 10000, pledge_leverage: 1, k_exclude: 30}
+    - {name: skip_top50_min_pledge_flat_1x, preset: skip_top20_delegators, min_pledge_ada: 10000, pledge_leverage: 1, k_exclude: 50}
+    - {name: skip_top70_min_pledge_flat_1x, preset: skip_top20_delegators, min_pledge_ada: 10000, pledge_leverage: 1, k_exclude: 70}
+    - {name: skip_top100_min_pledge_flat_1x, preset: skip_top20_delegators, min_pledge_ada: 10000, pledge_leverage: 1, k_exclude: 100}
+    - {name: skip_top30_min_pledge_by_power_1x, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, k_exclude: 30}
+    - {name: skip_top50_min_pledge_by_power_1x, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, k_exclude: 50}
+    - {name: skip_top70_min_pledge_by_power_1x, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, k_exclude: 70}
+    - {name: skip_top100_min_pledge_by_power_1x, preset: skip_top20_delegators, min_pledge_ada: 10000, delegator_mode: per_drep, pledge_leverage: 1, k_exclude: 100}
     # How much goes to delegators: a fifth or four fifths instead of half.
     - {name: proportional_delegators_by_power_20, preset: proportional, delegator_share: 0.2, delegator_mode: per_drep}
     - {name: proportional_delegators_by_power_80, preset: proportional, delegator_share: 0.8, delegator_mode: per_drep}

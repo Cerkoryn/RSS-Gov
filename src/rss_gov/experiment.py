@@ -197,6 +197,7 @@ METRICS = [
     "whale_take",
     "whale_pledge",
     "whale_dreps",
+    "whale_power",
 ]
 
 

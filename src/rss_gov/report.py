@@ -106,10 +106,11 @@ def _stress(study, summary, axes, middle, skip=(), rows=25):
             table[f"`{s}`"] = [
                 f"{v.loc[n, 'whale_take']:.0%} ({v.loc[n, 'whale_pledge'] / 1e6:.0f}M"
                 + (
-                    f" in {v.loc[n, 'whale_dreps']:.0f})"
+                    f" in {v.loc[n, 'whale_dreps']:.0f}"
                     if study.scenarios[s].whale_identities > 1
-                    else ")"
+                    else ""
                 )
+                + (f"; {v.loc[n, 'whale_power']:.0%} of power)" if "whale_power" in v else ")")
                 for n in table.scheme
             ]
         last = views[whales[-1]]
@@ -141,6 +142,8 @@ def _stress(study, summary, axes, middle, skip=(), rows=25):
                 if any(study.scenarios[s].whale_identities > 1 for s in whales)
                 else ""
             )
+            + ", and the share of all voting power its DReps hold, with what others delegate to "
+            "them"
             + "; the last column is the change against unpaid in DReps holding two thirds of "
             "the voting power, counting the newcomer's DReps as one"
             + f". The {len(table)} designs with the highest net benefit in `{middle}` (from "

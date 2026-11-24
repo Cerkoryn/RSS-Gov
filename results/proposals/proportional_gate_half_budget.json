@@ -23,6 +23,7 @@
   "delegator_mode": "passthrough",
   "delegator_alpha": 1.0,
   "delegator_k_exclude": 0,
+  "delegator_yield_cap": 0.0,
   "pledge_leverage": 0.0,
   "hard_cap": false,
   "pledge_rate": 0.0
@@ -32,10 +33,10 @@
  "holdout": 1000000,
  "rerun": true,
  "accepted": false,
- "hypervolume_gain": 4.44476693926138e-05,
+ "hypervolume_gain": 9.470967621272308e-10,
  "hypervolume_gain_ci": [
-  4.1476865809131e-05,
-  4.778659482457502e-05
+  6.539271193983786e-10,
+  1.2231811723217853e-09
  ],
  "reason": "matched or beaten by a design already on the front",
  "change_from_unpaid": {
@@ -48,6 +49,6 @@
  "pilot_testable": true,
  "hypothesis": "Half the budget buys most of the participation of the full one.",
  "author": "",
- "evaluated": "2026-11-23T14:05:08Z",
+ "evaluated": "2026-11-24T02:24:48Z",
  "calibration": "4a6c2a9aafd4970d"
 }

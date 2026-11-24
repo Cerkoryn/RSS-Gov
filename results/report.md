@@ -184,6 +184,23 @@ Exact arithmetic on the current snapshot. `outsider's take` is the share of the 
 | pledge_contest_delegators_skip20_2m5 | linear, skip top 20, pay 100, 50% to delegators (by counted power), pledge soft cap 1x; 2.5M ADA | 92 | 7,618 | 0% | 14% | 0% | 4% | 100% | 9,791 |
 | pledge_contest_delegators_skip20_rate5 | linear, skip top 20, pay 100, 50% to delegators (by counted power), pledge soft cap 1x, pot at most 5% of pledge a year; 5M ADA | 92 | 458 | 0% | 0% | 0% | 0% | 100% | 9,791 |
 | pledge_contest_delegators_skip20_rate10 | linear, skip top 20, pay 100, 50% to delegators (by counted power), pledge soft cap 1x, pot at most 10% of pledge a year; 5M ADA | 92 | 917 | 0% | 1% | 0% | 0% | 100% | 9,791 |
+| skip_top20_min_pledge_by_power_1x_ycap1_5 | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), delegator yield at most 1.5x flat, pledge soft cap 1x; 5M ADA | 22 | 7,961 | 0% | 5% | 0% | 0% | 100% | 1,907 |
+| skip_top20_min_pledge_by_power_1x_ycap2 | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), delegator yield at most 2x flat, pledge soft cap 1x; 5M ADA | 22 | 7,961 | 0% | 5% | 0% | 0% | 100% | 1,907 |
+| skip_top20_min_pledge_by_power_1x_ycap3 | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), delegator yield at most 3x flat, pledge soft cap 1x; 5M ADA | 22 | 7,961 | 0% | 5% | 0% | 0% | 100% | 1,907 |
+| skip_top20_min_pledge_by_power_1x_ycap5 | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), delegator yield at most 5x flat, pledge soft cap 1x; 5M ADA | 22 | 7,961 | 0% | 6% | 0% | 0% | 100% | 1,907 |
+| skip_top20_min_pledge_flat_1x | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | 22 | 7,961 | 0% | 4% | 0% | 0% | 100% | 1,907 |
+| skip_top20_min_pledge_sqrt_1x_ycap2 | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (sqrt per DRep), delegator yield at most 2x flat, pledge soft cap 1x; 5M ADA | 22 | 7,961 | 0% | 5% | 0% | 0% | 100% | 1,907 |
+| skip_top20_delegators_min_pledge_by_power_ycap2 | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), delegator yield at most 2x flat, pledge soft cap 2x; 5M ADA | 22 | 4,748 | 0% | 4% | 0% | 0% | 100% | 1,907 |
+| pledge_contest_delegators_ycap2 | linear, pay 100, 50% to delegators (by counted power), delegator yield at most 2x flat, pledge soft cap 1x; 5M ADA | 91 | 17,365 | 5% | 0% | 0% | 1% | 100% | 59,191 |
+| pledge_contest_delegators_skip20_ycap2 | linear, skip top 20, pay 100, 50% to delegators (by counted power), delegator yield at most 2x flat, pledge soft cap 1x; 5M ADA | 92 | 15,235 | 0% | 7% | 0% | 13% | 100% | 9,791 |
+| skip_top30_min_pledge_flat_1x | linear, skip top 30, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | 20 | 8,928 | 0% | 5% | 0% | 0% | 100% | 1,569 |
+| skip_top50_min_pledge_flat_1x | linear, skip top 50, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | 18 | 9,447 | 0% | 6% | 0% | 0% | 100% | 1,250 |
+| skip_top70_min_pledge_flat_1x | linear, skip top 70, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | 17 | 9,527 | 0% | 7% | 0% | 0% | 100% | 975 |
+| skip_top100_min_pledge_flat_1x | linear, skip top 100, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | 14 | 12,443 | 0% | 11% | 0% | 0% | 100% | 662 |
+| skip_top30_min_pledge_by_power_1x | linear, skip top 30, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | 20 | 8,928 | 0% | 22% | 0% | 0% | 100% | 1,569 |
+| skip_top50_min_pledge_by_power_1x | linear, skip top 50, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | 18 | 9,447 | 0% | 23% | 0% | 0% | 100% | 1,250 |
+| skip_top70_min_pledge_by_power_1x | linear, skip top 70, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | 17 | 9,527 | 0% | 23% | 0% | 0% | 100% | 975 |
+| skip_top100_min_pledge_by_power_1x | linear, skip top 100, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | 14 | 12,443 | 0% | 28% | 0% | 0% | 100% | 662 |
 | proportional_delegators_by_power_20 | linear, 20% to delegators (by counted power); 5M ADA | 193 | 15,125 | 55% | 0% | 0% | 0% | 100% | 63,839 |
 | proportional_delegators_by_power_80 | linear, 80% to delegators (by counted power); 5M ADA | 193 | 3,781 | 55% | 0% | 0% | 0% | 100% | 63,839 |
 | proportional_delegators_equal_20 | linear, 20% to delegators (equal per DRep); 5M ADA | 193 | 15,125 | 55% | 18% | 17% | 2% | 100% | 63,839 |
@@ -453,35 +470,35 @@ Skin in the game: change in Voting power backed by the DRep's pledge (points)
 
 Scenarios outside the ranking, each the `central` reactions with one thing changed.
 
-A wealthy newcomer self-delegates each epoch the part of its ADA that earns the most over the return it wants on that ADA and the cost of voting on everything: `central_whale` 100M ADA wanting 5% a year (1% of the pay or more under 103 of 238 paid designs); `central_whale_idle` 100M ADA wanting 1% a year (1% of the pay or more under 137 of 238 paid designs); `central_whale_split` 100M ADA wanting 1% a year, over as many as 20 DReps (1% of the pay or more under 164 of 238 paid designs). Cells are its share of all that is paid, with the ADA it self-delegates and the DReps it runs; the last column is the change against unpaid in DReps holding two thirds of the voting power, counting the newcomer's DReps as one. The 25 designs with the highest net benefit in `central` (from these runs, at the ranking's values; fee variants left out):
+A wealthy newcomer self-delegates each epoch the part of its ADA that earns the most over the return it wants on that ADA and the cost of voting on everything: `central_whale` 100M ADA wanting 5% a year (1% of the pay or more under 118 of 255 paid designs); `central_whale_idle` 100M ADA wanting 1% a year (1% of the pay or more under 152 of 255 paid designs); `central_whale_split` 100M ADA wanting 1% a year, over as many as 20 DReps (1% of the pay or more under 181 of 255 paid designs). Cells are its share of all that is paid, with the ADA it self-delegates and the DReps it runs, and the share of all voting power its DReps hold, with what others delegate to them; the last column is the change against unpaid in DReps holding two thirds of the voting power, counting the newcomer's DReps as one. The 25 designs with the highest net benefit in `central` (from these runs, at the ranking's values; fee variants left out):
 
 | scheme | net benefit, `central` | `central_whale` | `central_whale_idle` | `central_whale_split` | DReps holding ⅔: `central` → `central_whale_split` |
 |---|---|---|---|---|---|
-| skip_top20_min_pledge_by_power_1x | +5.0M | 2% (1M) | 3% (1M) | 26% (95M in 13) | +7.1 → +1.4 |
-| skip_top20_delegators_min_pledge_by_power | +4.5M | 2% (1M) | 3% (1M) | 27% (96M in 14) | +7.1 → +1.3 |
-| skip_top20_delegators_by_power | +4.0M | 2% (1M) | 2% (1M) | 27% (96M in 13) | +7.1 → +0.8 |
-| skip_top20_min_pledge_by_power_5x | +3.9M | 2% (1M) | 2% (1M) | 28% (94M in 16) | +7.0 → +0.5 |
-| skip_top20_delegators_min_pledge | +3.6M | 5% (6M) | 8% (12M) | 17% (57M in 8) | +6.1 → +5.2 |
-| skip_top20_min_pledge_by_power_10x | +3.6M | 2% (1M) | 2% (1M) | 26% (95M in 15) | +7.1 → +1.5 |
-| skip_top20_min_pledge_by_power_2m5 | +3.2M | 3% (1M) | 3% (2M) | 36% (84M in 14) | +4.1 → +0.8 |
-| skip_top20_min_pledge_delegators_sqrt | +2.7M | 3% (3M) | 4% (4M) | 30% (93M in 15) | +7.9 → +0.7 |
-| pledge_contest_delegators_skip20_2m5 | +2.5M | 7% (3M) | 8% (4M) | 56% (94M in 14) | +3.1 → +0.3 |
-| skip_top20_min_pledge_by_power_half | +2.5M | 3% (2M) | 4% (2M) | 43% (94M in 14) | +6.0 → +1.4 |
-| skip_top20_min_pledge_by_power_10m | +2.4M | 2% (0M) | 2% (0M) | 21% (94M in 15) | +11.1 → +1.1 |
-| pledge_contest_delegators_all_skip20 | +2.3M | 3% (3M) | 4% (3M) | 42% (97M in 15) | +5.3 → +1.1 |
-| pledge_contest_delegators_skip20 | +2.1M | 3% (3M) | 4% (3M) | 46% (97M in 15) | +5.4 → +0.5 |
-| pledge_contest_1m | +0.7M | 9% (2M) | 61% (50M) | 61% (50M in 8) | -1.4 → -0.7 |
-| pledge_contest_delegators_skip20_rate10 | +0.7M | 16% (3M) | 16% (3M) | 57% (99M in 18) | +0.9 → -1.6 |
-| skip_top20_min_pledge_by_power_1x_rate10 | +0.5M | 19% (0M) | 19% (0M) | 36% (98M in 18) | +0.6 → -4.0 |
-| pledge_contest_10m_rate10 | +0.3M | 70% (100M) | 70% (100M) | 70% (100M in 1) | -1.5 → -1.3 |
-| pledge_contest_rate10 | +0.3M | 64% (67M) | 71% (100M) | 72% (100M in 15) | -1.5 → -1.1 |
-| exclude_k_pay_n | +0.3M | 0% (0M) | 0% (0M) | 0% (0M in 0) | +0.2 → +0.1 |
-| skip_top20_min_pledge_by_power_1x_rate5 | +0.2M | 0% (0M) | 25% (4M) | 48% (97M in 16) | +0.2 → -1.9 |
-| pledge_contest_rate5 | +0.2M | 0% (0M) | 78% (100M) | 78% (100M in 1) | -1.5 → -1.3 |
-| pledge_contest_rate2 | +0.1M | 0% (0M) | 91% (100M) | 91% (100M in 1) | +0.0 → -0.2 |
-| pledge_contest_delegators_all_20_2m5 | +0.1M | 26% (18M) | 64% (100M) | 65% (100M in 11) | -1.1 → -1.1 |
-| pledge_contest_delegators_skip20_rate5 | +0.0M | 0% (0M) | 37% (6M) | 70% (100M in 16) | +0.3 → -1.0 |
-| pledge_contest_all_rate5 | +0.0M | 0% (0M) | 74% (100M) | 74% (100M in 1) | -1.4 → -1.3 |
+| skip_top100_min_pledge_by_power_1x | +34.8M | 2% (0M; 2% of power) | 2% (0M; 2% of power) | 10% (22M in 9; 18% of power) | +27.2 → +11.2 |
+| skip_top70_min_pledge_flat_1x | +34.5M | 1% (0M; 2% of power) | 1% (0M; 2% of power) | 17% (47M in 18; 14% of power) | +23.8 → +10.9 |
+| skip_top100_min_pledge_flat_1x | +30.6M | 1% (0M; 1% of power) | 1% (0M; 1% of power) | 9% (28M in 12; 20% of power) | +7.7 → +14.2 |
+| skip_top70_min_pledge_by_power_1x | +22.9M | 2% (0M; 3% of power) | 2% (0M; 3% of power) | 13% (29M in 13; 17% of power) | +20.5 → +6.8 |
+| skip_top50_min_pledge_flat_1x | +18.6M | 2% (1M; 1% of power) | 2% (1M; 1% of power) | 22% (63M in 19; 10% of power) | +15.5 → +8.8 |
+| skip_top50_min_pledge_by_power_1x | +15.9M | 2% (0M; 3% of power) | 2% (0M; 3% of power) | 20% (72M in 16; 17% of power) | +15.6 → +4.3 |
+| skip_top30_min_pledge_flat_1x | +10.0M | 6% (7M; 1% of power) | 6% (6M; 1% of power) | 21% (66M in 16; 6% of power) | +9.7 → +7.0 |
+| skip_top30_min_pledge_by_power_1x | +9.8M | 2% (0M; 2% of power) | 2% (0M; 2% of power) | 24% (91M in 14; 16% of power) | +10.7 → +2.5 |
+| skip_top20_min_pledge_by_power_1x | +5.0M | 2% (1M; 2% of power) | 3% (1M; 2% of power) | 26% (95M in 13; 15% of power) | +7.1 → +1.4 |
+| skip_top20_delegators_min_pledge_by_power | +4.5M | 2% (1M; 2% of power) | 3% (1M; 2% of power) | 27% (96M in 14; 15% of power) | +7.1 → +1.3 |
+| skip_top20_min_pledge_by_power_1x_ycap5 | +4.1M | 2% (1M; 2% of power) | 2% (2M; 2% of power) | 28% (94M in 13; 13% of power) | +6.6 → +1.2 |
+| skip_top20_delegators_by_power | +4.0M | 2% (1M; 2% of power) | 2% (1M; 2% of power) | 27% (96M in 13; 15% of power) | +7.1 → +0.8 |
+| skip_top20_min_pledge_flat_1x | +4.0M | 6% (7M; 1% of power) | 8% (15M; 2% of power) | 18% (64M in 11; 5% of power) | +6.2 → +5.3 |
+| skip_top20_min_pledge_by_power_5x | +3.9M | 2% (1M; 2% of power) | 2% (1M; 2% of power) | 28% (94M in 16; 16% of power) | +7.0 → +0.5 |
+| skip_top20_delegators_min_pledge | +3.6M | 5% (6M; 1% of power) | 8% (12M; 2% of power) | 17% (57M in 8; 4% of power) | +6.1 → +5.2 |
+| skip_top20_min_pledge_by_power_10x | +3.6M | 2% (1M; 2% of power) | 2% (1M; 2% of power) | 26% (95M in 15; 13% of power) | +7.1 → +1.5 |
+| skip_top20_min_pledge_by_power_1x_ycap3 | +3.5M | 4% (2M; 2% of power) | 3% (3M; 2% of power) | 29% (99M in 17; 11% of power) | +6.3 → +1.6 |
+| skip_top20_min_pledge_by_power_2m5 | +3.2M | 3% (1M; 2% of power) | 3% (2M; 2% of power) | 36% (84M in 14; 9% of power) | +4.1 → +0.8 |
+| skip_top20_min_pledge_delegators_sqrt | +2.7M | 3% (3M; 2% of power) | 4% (4M; 2% of power) | 30% (93M in 15; 14% of power) | +7.9 → +0.7 |
+| skip_top20_min_pledge_sqrt_1x_ycap2 | +2.7M | 6% (5M; 2% of power) | 5% (4M; 2% of power) | 26% (99M in 18; 8% of power) | +5.9 → +2.7 |
+| pledge_contest_delegators_skip20_2m5 | +2.5M | 7% (3M; 2% of power) | 8% (4M; 2% of power) | 56% (94M in 14; 7% of power) | +3.1 → +0.3 |
+| skip_top20_min_pledge_by_power_half | +2.5M | 3% (2M; 2% of power) | 4% (2M; 2% of power) | 43% (94M in 14; 11% of power) | +6.0 → +1.4 |
+| skip_top20_min_pledge_by_power_10m | +2.4M | 2% (0M; 3% of power) | 2% (0M; 3% of power) | 21% (94M in 15; 23% of power) | +11.1 → +1.1 |
+| pledge_contest_delegators_all_skip20 | +2.3M | 3% (3M; 2% of power) | 4% (3M; 2% of power) | 42% (97M in 15; 10% of power) | +5.3 → +1.1 |
+| pledge_contest_delegators_skip20 | +2.1M | 3% (3M; 2% of power) | 4% (3M; 2% of power) | 46% (97M in 15; 12% of power) | +5.4 → +0.5 |
 
 What DReps can afford to add as pledge: `central_poor` up to 2× their holdings, only what can be traced; `central` up to 5× their holdings, taken as at least 0.1% of their voting power; `central_rich` up to 7× their holdings, taken as at least 1.0% of their voting power. Change in skin in the game against unpaid (points), for the 25 paid designs that raise it most in `central` (fee variants left out):
 
@@ -620,6 +637,23 @@ Named designs with a setting changed, `central` scenario; compare each with its 
 | pledge_contest_delegators_skip20_2m5 | `pledge_contest_delegators`: skip 20, 2.5M ADA | 5.1M | 0.36% | +1.5 ± 0.1 | +3.1 ± 0.2 | 3,399,731 |
 | pledge_contest_delegators_skip20_rate5 | `pledge_contest_delegators`: skip 20, pot ≤ 5% of pledge a year | 0.5M | 0.04% | +0.2 ± 0.1 | +0.3 ± 0.1 | 2,890,284 |
 | pledge_contest_delegators_skip20_rate10 | `pledge_contest_delegators`: skip 20, pot ≤ 10% of pledge a year | 1.6M | 0.12% | +0.5 ± 0.1 | +0.9 ± 0.2 | 2,962,149 |
+| skip_top20_min_pledge_by_power_1x_ycap1_5 | `skip_top20_delegators`: ≥10k ADA pledge, delegator pots by counted power, pledge soft cap 1×, delegator yield ≤ 1.5× flat | 10.1M | 0.73% | +4.1 ± 0.2 | +5.2 ± 0.3 | 2,460,189 |
+| skip_top20_min_pledge_by_power_1x_ycap2 | `skip_top20_delegators`: ≥10k ADA pledge, delegator pots by counted power, pledge soft cap 1×, delegator yield ≤ 2× flat | 10.1M | 0.73% | +4.2 ± 0.2 | +5.3 ± 0.3 | 2,388,388 |
+| skip_top20_min_pledge_by_power_1x_ycap3 | `skip_top20_delegators`: ≥10k ADA pledge, delegator pots by counted power, pledge soft cap 1×, delegator yield ≤ 3× flat | 10.1M | 0.73% | +4.4 ± 0.2 | +6.3 ± 0.3 | 2,308,793 |
+| skip_top20_min_pledge_by_power_1x_ycap5 | `skip_top20_delegators`: ≥10k ADA pledge, delegator pots by counted power, pledge soft cap 1×, delegator yield ≤ 5× flat | 10.1M | 0.73% | +4.4 ± 0.2 | +6.6 ± 0.3 | 2,303,151 |
+| skip_top20_min_pledge_flat_1x | `skip_top20_delegators`: ≥10k ADA pledge, pledge soft cap 1× | 10.1M | 0.73% | +5.2 ± 0.2 | +6.2 ± 0.3 | 1,964,525 |
+| skip_top20_min_pledge_sqrt_1x_ycap2 | `skip_top20_delegators`: ≥10k ADA pledge, delegator pots by counted power, pledge soft cap 1×, delegator pots by √power, delegator yield ≤ 2× flat | 10.1M | 0.73% | +4.1 ± 0.1 | +5.9 ± 0.3 | 2,446,460 |
+| skip_top20_delegators_min_pledge_by_power_ycap2 | `skip_top20_delegators`: ≥10k ADA pledge, delegator pots by counted power, delegator yield ≤ 2× flat | 10.1M | 0.73% | +4.3 ± 0.1 | +5.3 ± 0.3 | 2,366,473 |
+| pledge_contest_delegators_ycap2 | `pledge_contest_delegators`: delegator yield ≤ 2× flat | 10.1M | 0.73% | +4.0 ± 0.1 | -1.9 ± 0.2 | 2,530,628 |
+| pledge_contest_delegators_skip20_ycap2 | `pledge_contest_delegators`: skip 20, delegator yield ≤ 2× flat | 10.1M | 0.73% | +2.4 ± 0.1 | +4.1 ± 0.3 | 4,297,278 |
+| skip_top30_min_pledge_flat_1x | `skip_top20_delegators`: ≥10k ADA pledge, pledge soft cap 1×, skip 30 | 10.1M | 0.73% | +7.2 ± 0.2 | +9.7 ± 0.3 | 1,403,629 |
+| skip_top50_min_pledge_flat_1x | `skip_top20_delegators`: ≥10k ADA pledge, pledge soft cap 1×, skip 50 | 10.1M | 0.73% | +9.3 ± 0.2 | +15.5 ± 0.4 | 1,095,869 |
+| skip_top70_min_pledge_flat_1x | `skip_top20_delegators`: ≥10k ADA pledge, pledge soft cap 1×, skip 70 | 10.1M | 0.73% | +15.3 ± 0.5 | +23.8 ± 0.4 | 663,067 |
+| skip_top100_min_pledge_flat_1x | `skip_top20_delegators`: ≥10k ADA pledge, pledge soft cap 1×, skip 100 | 10.1M | 0.73% | +33.2 ± 0.7 | +7.7 ± 1.5 | 305,260 |
+| skip_top30_min_pledge_by_power_1x | `skip_top20_delegators`: ≥10k ADA pledge, delegator pots by counted power, pledge soft cap 1×, skip 30 | 10.1M | 0.73% | +5.1 ± 0.2 | +10.7 ± 0.3 | 1,987,260 |
+| skip_top50_min_pledge_by_power_1x | `skip_top20_delegators`: ≥10k ADA pledge, delegator pots by counted power, pledge soft cap 1×, skip 50 | 10.1M | 0.73% | +6.0 ± 0.2 | +15.6 ± 0.4 | 1,692,085 |
+| skip_top70_min_pledge_by_power_1x | `skip_top20_delegators`: ≥10k ADA pledge, delegator pots by counted power, pledge soft cap 1×, skip 70 | 10.1M | 0.73% | +7.6 ± 0.3 | +20.5 ± 0.4 | 1,340,806 |
+| skip_top100_min_pledge_by_power_1x | `skip_top20_delegators`: ≥10k ADA pledge, delegator pots by counted power, pledge soft cap 1×, skip 100 | 10.1M | 0.73% | +12.0 ± 0.4 | +27.2 ± 0.6 | 845,477 |
 | proportional_delegators_by_power_20 | `proportional`: 20% to delegators, delegator pots by counted power | 10.1M | 0.73% | +4.6 ± 0.1 | -2.3 ± 0.2 | 2,222,857 |
 | proportional_delegators_by_power_80 | `proportional`: 80% to delegators, delegator pots by counted power | 10.1M | 0.73% | +4.3 ± 0.1 | -2.5 ± 0.2 | 2,372,847 |
 | proportional_delegators_equal_20 | `proportional`: 20% to delegators, delegator pots by counted power, an equal delegator pot per DRep | 10.1M | 0.73% | +4.5 ± 0.1 | -1.6 ± 0.2 | 2,265,322 |
@@ -746,93 +780,87 @@ Skin in the game: change in Voting power backed by the DRep's pledge (points)
 
 ## Search over the scheme family
 
-324 designs simulated over 10 generations, with the budget as one of the searched parameters. The finalists were re-run on 100 seeds the search never saw; all numbers here are from those seeds, averaged over `low`, `central`, `high`. Marks: ▲ better than unpaid in every scenario, ▼ worse in at least one.
+348 designs simulated over 10 generations, with the budget as one of the searched parameters. The finalists were re-run on 100 seeds the search never saw; all numbers here are from those seeds, averaged over `low`, `central`, `high`. Marks: ▲ better than unpaid in every scenario, ▼ worse in at least one.
 
-- 32 of 147 finalists are unbeaten: no other design is at least as good on all 5 axes.
-- Guardrail: no axis other than cost and Sybil resistance may be worse than unpaid in any scenario; those two are exact trade-offs, weighed on the front like the others. **62 of 147 finalists stay inside it.**
-- Hypervolume of the front (progress measure, in the units of `axes.scale`): **0.09131** (95% 0.08983–0.09317); unpaid alone 0.00455. The search adds **0.00719** over the named schemes (95% 0.00692–0.00740).
+- 30 of 165 finalists are unbeaten: no other design is at least as good on all 5 axes.
+- Guardrail: no axis other than cost and Sybil resistance may be worse than unpaid in any scenario; those two are exact trade-offs, weighed on the front like the others. **73 of 165 finalists stay inside it.**
+- Hypervolume of the front (progress measure, in the units of `axes.scale`): **0.14431** (95% 0.14281–0.14598); unpaid alone 0.00455. The search adds **0.00685** over the named schemes (95% 0.00647–0.00710).
 
 ### Shortlist: inside every guardrail and unbeaten
 
 | scheme | rule | Participation | Decentralisation | Skin in the game | Reward sustainability | Sybil resistance |
 |---|---|---|---|---|---|---|
 | pledge_backed_delegators_half | linear, cap 5M, 50% to delegators (passthrough), pledge soft cap 1x; 5M ADA | +3.7 ± 0.1 ▲ | +2.1 ± 0.2 ▲ | +1.08 ± 0.01 | 10.1M | 0% |
-| skip_top20_delegators_min_pledge | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 2x; 5M ADA | +6.4 ± 0.2 ▲ | +6.6 ± 0.3 ▲ | +0.53 ± 0.01 | 10.1M | 0% |
-| skip_top20_min_pledge_delegators_sqrt | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (sqrt per DRep), pledge soft cap 2x; 5M ADA | +4.9 ± 0.2 ▲ | +8.6 ± 0.3 ▲ | +0.60 ± 0.01 | 10.1M | 26% |
-| skip_top20_min_pledge_delegators_equal | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (equal per DRep), pledge soft cap 2x; 5M ADA | +4.7 ± 0.2 ▲ | +9.7 ± 0.3 ▲ | +0.54 ± 0.01 | 10.1M | 52% |
 | skip_top20_min_pledge_by_power_1x | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +5.2 ± 0.2 ▲ | +7.4 ± 0.3 ▲ | +0.71 ± 0.01 | 10.1M | 0% |
-| skip_top20_min_pledge_by_power_2m5 | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 2x; 2.5M ADA | +3.0 ± 0.1 ▲ | +4.9 ± 0.2 ▲ | +0.29 ± 0.01 | 5.1M | 0% |
 | skip_top20_min_pledge_by_power_10m | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 2x; 10M ADA | +8.6 ± 0.2 ▲ | +11.1 ± 0.3 ▲ | +0.81 ± 0.01 | 20.3M | 0% |
-| g10_10 | power^0.75, skip top 20, min pledge 100k, gate 70%, 80% to delegators (sqrt per DRep), pledge soft cap 2x; 5M ADA | +5.6 ± 0.2 ▲ | +8.7 ± 0.3 ▲ | +0.36 ± 0.01 | 10.1M | 10% |
-| g10_17 | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (sqrt per DRep), pledge soft cap 2x; 10M ADA | +8.0 ± 0.2 ▲ | +13.5 ± 0.3 ▲ | +0.81 ± 0.01 | 20.3M | 26% |
-| g7_1 | linear, skip top 20, min 25 delegators, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 2x; 10M ADA | +9.3 ± 0.2 ▲ | +8.6 ± 0.3 ▲ | +0.60 ± 0.01 | 20.3M | 0% |
-| g2_20 | linear, skip top 20, min pledge 10k, gate 70%, 50% to delegators (by counted power), pledge soft cap 2x; 10M ADA | +6.5 ± 0.2 ▲ | +9.6 ± 0.3 ▲ | +0.93 ± 0.02 | 20.3M | 0% |
-| capped_1m | linear, cap 20M; 1M ADA | +3.3 ± 0.1 ▲ | -0.4 ± 0.2 | -0.00 ± 0.00 | 2.0M | 30% |
-| capped_2m5 | linear, cap 20M; 2.5M ADA | +4.0 ± 0.1 ▲ | -0.4 ± 0.2 | -0.00 ± 0.00 | 5.1M | 30% |
-| delegators_not_top20_2x_by_power | linear, 50% to delegators (by counted power), not via top 20, pledge soft cap 2x; 5M ADA | +4.4 ± 0.1 ▲ | +0.7 ± 0.2 | +1.52 ± 0.01 | 10.1M | 2% |
+| skip_top30_min_pledge_flat_1x | linear, skip top 30, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | +7.9 ± 0.2 ▲ | +10.6 ± 0.3 ▲ | +0.54 ± 0.01 | 10.1M | 0% |
+| skip_top30_min_pledge_by_power_1x | linear, skip top 30, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +5.9 ± 0.2 ▲ | +11.1 ± 0.3 ▲ | +0.64 ± 0.01 | 10.1M | 0% |
+| g5_4 | linear, skip top 30, min pledge 10k, gate 50%, 80% to delegators (flat), pledge soft cap 1x; 2.5M ADA | +4.2 ± 0.1 ▲ | +6.4 ± 0.3 ▲ | +0.22 ± 0.01 | 5.1M | 0% |
+| g8_14 | linear, skip top 5, pay 100, 50% to delegators (by counted power), pledge soft cap 1x; 10M ADA | +5.0 ± 0.1 ▲ | +1.3 ± 0.2 | +2.12 ± 0.02 ▲ | 20.3M | 2% |
+| g4_11 | linear, skip top 20, 25% to delegators (by counted power), pledge soft cap 1x; 10M ADA | +3.2 ± 0.1 | +6.5 ± 0.2 ▲ | +1.71 ± 0.02 ▲ | 20.3M | 3% |
 | pledge_contest_delegators_all_skip20 | linear, skip top 20, 50% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +2.7 ± 0.1 | +5.7 ± 0.2 ▲ | +1.42 ± 0.02 | 10.1M | 3% |
-| g9_16 | linear, min pledge 10k, gate 70%, 50% to delegators (sqrt per DRep), pledge soft cap 2x; 10M ADA | +6.4 ± 0.2 ▲ | +2.6 ± 0.2 | +1.89 ± 0.02 | 20.3M | 16% |
-| g1_21 | linear, skip top 10, pay 100, 25% to delegators (passthrough), pledge soft cap 1x; 5M ADA | +2.7 ± 0.1 | +2.2 ± 0.2 ▲ | +1.69 ± 0.02 | 10.1M | 5% |
+| g7_17 | linear, skip top 30, 50% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +2.7 ± 0.1 | +7.9 ± 0.2 ▲ | +1.22 ± 0.01 | 10.1M | 3% |
+| g7_9 | linear, cap 200M, 50% to delegators (by counted power), not via top 20, pledge soft cap 2x; 5M ADA | +4.4 ± 0.1 ▲ | +1.0 ± 0.2 | +1.52 ± 0.01 | 10.1M | 2% |
+| g3_17 | linear, skip top 50, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 1M ADA | +3.5 ± 0.1 ▲ | +4.4 ± 0.3 | +0.03 ± 0.01 | 2.0M | 0% |
+| pledge_contest_skip10 | linear, skip top 10, pay 100, pledge soft cap 1x; 5M ADA | +2.2 ± 0.1 | +1.1 ± 0.2 | +1.51 ± 0.02 | 10.1M | 5% |
 | skip_top20_min_pledge_by_power_1x_rate10 | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x, pot at most 10% of pledge a year; 5M ADA | +1.4 ± 0.1 | +2.1 ± 0.2 | +0.25 ± 0.01 | 1.8M | 0% |
+| pledge_contest_delegators_skip20_rate5 | linear, skip top 20, pay 100, 50% to delegators (by counted power), pledge soft cap 1x, pot at most 5% of pledge a year; 5M ADA | +0.8 ± 0.0 | +1.8 ± 0.1 | +0.63 ± 0.01 | 1.6M | 0% |
 | pledge_contest_delegators_skip20_rate10 | linear, skip top 20, pay 100, 50% to delegators (by counted power), pledge soft cap 1x, pot at most 10% of pledge a year; 5M ADA | +1.7 ± 0.1 | +3.4 ± 0.2 | +1.02 ± 0.01 | 4.3M | 0% |
-| g3_7 | linear, skip top 20, pay 100, 50% to delegators (by counted power), pledge soft cap 2x, pot at most 5% of pledge a year; 5M ADA | +0.8 ± 0.0 | +1.6 ± 0.1 | +0.51 ± 0.01 | 1.4M | 0% |
+| skip_top50_min_pledge_by_power_1x | linear, skip top 50, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +7.2 ± 0.2 ▲ | +17.1 ± 0.3 ▲ | +0.40 ± 0.01 | 10.1M | 0% |
 
 By response scenario:
 
 | scheme | Participation (low) | Participation (central) | Participation (high) | Decentralisation (low) | Decentralisation (central) | Decentralisation (high) |
 |---|---|---|---|---|---|---|
 | pledge_backed_delegators_half | +1.0 | +3.7 | +6.3 | +1.4 | +1.2 | +3.7 |
-| skip_top20_delegators_min_pledge | +4.1 | +5.1 | +10.1 | +3.9 | +6.3 | +9.4 |
-| skip_top20_min_pledge_delegators_sqrt | +3.0 | +4.0 | +7.7 | +4.8 | +7.9 | +13.1 |
-| skip_top20_min_pledge_delegators_equal | +3.0 | +3.9 | +7.3 | +4.7 | +8.3 | +16.0 |
 | skip_top20_min_pledge_by_power_1x | +3.2 | +4.2 | +8.2 | +4.6 | +7.4 | +10.3 |
-| skip_top20_min_pledge_by_power_2m5 | +1.9 | +2.4 | +4.6 | +2.2 | +4.3 | +8.3 |
 | skip_top20_min_pledge_by_power_10m | +5.5 | +7.4 | +12.8 | +8.0 | +11.4 | +14.1 |
-| g10_10 | +3.8 | +4.9 | +8.2 | +5.0 | +8.0 | +13.2 |
-| g10_17 | +4.9 | +7.0 | +12.0 | +8.5 | +13.0 | +18.9 |
-| g7_1 | +6.4 | +7.7 | +13.7 | +5.6 | +8.6 | +11.6 |
-| g2_20 | +3.9 | +5.4 | +10.2 | +5.9 | +9.7 | +13.2 |
-| capped_1m | +1.8 | +3.1 | +4.8 | -0.3 | -0.3 | -0.5 |
-| capped_2m5 | +2.4 | +3.9 | +5.7 | -0.2 | -0.4 | -0.5 |
-| delegators_not_top20_2x_by_power | +1.4 | +4.5 | +7.2 | +1.6 | +0.9 | -0.3 |
+| skip_top30_min_pledge_flat_1x | +5.2 | +7.1 | +11.3 | +6.6 | +9.8 | +15.5 |
+| skip_top30_min_pledge_by_power_1x | +3.9 | +5.0 | +8.7 | +6.0 | +10.7 | +16.7 |
+| g5_4 | +2.4 | +3.2 | +6.9 | +2.4 | +5.2 | +11.6 |
+| g8_14 | +1.7 | +4.7 | +8.5 | +1.8 | +1.7 | +0.5 |
+| g4_11 | +0.9 | +2.8 | +5.9 | +2.4 | +6.3 | +10.9 |
 | pledge_contest_delegators_all_skip20 | +0.8 | +2.3 | +5.1 | +2.2 | +5.3 | +9.7 |
-| g9_16 | +3.3 | +5.9 | +10.0 | +4.5 | +2.5 | +1.0 |
-| g1_21 | +0.6 | +2.5 | +4.9 | +1.2 | +2.3 | +3.0 |
+| g7_17 | +0.9 | +2.2 | +4.9 | +2.3 | +6.9 | +14.5 |
+| g7_9 | +1.4 | +4.5 | +7.4 | +1.6 | +0.9 | +0.5 |
+| g3_17 | +2.3 | +2.5 | +5.7 | +1.0 | +3.3 | +9.0 |
+| pledge_contest_skip10 | +0.4 | +2.1 | +4.0 | +0.5 | +1.0 | +1.8 |
 | skip_top20_min_pledge_by_power_1x_rate10 | +0.4 | +0.8 | +3.1 | +0.1 | +0.5 | +5.6 |
+| pledge_contest_delegators_skip20_rate5 | +0.1 | +0.2 | +2.2 | +0.2 | +0.4 | +4.8 |
 | pledge_contest_delegators_skip20_rate10 | +0.1 | +0.5 | +4.5 | +0.3 | +1.2 | +8.8 |
-| g3_7 | +0.1 | +0.2 | +2.0 | +0.1 | +0.4 | +4.3 |
+| skip_top50_min_pledge_by_power_1x | +5.6 | +6.1 | +9.9 | +8.7 | +15.7 | +27.1 |
 
 ### Accepting a cost in decentralisation
 
-15 unbeaten among the finalists that give up exactly this; the 10 that are hardest to game by splitting are shown.
+14 unbeaten among the finalists that give up exactly this; the 10 that are hardest to game by splitting are shown.
 
 | scheme | rule | Participation | Decentralisation | Skin in the game | Reward sustainability | Sybil resistance |
 |---|---|---|---|---|---|---|
-| g1_2 | linear, pay 200, 50% to delegators (by counted power), pledge soft cap 1x; 10M ADA | +5.2 ± 0.1 ▲ | -0.1 ± 0.2 ▼ | +2.47 ± 0.02 ▲ | 20.3M | 0% |
 | proportional | linear; 5M ADA | +4.4 ± 0.1 ▲ | -2.2 ± 0.2 ▼ | -0.01 ± 0.00 | 10.1M | 0% |
 | pledge_contest_delegators_all | linear, 50% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +3.6 ± 0.1 ▲ | -0.5 ± 0.2 ▼ | +1.65 ± 0.01 ▲ | 10.1M | 0% |
 | pledge_contest_10m_rate10 | linear, pay 100, pledge soft cap 1x, pot at most 10% of pledge a year; 10M ADA | +3.4 ± 0.1 | -1.6 ± 0.2 ▼ | +2.30 ± 0.02 | 8.5M | 0% |
 | pledge_contest_rate10 | linear, pay 100, pledge soft cap 1x, pot at most 10% of pledge a year; 5M ADA | +3.2 ± 0.1 | -1.6 ± 0.2 ▼ | +2.23 ± 0.02 | 5.1M | 0% |
-| pledge_contest_all_rate5 | linear, pledge soft cap 1x, pot at most 5% of pledge a year; 5M ADA | +2.7 ± 0.1 | -1.6 ± 0.2 ▼ | +2.12 ± 0.02 | 4.2M | 0% |
-| pledge_contest_rate5 | linear, pay 100, pledge soft cap 1x, pot at most 5% of pledge a year; 5M ADA | +2.6 ± 0.1 | -1.6 ± 0.2 ▼ | +2.09 ± 0.02 | 4.0M | 0% |
+| g1_22 | linear, cap 200M, pay 100, pledge soft cap 1x, pot at most 5% of pledge a year; 5M ADA | +2.6 ± 0.1 | -1.5 ± 0.2 ▼ | +2.10 ± 0.02 | 4.0M | 0% |
 | pledge_contest_rate2 | linear, pay 100, pledge soft cap 1x, pot at most 2% of pledge a year; 5M ADA | +1.3 ± 0.1 | -1.2 ± 0.1 ▼ | +1.32 ± 0.02 | 1.5M | 0% |
+| pledge_contest_delegators_10m | linear, pay 100, 50% to delegators (by counted power), pledge soft cap 1x; 10M ADA | +5.3 ± 0.1 ▲ | -0.5 ± 0.2 ▼ | +2.36 ± 0.02 ▲ | 20.3M | 1% |
 | pledge_contest_delegators_10x | linear, pay 100, 50% to delegators (by counted power), pledge soft cap 10x; 5M ADA | +4.1 ± 0.1 ▲ | -1.2 ± 0.2 ▼ | +1.26 ± 0.01 | 10.1M | 1% |
 | pledge_contest_delegators_all_20_not_top20 | linear, 20% to delegators (by counted power), not via top 20, pledge soft cap 1x; 5M ADA | +3.9 ± 0.1 ▲ | -0.7 ± 0.2 ▼ | +2.28 ± 0.02 | 10.1M | 1% |
+| pledge_contest_delegators_2m5 | linear, pay 100, 50% to delegators (by counted power), pledge soft cap 1x; 2.5M ADA | +2.8 ± 0.1 | -0.9 ± 0.2 ▼ | +0.88 ± 0.01 | 5.1M | 1% |
 
 By response scenario:
 
 | scheme | Participation (low) | Participation (central) | Participation (high) | Decentralisation (low) | Decentralisation (central) | Decentralisation (high) |
 |---|---|---|---|---|---|---|
-| g1_2 | +1.6 | +5.2 | +8.7 | +2.2 | +0.5 | -3.0 |
 | proportional | +2.8 | +4.4 | +5.9 | -1.1 | -2.1 | -3.3 |
 | pledge_contest_delegators_all | +1.1 | +3.8 | +6.0 | +1.4 | -0.2 | -2.8 |
 | pledge_contest_10m_rate10 | +0.4 | +3.1 | +6.7 | -0.1 | -1.6 | -3.1 |
 | pledge_contest_rate10 | +0.4 | +3.1 | +6.1 | -0.1 | -1.6 | -3.2 |
-| pledge_contest_all_rate5 | +0.3 | +1.8 | +5.8 | -0.0 | -1.4 | -3.3 |
-| pledge_contest_rate5 | +0.3 | +1.8 | +5.8 | -0.0 | -1.4 | -3.3 |
+| g1_22 | +0.3 | +1.8 | +5.9 | -0.0 | -1.4 | -3.2 |
 | pledge_contest_rate2 | +0.2 | +0.3 | +3.4 | +0.0 | +0.1 | -3.8 |
+| pledge_contest_delegators_10m | +1.8 | +5.4 | +8.8 | +1.6 | -0.1 | -3.1 |
 | pledge_contest_delegators_10x | +1.3 | +4.3 | +6.8 | +0.7 | -1.2 | -3.1 |
 | pledge_contest_delegators_all_20_not_top20 | +1.1 | +4.1 | +6.5 | +0.7 | -0.6 | -2.2 |
+| pledge_contest_delegators_2m5 | +0.8 | +2.9 | +4.6 | +0.6 | -0.7 | -2.7 |
 
 ### Accepting a cost in skin in the game
 
@@ -840,15 +868,33 @@ By response scenario:
 
 | scheme | rule | Participation | Decentralisation | Skin in the game | Reward sustainability | Sybil resistance |
 |---|---|---|---|---|---|---|
-| g10_1 | linear, skip top 20, pay 50, min 1M, min 25 delegators, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 100x; 5M ADA | +9.4 ± 0.3 ▲ | +3.9 ± 0.3 ▲ | -0.22 ± 0.01 ▼ | 10.1M | 0% |
-| g8_19 | linear, cap 2M, skip top 20, min pledge 10k, gate 70%, 50% to delegators (by counted power); 10M ADA | +6.8 ± 0.2 ▲ | +15.5 ± 0.3 ▲ | -0.17 ± 0.01 ▼ | 20.3M | 0% |
+| g6_0 | linear, skip top 70, min pledge 10k, gate 70%, 50% to delegators (flat), pledge soft cap 1x; 5M ADA | +15.0 ± 0.4 ▲ | +16.5 ± 0.4 | +0.12 ± 0.01 ▼ | 10.1M | 0% |
+| skip_top50_min_pledge_flat_1x | linear, skip top 50, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | +12.5 ± 0.4 ▲ | +16.9 ± 0.4 ▲ | +0.30 ± 0.01 ▼ | 10.1M | 0% |
 
 By response scenario:
 
 | scheme | Participation (low) | Participation (central) | Participation (high) | Decentralisation (low) | Decentralisation (central) | Decentralisation (high) |
 |---|---|---|---|---|---|---|
-| g10_1 | +5.0 | +10.8 | +12.3 | +3.7 | +2.8 | +5.3 |
-| g8_19 | +3.7 | +6.2 | +10.6 | +7.0 | +14.8 | +24.7 |
+| g6_0 | +20.6 | +10.5 | +14.0 | -0.6 | +18.6 | +31.5 |
+| skip_top50_min_pledge_flat_1x | +14.2 | +9.2 | +14.0 | +9.2 | +15.6 | +25.9 |
+
+### Accepting a cost in decentralisation, skin in the game
+
+3 unbeaten among the finalists that give up exactly this.
+
+| scheme | rule | Participation | Decentralisation | Skin in the game | Reward sustainability | Sybil resistance |
+|---|---|---|---|---|---|---|
+| skip_top100_min_pledge_flat_1x | linear, skip top 100, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | +26.6 ± 0.4 ▲ | +14.7 ± 0.7 ▼ | -0.24 ± 0.01 ▼ | 10.0M | 0% |
+| g9_4 | linear, skip top 70, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 2x; 5M ADA | +20.1 ± 0.4 ▲ | +18.2 ± 0.3 ▼ | -0.06 ± 0.01 ▼ | 10.1M | 0% |
+| g9_20 | linear, skip top 20, min 50 delegators, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 2x; 10M ADA | +14.4 ± 0.4 ▲ | +4.0 ± 0.4 ▼ | +0.43 ± 0.01 ▼ | 20.1M | 0% |
+
+By response scenario:
+
+| scheme | Participation (low) | Participation (central) | Participation (high) | Decentralisation (low) | Decentralisation (central) | Decentralisation (high) |
+|---|---|---|---|---|---|---|
+| skip_top100_min_pledge_flat_1x | +21.0 | +33.0 | +25.8 | -3.8 | +6.6 | +41.4 |
+| g9_4 | +24.9 | +16.5 | +18.8 | -3.4 | +23.5 | +34.4 |
+| g9_20 | +16.0 | +10.6 | +16.6 | -2.8 | +6.6 | +8.3 |
 
 ### Accepting a cost in participation, decentralisation (needs another hard fork)
 
@@ -869,41 +915,52 @@ By response scenario:
 | scheme | gives up | unbeaten among designs giving up the same |
 |---|---|---|
 | pledge_backed_delegators_half | nothing | yes |
-| skip_top20_delegators_min_pledge | nothing | yes |
-| skip_top20_min_pledge_delegators_sqrt | nothing | yes |
-| skip_top20_min_pledge_delegators_equal | nothing | yes |
 | skip_top20_min_pledge_by_power_1x | nothing | yes |
-| skip_top20_min_pledge_by_power_2m5 | nothing | yes |
 | skip_top20_min_pledge_by_power_10m | nothing | yes |
-| capped_1m | nothing | yes |
-| capped_2m5 | nothing | yes |
-| delegators_not_top20_2x_by_power | nothing | yes |
+| skip_top30_min_pledge_flat_1x | nothing | yes |
+| skip_top30_min_pledge_by_power_1x | nothing | yes |
 | pledge_contest_delegators_all_skip20 | nothing | yes |
+| pledge_contest_skip10 | nothing | yes |
 | skip_top20_min_pledge_by_power_1x_rate10 | nothing | yes |
+| pledge_contest_delegators_skip20_rate5 | nothing | yes |
 | pledge_contest_delegators_skip20_rate10 | nothing | yes |
+| skip_top50_min_pledge_by_power_1x | nothing | yes |
 | pledge_contest_delegators_all | decentralisation | yes |
+| pledge_contest_delegators_10m | decentralisation | yes |
+| skip_top50_min_pledge_flat_1x | skin in the game | yes |
 | pledge_contest_delegators_all_20_not_top20 | decentralisation | yes |
+| skip_top100_min_pledge_flat_1x | decentralisation, skin in the game | yes |
 | pledge_contest_1m | decentralisation | yes |
 | pledge_contest_delegators_2m5 | decentralisation | yes |
 | pledge_contest_rate2 | decentralisation | yes |
-| pledge_contest_rate5 | decentralisation | yes |
 | pledge_contest_rate10 | decentralisation | yes |
-| pledge_contest_all_rate5 | decentralisation | yes |
 | pledge_contest_10m_rate10 | decentralisation | yes |
 | pledge_backed_delegators | nothing | no |
 | skip_top20_delegators | nothing | no |
 | pledge_backed_delegators_2x | nothing | no |
 | pledge_backed_delegators_5x | nothing | no |
+| skip_top20_delegators_min_pledge | nothing | no |
 | top100_delegators_not_top20_min_pledge | skin in the game | no |
 | equal_delegators_equal | nothing | no |
 | skip_top20_delegators_by_power | nothing | no |
 | skip_top20_delegators_min_pledge_by_power | nothing | no |
 | haircut_top20_delegators_by_power | nothing | no |
+| skip_top20_min_pledge_delegators_sqrt | nothing | no |
+| skip_top20_min_pledge_delegators_equal | nothing | no |
 | skip_top20_min_pledge_by_power_5x | nothing | no |
 | skip_top20_min_pledge_by_power_10x | nothing | no |
 | skip_top20_min_pledge_by_power_half | nothing | no |
+| skip_top20_min_pledge_by_power_2m5 | nothing | no |
 | pledge_contest_delegators_top200 | decentralisation | no |
-| pledge_contest_delegators_10m | decentralisation | no |
+| skip_top20_min_pledge_by_power_1x_ycap1_5 | nothing | no |
+| skip_top20_min_pledge_by_power_1x_ycap2 | nothing | no |
+| skip_top20_min_pledge_by_power_1x_ycap3 | nothing | no |
+| skip_top20_min_pledge_by_power_1x_ycap5 | nothing | no |
+| skip_top20_min_pledge_flat_1x | nothing | no |
+| skip_top20_min_pledge_sqrt_1x_ycap2 | nothing | no |
+| skip_top20_delegators_min_pledge_by_power_ycap2 | nothing | no |
+| skip_top70_min_pledge_by_power_1x | skin in the game | no |
+| skip_top100_min_pledge_by_power_1x | skin in the game | no |
 | proportional | decentralisation | yes |
 | equal | nothing | no |
 | sqrt | decentralisation | no |
@@ -929,6 +986,8 @@ By response scenario:
 | small_drep_delegators | nothing | no |
 | delegators_not_top20 | decentralisation | yes |
 | top100_delegators_not_top20 | decentralisation | no |
+| capped_1m | nothing | no |
+| capped_2m5 | nothing | no |
 | capped_10m | nothing | no |
 | pledge_backed_delegators_uncapped | decentralisation | no |
 | skip_top10_delegators | nothing | no |
@@ -945,6 +1004,7 @@ By response scenario:
 | pledge_soft_cap_2x_delegators_flat | decentralisation | no |
 | pledge_soft_cap_2x_delegators_by_power | decentralisation | no |
 | delegators_not_top20_2x_flat | nothing | no |
+| delegators_not_top20_2x_by_power | nothing | no |
 | pledge_contest_delegators | decentralisation | no |
 | pledge_contest_top25 | decentralisation | no |
 | pledge_contest_top50 | decentralisation | no |
@@ -973,6 +1033,9 @@ By response scenario:
 | pledge_contest_delegators_all_skip20_20 | nothing | no |
 | pledge_contest_delegators_skip20_20 | nothing | no |
 | pledge_contest_delegators_skip20_2m5 | nothing | no |
+| pledge_contest_delegators_ycap2 | decentralisation | no |
+| pledge_contest_delegators_skip20_ycap2 | nothing | no |
+| skip_top70_min_pledge_flat_1x | decentralisation, skin in the game | no |
 | proportional_delegators_by_power_20 | decentralisation | no |
 | proportional_delegators_by_power_80 | decentralisation | no |
 | proportional_delegators_equal_20 | decentralisation | no |
@@ -989,22 +1052,22 @@ By response scenario:
 | pledge_contest_top400 | decentralisation | no |
 | pledge_contest_all | decentralisation | no |
 | pledge_contest_all_2x | decentralisation | no |
-| pledge_contest_skip10 | nothing | no |
 | pledge_contest_skip20 | nothing | no |
 | pledge_contest_gate70 | decentralisation | no |
 | pledge_contest_min10_delegators | decentralisation | no |
 | pledge_contest_cap5m | nothing | no |
 | pledge_contest_roll_down | decentralisation | no |
 | pledge_contest_2m5 | decentralisation | no |
+| pledge_contest_rate5 | decentralisation | no |
 | pledge_contest_rate20 | decentralisation | no |
 | pledge_contest_rate50 | decentralisation | no |
+| pledge_contest_all_rate5 | decentralisation | no |
 | pledge_contest_all_rate10 | decentralisation | no |
 | pledge_contest_delegators_rate5 | decentralisation | no |
 | pledge_contest_delegators_rate10 | decentralisation | no |
 | skip_top20_min_pledge_by_power_1x_rate5 | nothing | yes |
 | pledge_contest_delegators_all_20 | decentralisation | no |
 | pledge_contest_delegators_all_20_2m5 | decentralisation | no |
-| pledge_contest_delegators_skip20_rate5 | nothing | no |
 
 The guardrails are judgement calls in `config.yaml`. Moving one and running `rss-gov report` regroups these tables without simulating anything.
 
@@ -1016,28 +1079,28 @@ One score per design: what its gains are worth at the values in `config.yaml` (`
 
 *Behind the best*: the most it falls short of the best design in any one scenario. *Pays off from*: the share of these values at which its gains cover its cost. *First*: how often it ranks first when every value moves by up to 50% either way. *Gives up*: the guardrail it crosses.
 
-Designs that need only CIP-159 (146 designs: the experiment's and the search's finalists), the top 15:
+Designs that need only CIP-159 (164 designs: the experiment's and the search's finalists), the top 15:
 
 | rank | scheme | rule | net benefit | low | central | high | behind the best | pays off from | first, values ±50% | gives up |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | skip_top20_min_pledge_by_power_1x | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +7.5M ± 0.3M | -1.3M | +5.2M | +18.7M | 2.6M | 0.57× | 18% |  |
-| 2 | skip_top20_delegators_min_pledge_by_power | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 2x; 5M ADA | +7.2M ± 0.3M | -1.4M | +4.5M | +18.6M | 2.7M | 0.58× | 0% |  |
-| 3 | g10_10 | power^0.75, skip top 20, min pledge 100k, gate 70%, 80% to delegators (sqrt per DRep), pledge soft cap 2x; 5M ADA | +7.1M ± 0.3M | -1.5M | +4.7M | +18.0M | 3.3M | 0.61× | 8% |  |
-| 4 | skip_top20_delegators_min_pledge | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 2x; 5M ADA | +6.9M ± 0.3M | -1.6M | +3.7M | +18.5M | 2.8M | 0.60× | 4% |  |
-| 5 | skip_top20_min_pledge_by_power_5x | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 5x; 5M ADA | +6.8M ± 0.3M | -1.5M | +3.8M | +17.9M | 3.3M | 0.60× | 0% |  |
-| 6 | pledge_contest_delegators_skip20_rate10 | linear, skip top 20, pay 100, 50% to delegators (by counted power), pledge soft cap 1x, pot at most 10% of pledge a year; 5M ADA | +6.3M ± 0.2M | -0.4M | +1.0M | +18.5M | 4.3M | 0.40× | 4% |  |
-| 7 | skip_top20_delegators_by_power | linear, skip top 20, gate 70%, 80% to delegators (by counted power), pledge soft cap 2x; 5M ADA | +6.2M ± 0.3M | -3.1M | +4.1M | +17.7M | 3.6M | 0.62× | 0% |  |
-| 8 | pledge_contest_rate10 | linear, pay 100, pledge soft cap 1x, pot at most 10% of pledge a year; 5M ADA | +6.1M ± 0.2M | -0.5M | +0.2M | +18.7M | 5.1M | 0.45× | 26% | decentralisation |
-| 9 | pledge_contest_all_rate5 | linear, pledge soft cap 1x, pot at most 5% of pledge a year; 5M ADA | +6.1M ± 0.2M | -0.4M | +0.0M | +18.6M | 5.2M | 0.41× | 5% | decentralisation |
-| 10 | pledge_contest_rate5 | linear, pay 100, pledge soft cap 1x, pot at most 5% of pledge a year; 5M ADA | +6.0M ± 0.2M | -0.2M | +0.3M | +18.0M | 4.9M | 0.40× | 4% | decentralisation |
-| 11 | skip_top20_min_pledge_by_power_10x | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 10x; 5M ADA | +5.9M ± 0.3M | -1.7M | +3.5M | +15.9M | 5.3M | 0.63× | 0% |  |
-| 12 | pledge_contest_all_rate10 | linear, pledge soft cap 1x, pot at most 10% of pledge a year; 5M ADA | +5.9M ± 0.2M | -1.1M | -0.4M | +19.2M | 5.7M | 0.49× | 0% | decentralisation |
-| 13 | skip_top20_min_pledge_by_power_half | linear, skip top 20, min pledge 10k, gate 70%, 50% to delegators (by counted power), pledge soft cap 2x; 5M ADA | +5.9M ± 0.3M | -3.9M | +2.4M | +19.1M | 4.0M | 0.63× | 0% |  |
-| 14 | skip_top20_min_pledge_by_power_10m | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 2x; 10M ADA | +5.9M ± 0.3M | -5.3M | +2.7M | +20.2M | 5.4M | 0.78× | 5% |  |
-| 15 | pledge_contest_delegators_all_skip20 | linear, skip top 20, 50% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +5.8M ± 0.3M | -6.0M | +2.3M | +21.3M | 6.1M | 0.64× | 1% |  |
-| 74 | paying nothing |  | +0.0M ± 0.0M | +0.0M | +0.0M | +0.0M | 21.3M |  | 0% |  |
+| 1 | skip_top100_min_pledge_by_power_1x | linear, skip top 100, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +37.1M ± 0.5M | +13.6M | +34.4M | +63.4M | 5.3M | 0.21× | 67% | skin in the game |
+| 2 | skip_top100_min_pledge_flat_1x | linear, skip top 100, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | +34.0M ± 0.9M | +4.3M | +28.9M | +68.7M | 9.7M | 0.23× | 33% | decentralisation, skin in the game |
+| 3 | skip_top70_min_pledge_flat_1x | linear, skip top 70, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | +32.9M ± 0.5M | +8.9M | +34.2M | +55.5M | 13.2M | 0.23× | 0% | decentralisation, skin in the game |
+| 4 | g9_4 | linear, skip top 70, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 2x; 5M ADA | +32.5M ± 0.5M | +8.4M | +34.8M | +54.2M | 14.5M | 0.24× | 0% | decentralisation, skin in the game |
+| 5 | skip_top70_min_pledge_by_power_1x | linear, skip top 70, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +28.4M ± 0.4M | +12.8M | +23.3M | +49.3M | 19.3M | 0.26× | 0% | skin in the game |
+| 6 | g6_0 | linear, skip top 70, min pledge 10k, gate 70%, 50% to delegators (flat), pledge soft cap 1x; 5M ADA | +26.1M ± 0.5M | +7.7M | +23.4M | +47.2M | 21.4M | 0.28× | 0% | skin in the game |
+| 7 | skip_top50_min_pledge_flat_1x | linear, skip top 50, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | +24.8M ± 0.4M | +14.0M | +18.6M | +41.7M | 26.9M | 0.29× | 0% | skin in the game |
+| 8 | skip_top50_min_pledge_by_power_1x | linear, skip top 50, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +20.3M ± 0.4M | +5.6M | +16.1M | +39.1M | 29.5M | 0.33× | 0% |  |
+| 9 | skip_top30_min_pledge_flat_1x | linear, skip top 30, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 5M ADA | +13.5M ± 0.4M | +2.9M | +10.1M | +27.4M | 41.2M | 0.43× | 0% |  |
+| 10 | skip_top30_min_pledge_by_power_1x | linear, skip top 30, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +12.6M ± 0.3M | +1.0M | +9.7M | +27.0M | 41.7M | 0.45× | 0% |  |
+| 11 | g5_4 | linear, skip top 30, min pledge 10k, gate 50%, 80% to delegators (flat), pledge soft cap 1x; 2.5M ADA | +8.1M ± 0.3M | -0.0M | +5.0M | +19.3M | 49.3M | 0.39× | 0% |  |
+| 12 | g7_17 | linear, skip top 30, 50% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +7.6M ± 0.3M | -5.8M | +3.8M | +25.0M | 43.6M | 0.58× | 0% |  |
+| 13 | skip_top20_min_pledge_by_power_1x | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 1x; 5M ADA | +7.5M ± 0.3M | -1.3M | +5.2M | +18.7M | 50.0M | 0.57× | 0% |  |
+| 14 | skip_top20_delegators_min_pledge_by_power | linear, skip top 20, min pledge 10k, gate 70%, 80% to delegators (by counted power), pledge soft cap 2x; 5M ADA | +7.2M ± 0.3M | -1.4M | +4.5M | +18.6M | 50.0M | 0.58× | 0% |  |
+| 15 | g3_17 | linear, skip top 50, min pledge 10k, gate 70%, 80% to delegators (flat), pledge soft cap 1x; 1M ADA | +7.2M ± 0.3M | +1.0M | +4.5M | +16.0M | 52.7M | 0.22× | 0% |  |
+| 91 | paying nothing |  | +0.0M ± 0.0M | +0.0M | +0.0M | +0.0M | 68.7M |  | 0% |  |
 
-- Smallest shortfall in any scenario: `skip_top20_min_pledge_by_power_1x`, never more than 2.6M ADA a year behind the best.
+- Smallest shortfall in any scenario: `skip_top100_min_pledge_by_power_1x`, never more than 5.3M ADA a year behind the best.
 - Best design that needs another hard fork: `pledge_soft_cap_skip20_fee_50k`, +4.6M ADA a year.
 
 ## How to read this

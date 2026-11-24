@@ -105,6 +105,7 @@ function setting(field, v) {
     return num(v, 2) + (word ? ` (${word[1]})` : v > 1 ? " (favours the largest)" : "");
   }
   if (field.name === "pledge_leverage") return v ? `${num(v, 0)}×` : "off";
+  if (field.name === "delegator_yield_cap") return v ? `${num(v, 1)}× flat` : "off";
   if (field.name === "delegator_alpha") {
     const word = [[0, "equal per DRep"], [0.5, "square root"], [1, "in proportion"]].find(([a]) => Math.abs(a - v) < 1e-9);
     return num(v, 2) + (word ? ` (${word[1]})` : "");
@@ -171,6 +172,7 @@ function describe(s, always = false) {
       ? `${pct(s.delegator_share)} of the budget goes to delegators. Each paid DRep's delegators get a pot ${perDrep}, times its vote rate, shared per ADA delegated.`
       : `${pct(s.delegator_share)} of the budget goes to delegators, each sharing in their DRep's award.`);
     if (s.delegator_k_exclude) out.push(`Delegators of the ${num(s.delegator_k_exclude, 0)} largest DReps get nothing, though those DReps can still be paid; their part goes to the other delegators.`);
+    if (s.delegator_yield_cap && s.delegator_mode !== "flat") out.push(`No DRep's delegators earn more than ${num(s.delegator_yield_cap, 1)} times the yield one flat rate for all would pay; the excess goes to the other delegators.`);
   }
   if (s.budget_ada && (always || s.fee_ada || !D.meta || s.budget_ada !== D.meta.budget)) out.push(`Budget: ${ada(s.budget_ada)} ADA over the programme.`);
   if (s.fee_ada) out.push(`${s.budget_ada ? "On top of that, each" : "Paid by fees alone: each"} governance action that closes adds a ${ada(s.fee_ada)} ADA proposer fee, kept from its deposit instead of returned.`);

@@ -28,7 +28,7 @@ BASELINE = experiment.BASELINE
 CHOICES = dict(
     alpha=[0.0, 0.25, 0.5, 0.75, 1.0],
     cap_ada=[None, None, 2e6, 1e7, 5e7, 2e8],
-    k_exclude=[0, 0, 0, 5, 10, 20],
+    k_exclude=[0, 0, 0, 5, 10, 20, 30, 50, 100],
     n_pay=[0, 0, 0, 50, 100, 200, 400],
     min_power_ada=[0.0, 1e4, 1e5, 1e6],
     min_delegators=[0, 0, 5, 10, 25, 50],
@@ -37,7 +37,8 @@ CHOICES = dict(
     delegator_share=[0.0, 0.0, 0.25, 0.5, 0.8],
     delegator_mode=["passthrough", "flat", "per_drep"],
     delegator_alpha=[0.0, 0.5, 1.0],
-    delegator_k_exclude=[0, 0, 0, 10, 20],
+    delegator_k_exclude=[0, 0, 0, 10, 20, 30],
+    delegator_yield_cap=[0.0, 0.0, 0.0, 1.5, 2.0, 3.0],
     min_pledge_ada=[0.0, 0.0, 0.0, 1e4, 1e5],
     pledge_leverage=[0.0, 0.0, 0.0, 1.0, 2.0, 100.0, 1000.0, 10000.0],
     pledge_rate=[0.0, 0.0, 0.0, 0.0, 0.05, 0.1, 0.2],
@@ -71,6 +72,8 @@ def _make(values, name):
     if not values.get("delegator_share"):
         values["delegator_k_exclude"] = 0
         values["delegator_mode"] = "passthrough"  # no delegator pay: one rule, not three
+    if values.get("delegator_mode", "passthrough") == "flat" or not values.get("delegator_share"):
+        values["delegator_yield_cap"] = 0.0  # a flat yield has nothing to cap
     if values.get("delegator_mode") != "per_drep":
         values["delegator_alpha"] = 1.0  # only a pot per DRep has an exponent
     if values.get("alpha") or values.get("delegator_share"):

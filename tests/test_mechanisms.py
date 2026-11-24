@@ -327,3 +327,25 @@ def test_a_pot_that_grows_with_pledge_pays_a_yearly_rate_on_it_up_to_the_budget(
     assert value[1] * r.actions == pytest.approx(full[0][1])
     with pytest.raises(ValueError):
         m.Scheme(pledge_rate=-0.1)
+
+
+def test_a_delegator_yield_cap_holds_every_yield_to_a_multiple_of_the_flat_one():
+    r = make_round()
+    by_power = dict(budget_ada=1, alpha=1.0, delegator_share=0.6, delegator_mode="per_drep")
+    pledged = dict(by_power, pledge_leverage=1.0)
+    pot = 1e6
+    flat = m.allocate(m.Scheme(**{**by_power, "delegator_mode": "flat"}), r, pot)[1]
+    for k in (1.0, 1.5, 3.0):
+        award, capped = m.allocate(m.Scheme(**pledged, delegator_yield_cap=k), r, pot)
+        _, free = m.allocate(m.Scheme(**pledged), r, pot)
+        assert (capped <= k * flat * (1 + 1e-9)).all()  # no one above the line
+        assert (capped * r.power).sum() == pytest.approx((free * r.power).sum())  # all paid
+        assert award == pytest.approx(m.allocate(m.Scheme(**pledged), r, pot)[0])  # DReps alike
+    # at 1 it is the flat yield; far above every yield it changes nothing
+    assert m.allocate(m.Scheme(**pledged, delegator_yield_cap=1.0), r, pot)[1] == pytest.approx(
+        flat
+    )
+    loose = m.allocate(m.Scheme(**pledged, delegator_yield_cap=1e6), r, pot)[1]
+    assert loose == pytest.approx(m.allocate(m.Scheme(**pledged), r, pot)[1])
+    with pytest.raises(ValueError):
+        m.Scheme(delegator_yield_cap=0.5)

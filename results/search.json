@@ -2,148 +2,140 @@
   "history": [
     {
       "generation": 0,
-      "evaluated": 161,
-      "front": 31,
-      "hypervolume": 0.08080634927292568
+      "evaluated": 178,
+      "front": 28,
+      "hypervolume": 0.13237500271209182
     },
     {
       "generation": 1,
-      "evaluated": 178,
-      "front": 35,
-      "hypervolume": 0.0831902236718343
+      "evaluated": 198,
+      "front": 31,
+      "hypervolume": 0.13322020283243047
     },
     {
       "generation": 2,
-      "evaluated": 192,
-      "front": 40,
-      "hypervolume": 0.08431292634967698
+      "evaluated": 211,
+      "front": 34,
+      "hypervolume": 0.13403282089752525
     },
     {
       "generation": 3,
-      "evaluated": 209,
-      "front": 41,
-      "hypervolume": 0.08428541868636806
+      "evaluated": 229,
+      "front": 35,
+      "hypervolume": 0.13461294805194712
     },
     {
       "generation": 4,
-      "evaluated": 228,
-      "front": 42,
-      "hypervolume": 0.08480482878268276
+      "evaluated": 248,
+      "front": 37,
+      "hypervolume": 0.1366804949864912
     },
     {
       "generation": 5,
-      "evaluated": 242,
-      "front": 42,
-      "hypervolume": 0.08480482878268276
+      "evaluated": 262,
+      "front": 37,
+      "hypervolume": 0.13776812941544758
     },
     {
       "generation": 6,
-      "evaluated": 257,
-      "front": 47,
-      "hypervolume": 0.08540903685461441
+      "evaluated": 282,
+      "front": 43,
+      "hypervolume": 0.1389052097755819
     },
     {
       "generation": 7,
-      "evaluated": 275,
-      "front": 52,
-      "hypervolume": 0.08690381643617982
+      "evaluated": 297,
+      "front": 45,
+      "hypervolume": 0.14039737859063856
     },
     {
       "generation": 8,
-      "evaluated": 292,
-      "front": 52,
-      "hypervolume": 0.08746170614761574
+      "evaluated": 311,
+      "front": 49,
+      "hypervolume": 0.1411379215734393
     },
     {
       "generation": 9,
-      "evaluated": 309,
+      "evaluated": 331,
       "front": 55,
-      "hypervolume": 0.08837783550888013
+      "hypervolume": 0.14021914292785284
     },
     {
       "generation": 10,
-      "evaluated": 324,
-      "front": 57,
-      "hypervolume": 0.09083200321266381
+      "evaluated": 348,
+      "front": 56,
+      "hypervolume": 0.14046927311780458
     }
   ],
   "front": [
-    "capped_1m",
-    "capped_2m5",
     "pledge_backed_delegators_half",
-    "skip_top20_delegators_min_pledge",
-    "delegators_not_top20_2x_by_power",
-    "skip_top20_min_pledge_delegators_sqrt",
-    "skip_top20_min_pledge_delegators_equal",
     "skip_top20_min_pledge_by_power_1x",
-    "skip_top20_min_pledge_by_power_2m5",
     "skip_top20_min_pledge_by_power_10m",
+    "pledge_contest_skip10",
     "pledge_contest_1m",
     "pledge_contest_delegators_all",
     "pledge_contest_delegators_2m5",
+    "pledge_contest_delegators_10m",
     "pledge_contest_rate2",
-    "pledge_contest_rate5",
     "pledge_contest_rate10",
-    "pledge_contest_all_rate5",
     "pledge_contest_10m_rate10",
     "skip_top20_min_pledge_by_power_1x_rate10",
     "pledge_contest_delegators_all_20_not_top20",
     "pledge_contest_delegators_all_skip20",
+    "pledge_contest_delegators_skip20_rate5",
     "pledge_contest_delegators_skip20_rate10",
-    "g1_2",
-    "g10_10",
-    "g10_17",
-    "g10_1",
-    "g9_16",
-    "g8_19",
-    "g1_21",
-    "g7_1",
-    "g3_7",
-    "g2_20"
+    "skip_top30_min_pledge_flat_1x",
+    "skip_top50_min_pledge_flat_1x",
+    "skip_top100_min_pledge_flat_1x",
+    "skip_top30_min_pledge_by_power_1x",
+    "g9_4",
+    "g5_4",
+    "g8_14",
+    "g6_0",
+    "g7_17",
+    "g7_9",
+    "g3_17",
+    "g4_11",
+    "g9_20",
+    "g1_22"
   ],
   "shortlist": [
     "pledge_backed_delegators_half",
-    "skip_top20_delegators_min_pledge",
-    "skip_top20_min_pledge_delegators_sqrt",
-    "skip_top20_min_pledge_delegators_equal",
     "skip_top20_min_pledge_by_power_1x",
-    "skip_top20_min_pledge_by_power_2m5",
     "skip_top20_min_pledge_by_power_10m",
-    "g10_10",
-    "g10_17",
-    "g7_1",
-    "g2_20",
-    "capped_1m",
-    "capped_2m5",
-    "delegators_not_top20_2x_by_power",
+    "skip_top30_min_pledge_flat_1x",
+    "skip_top30_min_pledge_by_power_1x",
+    "g5_4",
+    "g8_14",
+    "g4_11",
     "pledge_contest_delegators_all_skip20",
-    "g9_16",
-    "g1_21",
+    "g7_17",
+    "g7_9",
+    "g3_17",
+    "pledge_contest_skip10",
     "skip_top20_min_pledge_by_power_1x_rate10",
+    "pledge_contest_delegators_skip20_rate5",
     "pledge_contest_delegators_skip20_rate10",
-    "g3_7"
+    "skip_top50_min_pledge_by_power_1x"
   ],
   "pilot_shortlist": [
     "pledge_backed_delegators_half",
-    "skip_top20_delegators_min_pledge",
-    "skip_top20_min_pledge_delegators_sqrt",
-    "skip_top20_min_pledge_delegators_equal",
     "skip_top20_min_pledge_by_power_1x",
-    "skip_top20_min_pledge_by_power_2m5",
     "skip_top20_min_pledge_by_power_10m",
-    "g10_10",
-    "g10_17",
-    "g7_1",
-    "g2_20",
-    "capped_1m",
-    "capped_2m5",
-    "delegators_not_top20_2x_by_power",
+    "skip_top30_min_pledge_flat_1x",
+    "skip_top30_min_pledge_by_power_1x",
+    "g5_4",
+    "g8_14",
+    "g4_11",
     "pledge_contest_delegators_all_skip20",
-    "g9_16",
-    "g1_21",
+    "g7_17",
+    "g7_9",
+    "g3_17",
+    "pledge_contest_skip10",
     "skip_top20_min_pledge_by_power_1x_rate10",
+    "pledge_contest_delegators_skip20_rate5",
     "pledge_contest_delegators_skip20_rate10",
-    "g3_7"
+    "skip_top50_min_pledge_by_power_1x"
   ],
   "axes": [
     "participation",
@@ -164,16 +156,16 @@
     "annual_cost_ada": 0.0,
     "split_gain": 0.0
   },
-  "hypervolume": 0.0913075024997952,
+  "hypervolume": 0.14431415309892434,
   "hypervolume_ci": [
-    0.08982954225565706,
-    0.09317438789591732
+    0.1428145048792489,
+    0.1459759903086925
   ],
   "hypervolume_unpaid": 0.004545454545454546,
-  "search_gain": 0.007192181728770952,
+  "search_gain": 0.006852113135048632,
   "search_gain_ci": [
-    0.006924953644350129,
-    0.007404345224859709
+    0.0064705752747088955,
+    0.007097914420863193
   ],
   "holdout_seeds": 100
 }

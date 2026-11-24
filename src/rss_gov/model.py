@@ -431,6 +431,7 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
                 voting_dreps=int((registered & (activity >= 0.5)).sum()),
                 whale_pledge=float(added[ws].sum()),
                 whale_dreps=int((added[ws] > 0).sum()),
+                whale_power=float(power[ws[registered[ws]]].sum() / max(live_power.sum(), 1e-9)),
                 shares=None,
             )
         )
@@ -484,6 +485,7 @@ def run(world, params, scheme, scenario=Scenario(), epochs=36, seed=0, trace=Fal
         whale_take=whale_paid / spent if spent > 0 else 0.0,
         whale_pledge=late_mean("whale_pledge"),
         whale_dreps=late_mean("whale_dreps"),
+        whale_power=late_mean("whale_power"),
     )
 
 

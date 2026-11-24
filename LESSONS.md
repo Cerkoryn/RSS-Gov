@@ -38,7 +38,12 @@ added pledge that stops paying (all scenarios), and two more newcomer tests: wan
 1% a year (`central_whale_idle`) and also splitting over up to 20 DReps
 (`central_whale_split`), whose DReps count as one actor in the concentration measures
 (L29 to L31). The search was rerun; designs' numbers moved by at most a few hundredths of
-a point in `central` (L29). "DReps" below is the number
+a point in `central` (L29). **R6** = the same day and data, with a cap on any DRep's
+delegator yield as a multiple of the flat yield (`*_ycap*`, L32), the leading design
+skipping 30 to 100 of the largest DReps (`skip_top{30,50,70,100}_*`, L33) and the share of
+voting power the newcomer's DReps hold (`whale_power`, L34); the search was rerun with both
+among its choices. Designs in R5 have the same numbers. Checks outside the pipeline say
+"ad hoc" and give their seeds. "DReps" below is the number
 of DReps holding two thirds of the voting power: more is more decentralised.
 
 ## DRep pay
@@ -125,6 +130,40 @@ shares.** *Holds.*
   R2: the same with a minimum pledge, 0% / 26% / 52% for pots by power, square root
   and equal (L3).
 - Why: splitting multiplies whatever is paid per DRep rather than per ADA.
+
+**L33. The more of the largest DReps are skipped, the more delegator pay buys; beyond
+about 50, the pay goes to the delegators of a handful of DReps.** *Holds in the model;
+rests on delegators chasing yields far above any seen, and on DReps voting more to pass
+the gate.*
+- Evidence (R6, the leader's settings — 10,000 ADA minimum pledge, a 70% vote gate, 80% to
+  delegators, L = 1 — skipping 20 / 30 / 50 / 70 / 100, with a flat yield): net benefit
+  +7.1 / +13.5 / +24.8 / +32.9 / +34.0M ADA a year, in `low` −1.5 / +2.9 / +14.0 / +8.9 /
+  +4.3M. With pots by counted power +7.5 / +12.6 / +20.3 / +28.4 / +37.1M, and
+  `skip_top100_min_pledge_by_power_1x` is first of all designs. Paired: skipping 30 with a
+  flat yield against the leader +5.92M ± 0.19M, 50 against 30 +11.32M ± 0.31M. Given 30 to
+  100 among its choices, the search puts two designs skipping 70 at #4 and #6 (`g9_4`,
+  `g6_0`).
+- Evidence (R6, flat yield): the delegator yield at the start, a year, weighted by ADA, is
+  4.3% / 8.6% / 20% / 25% / 57%. Late in a run (ad hoc, 3 seeds) it falls to 0.5% / 0.6% /
+  0.9% / 1.3% / 24% in `central` as delegators arrive; in `low` it is 1.6% / 2.5% / 5.1%,
+  then hundreds to thousands of percent. Skipping 70 or 100, the pay goes to 5 and 3 DReps a
+  round in `low` (29 skipping 20; in `central` 28 and 10), and DReps holding two thirds fall
+  below unpaid (−3.6 and −4.1). With pots by counted power they stay above it (+12.7 and
+  +11.2, 13 and 4 DReps a round). In `yield_only`, a flat yield skipping 50 or 100
+  concentrates power (−6.2 and −6.9 DReps): the spread in `central` needs the other
+  reactions too.
+- Why: skipping more leaves fewer, smaller DReps whose delegators are paid, so the same
+  pot is a higher yield. Movers weigh a paid DRep by exp(`delegator_response` × points of
+  yield) up to 50 points (`max_yield_pp`), so a few percent draws most of them. How many are
+  left to pay depends on how many DReps outside the K largest vote on 70% of actions with
+  10,000 ADA pledged: when DReps hardly react (`low`), few do. Arriving delegators lift a
+  DRep into the K largest, where its delegators stop being paid; the model's delegators do
+  not learn this. Whether real delegators would chase such yields is untested.
+- Not pursued (ad hoc, 20 seeds): a fixed ceiling on any delegator's yield, the rest left
+  unspent. At 10% a year it lifts the flat designs skipping 70 and 100 in `low` (+7.8 →
+  +22.9M and +4.3 → +19.6M) but lowers the one by counted power skipping 100 (+38.2 →
+  +32.2M over the three scenarios), and in `low` the 10 best-paid DReps still take 98% to
+  100% of the pay. It bounds the yield, not how few are paid.
 
 ## Pledge
 
@@ -245,6 +284,7 @@ pledge.*
   pays delegators; `pledge_soft_cap_skip20`, without delegators, +0.7M.
 - Why: a skipped DRep loses its pay and votes less, but only delegators react to yield.
   With delegator pay, the delegators of the largest move to paid DReps (`yield_only`).
+- R6: the more are skipped, the more it buys, up to 100 (L33).
 
 **L22. Capping counted power per DRep, against one large pledge taking the pot, costs a lot
 in the model.** *Holds; R4 models the threat (L23): the cap stops it, but the score does not
@@ -396,17 +436,62 @@ that the DReps are one actor.*
   pledge, and the newcomer's DReps carry much pledge and few delegators, so they offer the
   highest yields and movers go to them. A flat yield is the same at every paid DRep, so
   nothing draws movers to the newcomer. Under the contest it pays no delegators.
+- R6: the leader with a flat yield (`skip_top20_min_pledge_flat_1x`) trails it by −0.49M ±
+  0.21M and holds the splitting newcomer to 4.6% of voting power against 14.7%; DReps
+  holding two thirds go +6.2 → +5.3 against +7.1 → +1.4. A cap on yields does not get
+  there (L32).
+
+**L32. Capping any DRep's delegator yield at a multiple of the flat yield does worse than a
+flat yield, with or without a splitting newcomer.** *Holds.*
+- Evidence (R6, the leader `skip_top20_min_pledge_by_power_1x` capped at 5× / 3× / 2× /
+  1.5× the flat yield): net benefit +6.9 / +6.5 / +5.7 / +5.3M ADA a year, against +7.5M
+  uncapped and +7.1M flat; 2× against flat −1.39M ± 0.22M. DReps holding two thirds in
+  `central` +6.6 / +6.3 / +5.3 / +5.2, against +7.1 uncapped and +6.2 flat: a cap in
+  between is worse than either end. The splitting newcomer's DReps hold 13.4% / 11.1% /
+  8.5% / 7.2% of voting power, against 14.7% uncapped and 4.6% flat. On
+  `pledge_contest_delegators_skip20`, 2× −3.81M ± 0.18M, with Sybil gain up from 4% to 13%.
+  The search, offered 1.5× to 3×, kept no cap among its finalists.
+- Why: at the start, a 2× cap binds on 11 of the 22 paid DReps, those with the most pledge
+  for their delegation (median 19% of their power, up to 43× the flat yield): the ones pots
+  by counted power reward (L9). What it frees goes mostly to the six largest paid DReps,
+  with 84% of the paid power and almost no pledge. So it gives up the uncapped design's
+  backing (+0.43 → +0.29 points at 2×) and DReps without reaching the flat yield's
+  participation (+4.2 against +5.2 points). The newcomer's DReps still offer yields up to
+  the line. In the contest, evening out delegator pay per DRep makes splitting pay (L7).
+
+**L34. Net benefit and a splitting newcomer's bloc rise together with how many of the
+largest DReps are skipped; at each number, a flat yield gives the smaller bloc.** *Holds;
+tracked beside the ranking, not in it.*
+- Evidence (R6, the 153 named pilot-testable designs, fee variants left out: holdout net
+  benefit against the newcomer's share of voting power in `central_whale_split`): those no
+  other design beats on both are, from the top, skipping 100 with pots by counted power
+  (+37.1M, 18.1%); with a flat yield skipping 70 (+32.9M, 14.1%), 50 (+24.8M, 9.8%), 30
+  (+13.5M, 5.8%) and 20 (+7.1M, 4.6%); `skip_top20_delegators_min_pledge` (+6.9M, 4.4%);
+  `pledge_contest_rate10` and `rate20` (+6.1M and +4.5M, 3.2%); `pledge_contest_1m` (+1.5M,
+  1.7%); `exclude_k_pay_n` (+0.3M, 0%). With pots by counted power the bloc is 15% to 18%
+  whatever is skipped. In 216 variations around the leader (ad hoc, 20 seeds), the 15 best
+  under the splitting newcomer all have a flat yield; skipping 30 beats 20 on average by
+  +3.5M in `central` and +1.6M with the newcomer.
+- Why: the more are skipped, the higher the yield the newcomer's DReps can offer (L33); with
+  pots by counted power its pledge buys them the top yields (L31).
+- Not in the ranking: the newcomer's ADA counts as backing there, so scoring this scenario
+  would reward being exposed to it.
 
 ## Cost and ranking
 
 **L11. With weak reactions to rewards, no design that costs millions a year is worth its
-cost at the starting values.** *Holds with exceptions.*
+cost at the starting values.** *Holds with exceptions; skipping 30 or more of the largest
+DReps breaks it (R6, L33).*
 - Evidence (R1, R2): the leader (`skip_top20_delegators_min_pledge_by_power`) is −1.4M ADA
   a year in `low`, +4.4M in `central`, +19M in `high`; every design costing 1M ADA a year
   or more is negative in `low`.
 - Counter-examples: very cheap designs are positive even in `low`: `exclude_k_pay_n`
   (10 ADA a vote, about 0.14M a year) and its proposer-fee versions, and
   `middle_out_fee_10k` (fee-funded, needs a hard fork).
+- Counter-examples (R6): skipping 30, 50 or 100 of the largest with a flat yield, +2.9M,
+  +14.0M and +4.3M ADA a year in `low`; skipping 100 with pots by counted power +13.6M.
+  Concentrating the delegator pot on fewer DReps makes the yield large enough for weak
+  reactions too, though from 70 on the pay goes to a few DReps (L33).
 - Why: gains scale with the assumed reactions, cost does not.
 
 **L12. Which design leads depends on what an improvement is worth: cheaper designs lead at

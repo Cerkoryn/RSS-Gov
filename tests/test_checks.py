@@ -40,6 +40,24 @@ RULES = [
         activity_gate=0.4,
     ),
     dict(alpha=0.0, n_pay=10, roll_down=True, pledge_rate=2.0),
+    dict(
+        alpha=1.0,
+        k_exclude=1,
+        pledge_leverage=1.0,
+        delegator_share=0.8,
+        delegator_mode="per_drep",
+        delegator_yield_cap=1.5,
+    ),
+    dict(alpha=0.5, delegator_share=0.5, delegator_k_exclude=1, delegator_yield_cap=1.0),
+    dict(
+        alpha=1.0,
+        n_pay=20,
+        delegator_share=0.4,
+        delegator_mode="per_drep",
+        delegator_alpha=0.0,
+        delegator_yield_cap=3.0,
+        activity_gate=0.3,
+    ),
 ]
 
 

@@ -373,6 +373,22 @@ FIELDS = [
         "though those DReps themselves can still be paid; their part goes to the other "
         "delegators. Rewards delegating away from the largest DReps.",
     ),
+    dict(
+        name="delegator_yield_cap",
+        short="Delegator yield cap",
+        tag="delegator yield ≤ {}× flat",
+        tags={"0": "no delegator yield cap"},
+        group="Delegators",
+        kind="number",
+        min=0,
+        max=20,
+        step=0.5,
+        label="Cap any DRep's delegator yield at this multiple of a flat yield (0: off)",
+        help="No paid DRep's delegators earn more per ADA than this multiple of what one yield "
+        "for all would pay; the excess goes to the other delegators. 1 is the same yield "
+        "everywhere. It stops a DRep with much pledge and few delegators from offering a yield "
+        "far above everyone else's. Ignored with a flat yield.",
+    ),
 ]
 BY_NAME = {f["name"]: f for f in FIELDS}
 

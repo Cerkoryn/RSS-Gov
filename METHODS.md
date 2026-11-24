@@ -437,7 +437,10 @@ is how the delegators' part is split across DReps (`delegator_mode`):
 Delegating to always-abstain or to a DRep that does not vote earns nothing.
 `delegator_k_exclude` pays nothing to the delegators of the K DReps with the most voting
 power, though those DReps can still be paid themselves; the delegators' part is shared
-among the delegators of the other paid DReps.
+among the delegators of the other paid DReps. `delegator_yield_cap` k holds every paid
+DRep's delegator yield to k times the flat yield at its vote rate (what `flat` would pay
+it), and shares what that frees among the other DReps' delegators by their pots, until
+none is above the line: at 1 it is the flat yield, and large k changes nothing.
 
 **How payments are made.** Payments go straight into reward accounts as direct deposits,
 which [CIP-159](https://cips.cardano.org/cip/CIP-159) adds to the ledger: no transaction
@@ -505,6 +508,11 @@ version and the leading delegator design a pot that grows with pledge, at 2% to 
 and the `pledge_contest_delegators_*` combinations pair the settings that did best
 around the contest: everyone competing, a fifth to delegators, the 20 largest skipped or
 their delegators left out, and 2.5M ADA.
+The `*_ycap*` designs cap any DRep's delegator yield at 1.5 to 5 times the flat yield, on
+the leading design and the contest with delegators; `skip_top20_min_pledge_flat_1x` is the
+leading design with a flat yield. `skip_top{30,50,70,100}_min_pledge_{flat,by_power}_1x`
+skip more of the largest DReps, which leaves fewer and smaller DReps whose delegators are
+paid, so the same pot is a higher yield.
 
 | Name | Rule | Source |
 |---|---|---|
@@ -671,7 +679,8 @@ to `whale_identities` (20) DReps: every six epochs it weighs splitting its ADA e
 over 1, 2, 3, 5, 8, 13 or 20 of them, each paying the cost of voting. DReps it stops using
 keep their delegators. Its DReps count as one in the concentration measures (DReps
 holding two thirds, effective number). The report shows its share of what is paid
-(`whale_take`), the ADA it self-delegates and how many DReps it uses.
+(`whale_take`), the ADA it self-delegates, how many DReps it uses, and the share of all
+voting power its DReps hold, its own ADA and what others delegate to them (`whale_power`).
 
 Not modelled: delegators leaving a DRep whose voting power is capped, vote buying,
 collusion, changes in vote *direction* or quality, and price effects.

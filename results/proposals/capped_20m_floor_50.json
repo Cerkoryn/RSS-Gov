@@ -23,6 +23,7 @@
   "delegator_mode": "passthrough",
   "delegator_alpha": 1.0,
   "delegator_k_exclude": 0,
+  "delegator_yield_cap": 0.0,
   "pledge_leverage": 0.0,
   "hard_cap": false,
   "pledge_rate": 0.0
@@ -35,7 +36,7 @@
  "hypervolume_gain": 0.0,
  "hypervolume_gain_ci": [
   0.0,
-  5.130992852819798e-13
+  0.0
  ],
  "reason": "no clear gain over the front",
  "change_from_unpaid": {
@@ -48,6 +49,6 @@
  "pilot_testable": true,
  "hypothesis": "A cap invites the largest DReps to split; a floor of 50 delegators per DRep makes each extra identity costly without giving up the participation the cap buys.",
  "author": "",
- "evaluated": "2026-11-23T14:04:36Z",
+ "evaluated": "2026-11-24T02:24:17Z",
  "calibration": "4a6c2a9aafd4970d"
 }
