@@ -118,8 +118,29 @@ const Checks = (() => {
         const shared = sum(paid.map((i) => award[i]));
         if (shared > 0) for (const i of paid) yields[i] = (delegatorPot * award[i]) / shared / r.power[i];
       }
+      if (s.delegator_yield_cap && s.delegator_mode !== "flat") capYields(yields, paid, r, delegatorPot, s.delegator_yield_cap);
     }
     return [award, yields];
+  }
+
+  // No paid DRep's delegators above k times the flat yield at its vote rate; what that frees
+  // goes to the others by their pots, until none is above the line (delegator_yield_cap).
+  function capYields(yields, paid, r, pot, k) {
+    const base = sum(paid.map((i) => r.power[i] * r.activity[i]));
+    if (base <= 0 || sum(paid.map((i) => yields[i] * r.power[i])) <= 0) return;
+    const line = (i) => (k * pot * r.activity[i]) / base;
+    const held = new Set();
+    for (;;) {
+      const over = paid.filter((i) => !held.has(i) && yields[i] > line(i) * (1 + 1e-12));
+      if (!over.length) return;
+      for (const i of over) held.add(i);
+      for (const i of held) yields[i] = line(i);
+      const rest = paid.filter((i) => !held.has(i));
+      const pots = sum(rest.map((i) => yields[i] * r.power[i]));
+      const free = pot - sum([...held].map((i) => line(i) * r.power[i]));
+      if (pots <= 0 || free <= 0) return;
+      for (const i of rest) yields[i] = (free * yields[i] * r.power[i]) / pots / r.power[i];
+    }
   }
 
   // Share of the pot going to the DReps `rows` and their delegators.

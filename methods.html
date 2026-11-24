@@ -636,7 +636,10 @@ is how the delegators' part is split across DReps (<code>delegator_mode</code>):
 <p>Delegating to always-abstain or to a DRep that does not vote earns nothing.
 <code>delegator_k_exclude</code> pays nothing to the delegators of the K DReps with the most voting
 power, though those DReps can still be paid themselves; the delegators' part is shared
-among the delegators of the other paid DReps.</p>
+among the delegators of the other paid DReps. <code>delegator_yield_cap</code> k holds every paid
+DRep's delegator yield to k times the flat yield at its vote rate (what <code>flat</code> would pay
+it), and shares what that frees among the other DReps' delegators by their pots, until
+none is above the line: at 1 it is the flat yield, and large k changes nothing.</p>
 <p><strong>How payments are made.</strong> Payments go straight into reward accounts as direct deposits,
 which <a href="https://cips.cardano.org/cip/CIP-159">CIP-159</a> adds to the ledger: no transaction
 output, so no minimum amount, and nothing for a recipient to claim. CIP-159 comes with a
@@ -694,7 +697,12 @@ entry ticket instead of a share. The <code>*_rate*</code> designs give the conte
 version and the leading delegator design a pot that grows with pledge, at 2% to 50% a year;
 and the <code>pledge_contest_delegators_*</code> combinations pair the settings that did best
 around the contest: everyone competing, a fifth to delegators, the 20 largest skipped or
-their delegators left out, and 2.5M ADA.</p>
+their delegators left out, and 2.5M ADA.
+The <code>*_ycap*</code> designs cap any DRep's delegator yield at 1.5 to 5 times the flat yield, on
+the leading design and the contest with delegators; <code>skip_top20_min_pledge_flat_1x</code> is the
+leading design with a flat yield. <code>skip_top{30,50,70,100}_min_pledge_{flat,by_power}_1x</code>
+skip more of the largest DReps, which leaves fewer and smaller DReps whose delegators are
+paid, so the same pot is a higher yield.</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -992,7 +1000,8 @@ to <code>whale_identities</code> (20) DReps: every six epochs it weighs splittin
 over 1, 2, 3, 5, 8, 13 or 20 of them, each paying the cost of voting. DReps it stops using
 keep their delegators. Its DReps count as one in the concentration measures (DReps
 holding two thirds, effective number). The report shows its share of what is paid
-(<code>whale_take</code>), the ADA it self-delegates and how many DReps it uses.</p>
+(<code>whale_take</code>), the ADA it self-delegates, how many DReps it uses, and the share of all
+voting power its DReps hold, its own ADA and what others delegate to them (<code>whale_power</code>).</p>
 <p>Not modelled: delegators leaving a DRep whose voting power is capped, vote buying,
 collusion, changes in vote <em>direction</em> or quality, and price effects.</p>
 <p>A DRep reacts to what one more vote is worth at its current size. It does not campaign
@@ -1202,7 +1211,7 @@ hard cap would rely on.</p>
   </div>
 </main>
 <footer class="site"><div class="inner"></div></footer>
-<script src="data.js?v=03d628a3b8"></script>
-<script src="common.js?v=29155c3061"></script>
+<script src="data.js?v=b91ac6b341"></script>
+<script src="common.js?v=1113d24df8"></script>
 </body>
 </html>
